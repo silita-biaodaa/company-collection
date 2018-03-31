@@ -26,7 +26,7 @@
   <name>company-collection</name>
   <groupId>com.biaodaa</groupId>
   <artifactId>company-collection</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0.1</version>
 
   <properties>
     <spring.version>4.1.6.RELEASE</spring.version>
@@ -58,6 +58,28 @@
     <webSourceDirectory>src/main/webapp</webSourceDirectory>
     <minimizedResource>true</minimizedResource>
   </properties>
+
+  <!-- 私有仓库 -->
+  <repositories>
+    <repository>
+      <id>public</id>  <!--这个ID需要与你新建的组group ID一致-->
+      <name>Public Repository</name>
+      <url>http://120.78.253.169/nexus/content/groups/public/</url>
+    </repository>
+  </repositories>
+
+  <!-- 自动打包 -->
+  <distributionManagement>
+    <repository>
+      <id>releases</id><!--这个ID需要与你的release仓库的Repository ID一致-->
+      <url>http://120.78.253.169/nexus/content/repositories/releases</url>
+    </repository>
+
+    <snapshotRepository>
+      <id>snapshots</id><!--这个ID需要与你的snapshots仓库的Repository ID一致-->
+      <url>http://120.78.253.169/nexus/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
 
   <dependencies>
 
@@ -318,6 +340,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.18.1</version>
+        <configuration>
+          <skipTests>true</skipTests>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.mybatis.generator</groupId>
