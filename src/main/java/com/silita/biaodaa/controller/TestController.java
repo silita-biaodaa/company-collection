@@ -46,7 +46,7 @@ public class TestController {
             user = new TUser();
         }
         return new ImmutableMap.Builder<String, Object>().put("status", 1)
-                .put("msg", "成功").put("data",user).build();
+                .put("msg", "成功！").put("data",user).build();
     }
 
 
