@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.silita.biaodaa.dao.TbCompanyMapper">
+
+    <insert id="insertCompany" parameterType="com.silita.biaodaa.model.TbCompany">
+        <selectKey resultType="Integer" order="AFTER" keyProperty="comId">
+            SELECT LAST_INSERT_ID() AS comId
+        </selectKey>
+        INSERT INTO
+        hunanyitihua.tb_company(`com_name`, `org_code`, `business_num`, `regis_address`, `com_address`,
+       `legal_person`, `economic_type`, `regis_capital`, `skill_leader`, `created`)
+      VALUES
+        (#{comName}, #{orgCode}, #{businessNum}, #{regisAddress}, #{comAddress},
+        #{legalPerson}, #{economicType}, #{regisCapital}, #{skillLeader}, now())
+    </insert>
+
+    <select id="getCompanyTotalForOrgCodeAndBusinessNum" parameterType="com.silita.biaodaa.model.TbCompany" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_company WHERE org_code = #{orgCode} AND business_num = #{businessNum}
+    </select>
+
+    <select id="getCompanyIdByOrgCodeAndBusinessNum" parameterType="com.silita.biaodaa.model.TbCompany" resultType="Integer">
+        SELECT com_id FROM hunanyitihua.tb_company WHERE org_code = #{orgCode} AND business_num = #{businessNum}
+    </select>
+</mapper>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.silita.biaodaa.dao.TbCompanyQualificationMapper">
+
+    <insert id="batchInsertCompanyQualification" parameterType="com.silita.biaodaa.model.TbCompanyQualification">
+        INSERT INTO
+        hunanyitihua.tb_company_qualification(`com_name`, `cert_no`, `cert_date`, `valid_date`, `tab`,
+        `url`, `corpid`)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.comName}, #{item.certNo}, #{item.certDate}, #{item.validDate}, #{item.tab},
+            #{item.url}, #{item.corpid})
+        </foreach>
+    </insert>
+
+    <insert id="InsertCompanyQualification" parameterType="com.silita.biaodaa.model.TbCompanyQualification">
+      INSERT INTO
+      hunanyitihua.tb_company_qualification(`com_name`, `cert_no`, `cert_date`, `valid_date`, `tab`,
+      `url`, `corpid`)
+      VALUES
+        (#{comName}, #{certNo}, #{certDate}, #{validDate}, #{tab},
+        #{url}, #{corpid})
+    </insert>
+
+    <select id="getTotalByCertNo" parameterType="String" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_company_qualification WHERE cert_no = #{certNo}
+    </select>
+
+    <select id="getAllCompanyQualificationUrl" resultType="String">
+        SELECT url FROM hunanyitihua.tb_company_qualification
+    </select>
+
+    <update id="updateCompanyQualificationUrlByCorpid" parameterType="com.silita.biaodaa.model.TbCompanyQualification">
+        UPDATE hunanyitihua.tb_company_qualification
+        SET qual_type = #{qualType}, cert_org = #{certOrg}, `range` = #{range}, com_id = #{comId}, created = NOW()
+        WHERE corpid = #{corpid}
+    </update>
+</mapper>

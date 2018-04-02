@@ -26,7 +26,7 @@
   <name>company-collection</name>
   <groupId>com.biaodaa</groupId>
   <artifactId>company-collection</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
 
   <properties>
     <spring.version>4.1.6.RELEASE</spring.version>

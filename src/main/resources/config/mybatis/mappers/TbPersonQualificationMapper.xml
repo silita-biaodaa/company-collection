@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.silita.biaodaa.dao.TbPersonQualificationMapper">
+
+    <insert id="insertPersonQualification" parameterType="com.silita.biaodaa.model.TbPersonQualification">
+        INSERT INTO
+        hunanyitihua.tb_person_qualification(`com_name`, `category`, `cert_no`, `seal_no`, `major`,
+        `cert_date`, `valid_date`, `url`, `innerid`, `per_id`,
+        `com_id`)
+        VALUES
+        (#{comName}, #{category}, #{certNo}, #{sealNo}, #{major},
+        #{certDate}, #{validDate}, #{url}, #{innerid}, #{perId},
+        #{comId})
+    </insert>
+
+    <select id="getTotalByCertNo" parameterType="String" resultType="Integer">
+      SELECT COUNT(*) FROM hunanyitihua.tb_person_qualification WHERE cert_no = #{certNo}
+    </select>
+</mapper>
