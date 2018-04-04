@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.silita.biaodaa.dao.TbProjectMapper">
+
+    <insert id="insertProjectInfo" parameterType="com.silita.biaodaa.model.TbProject">
+        <selectKey resultType="Integer" order="AFTER" keyProperty="proId">
+            SELECT LAST_INSERT_ID() AS proId
+        </selectKey>
+        INSERT INTO
+        hunanyitihua.tb_project(`xmid`, `pro_name`, `pro_no`, `pro_org`, `pro_where`,
+        `pro_address`, `invest_amount`, `approval_num`, `pro_type`, `build_type`,
+        `pro_scope`, `land_licence`, `plan_licence`, `money_source`, `pro_level`,
+        `pro_use`, `created`)
+        VALUES
+        (#{xmid}, #{proName}, #{proNo}, #{proOrg}, #{proWhere},
+        #{proAddress}, #{investAmount}, #{approvalNum}, #{proType}, #{buildType},
+        #{proScope}, #{landLicence}, #{planLicence}, #{moneySource}, #{proLevel},
+        #{proUse}, NOW())
+    </insert>
+
+    <select id="getProjectTotalByProjectNo" parameterType="String" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_project WHERE pro_no = #{proNo}
+    </select>
+
+    <select id="getProIdByProNo" parameterType="String" resultType="Integer">
+        SELECT pro_id FROM hunanyitihua.tb_project WHERE pro_no = #{proNo}
+    </select>
+</mapper>

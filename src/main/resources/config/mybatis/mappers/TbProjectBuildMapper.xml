@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.silita.biaodaa.dao.TbProjectBuildMapper">
+
+    <insert id="insertProjectBuild" parameterType="com.silita.biaodaa.model.TbProjectBuild">
+        INSERT INTO
+        hunanyitihua.tb_project_build(`bdxh`, `pro_id`, `pro_name`, `pro_type`, `com_id`,
+        `b_name`, `b_scope`, `b_org`, `bid_remark`, `bid_price`,
+        `contract_remark`, `b_licence`, `licence_date`, `complete_remark`, `complete_date`,
+        `sub_contrace`, `created`)
+        VALUES
+        (#{bdxh}, #{proId}, #{proName}, #{proType}, #{comId},
+        #{bName}, #{bScope}, #{bOrg}, #{bidRemark}, #{bidPrice},
+        #{contractRemark}, #{bLicence}, #{licenceDate}, #{completeRemark}, #{completeDate},
+        #{subContrace}, NOW())
+    </insert>
+
+    <select id="getTotalByBLicence" parameterType="String" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_project_build WHERE b_licence = #{bLicence}
+    </select>
+</mapper>

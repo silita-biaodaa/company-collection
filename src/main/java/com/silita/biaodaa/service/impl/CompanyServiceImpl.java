@@ -1,13 +1,7 @@
 package com.silita.biaodaa.service.impl;
 
-import com.silita.biaodaa.dao.TbCompanyMapper;
-import com.silita.biaodaa.dao.TbCompanyQualificationMapper;
-import com.silita.biaodaa.dao.TbPersonMapper;
-import com.silita.biaodaa.dao.TbPersonQualificationMapper;
-import com.silita.biaodaa.model.TbCompany;
-import com.silita.biaodaa.model.TbCompanyQualification;
-import com.silita.biaodaa.model.TbPerson;
-import com.silita.biaodaa.model.TbPersonQualification;
+import com.silita.biaodaa.dao.*;
+import com.silita.biaodaa.model.*;
 import com.silita.biaodaa.service.ICompanyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +22,10 @@ public class CompanyServiceImpl implements ICompanyService {
     private TbPersonMapper tbPersonMapper;
     @Autowired
     private TbPersonQualificationMapper tbPersonQualificationMapper;
+    @Autowired
+    private TbProjectMapper tbProjectMapper;
+    @Autowired
+    private TbProjectBuildMapper tbProjectBuildMapper;
 
     @Override
     public void batchInsertCompanyQualification(List<TbCompanyQualification> companyQualifications) {
@@ -57,7 +55,7 @@ public class CompanyServiceImpl implements ICompanyService {
     @Override
     public int insertCompanyInfo(TbCompany tbCompany) {
         boolean flag = tbCompanyMapper.getCompanyTotalForOrgCodeAndBusinessNum(tbCompany) > 0;
-        if(!flag) {
+        if (!flag) {
             //不存在新增、并返回新增的 comId
             tbCompanyMapper.insertCompany(tbCompany);
             return tbCompany.getComId();
@@ -70,7 +68,7 @@ public class CompanyServiceImpl implements ICompanyService {
     @Override
     public int insertPersionInfo(TbPerson tbPerson) {
         boolean flag = tbPersonMapper.getPersonTotalByNameAndIDAndSex(tbPerson) > 0;
-        if(!flag) {
+        if (!flag) {
             //不存在新增、并返回新增的 pkid
             tbPersonMapper.insertPersonInfo(tbPerson);
             return tbPerson.getPkid();
@@ -83,9 +81,31 @@ public class CompanyServiceImpl implements ICompanyService {
     @Override
     public void insertPersonQualification(TbPersonQualification tbPersonQualification) {
         boolean flag = tbPersonQualificationMapper.getTotalByCertNo(tbPersonQualification.getCertNo()) > 0;
-        if(!flag) {
+        if (!flag) {
             tbPersonQualificationMapper.insertPersonQualification(tbPersonQualification);
         }
     }
 
+    @Override
+    public int insertProjectInfo(TbProject tbProject) {
+        boolean flag = tbProjectMapper.getProjectTotalByProjectNo(tbProject.getProNo()) > 0;
+        if (!flag) {
+            tbProjectMapper.insertProjectInfo(tbProject);
+            return tbProject.getProId();
+        } else {
+            return tbProjectMapper.getProIdByProNo(tbProject.getProNo());
+        }
+    }
+
+    @Override
+    public void insertProjectBuild(TbProjectBuild tbProjectBuild) {
+        if ("无施工许可证信息".equals(tbProjectBuild.getBLicence())) {
+            tbProjectBuildMapper.insertProjectBuild(tbProjectBuild);
+        } else {
+            boolean flag = tbProjectBuildMapper.getTotalByBLicence(tbProjectBuild.getBLicence()) > 0;
+            if (!flag) {
+                tbProjectBuildMapper.insertProjectBuild(tbProjectBuild);
+            }
+        }
+    }
 }
