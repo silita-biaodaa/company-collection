@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by 91567 on 2018/4/2.
@@ -32,7 +33,14 @@ public class CompanyServiceImpl implements ICompanyService {
     private TbProjectDesignMapper tbProjectDesignMapper;
     @Autowired
     private TbPersonDesignMapper tbPersonDesignMapper;
-
+    @Autowired
+    private TbProjectSupervisionMapper tbProjectSupervisionMapper;
+    @Autowired
+    private AllZhMapper allZhMapper;
+    @Autowired
+    private AptitudeDictionaryMapper aptitudeDictionaryMapper;
+    @Autowired
+    private TbCompanyAptitudeMapper tbCompanyAptitudeMapper;
 
     @Override
     public void batchInsertCompanyQualification(List<TbCompanyQualification> companyQualifications) {
@@ -135,12 +143,12 @@ public class CompanyServiceImpl implements ICompanyService {
 
     @Override
     public int insertProjectDesign(TbProjectDesign tbProjectDesign) {
-        boolean falg = tbProjectDesignMapper.getProjectDesignTotalByCheckNo(tbProjectDesign.getCheckNo()) > 0;
+        boolean falg = tbProjectDesignMapper.getProjectDesignTotalByCheckNoAndDesignOrg(tbProjectDesign) > 0;
         if(!falg) {
             tbProjectDesignMapper.insertProjectDesign(tbProjectDesign);
             return tbProjectDesign.getPkid();
         } else {
-            return tbProjectDesignMapper.getPkidByCheckNo(tbProjectDesign.getCheckNo());
+            return tbProjectDesignMapper.getPkidByCheckNoAndDesignOrg(tbProjectDesign);
         }
     }
 
@@ -150,5 +158,52 @@ public class CompanyServiceImpl implements ICompanyService {
         if(!flag) {
             tbPersonDesignMapper.insertPersionDesign(tbPersonDesign);
         }
+    }
+
+    @Override
+    public int insertProjectDesignTwo(TbProjectDesign tbProjectDesign) {
+        boolean falg = tbProjectDesignMapper.getProjectDesignTotalByCheckNoAndExploreOrg(tbProjectDesign) > 0;
+        if(!falg) {
+            tbProjectDesignMapper.insertProjectDesign(tbProjectDesign);
+            return tbProjectDesign.getPkid();
+        } else {
+            return tbProjectDesignMapper.getPkidByCheckNoAndExploreOrg(tbProjectDesign);
+        }
+    }
+
+    @Override
+    public int insertProjectSupervisor(TbProjectSupervision tbProjectSupervision) {
+        boolean falg = tbProjectSupervisionMapper.getTotalByJlbdxh(tbProjectSupervision.getJlbdxh()) > 0;
+        if(!falg) {
+            tbProjectSupervisionMapper.insertProjectSupervision(tbProjectSupervision);
+            return tbProjectSupervision.getPkid();
+        } else {
+            return tbProjectSupervisionMapper.getPkidByJlbdxh(tbProjectSupervision.getJlbdxh());
+        }
+    }
+
+    @Override
+    public int getTotalCompanyQualificationByTabName(String tableName) {
+        return tbCompanyQualificationMapper.getTotalCompanyQualificationByTabName(tableName);
+    }
+
+    @Override
+    public List<TbCompanyQualification> getCompanyQualification(Map<String, Object> params) {
+        return tbCompanyQualificationMapper.getCompanyQualification(params);
+    }
+
+    @Override
+    public AllZh getAllZhByName(String name) {
+        return allZhMapper.getAllZhByName(name);
+    }
+
+    @Override
+    public String getMajorNameBymajorUuid(String majorUuid) {
+        return aptitudeDictionaryMapper.getMajorNameBymajorUuid(majorUuid);
+    }
+
+    @Override
+    public void batchInsertCompanyAptitude(List<TbCompanyAptitude> tbCompanyAptitudes) {
+        tbCompanyAptitudeMapper.batchInsertCompanyAptitude(tbCompanyAptitudes);
     }
 }

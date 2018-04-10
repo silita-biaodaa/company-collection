@@ -1,8 +1,6 @@
 package com.silita.biaodaa.controller;
 
-import com.silita.biaodaa.task.HuNanBuilderCompanyDetailTask;
-import com.silita.biaodaa.task.HuNanCompanyQualificationListTask;
-import com.silita.biaodaa.task.HuNanDesignCompanyDetailTask;
+import com.silita.biaodaa.task.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,9 +18,13 @@ public class CompanyController {
     private HuNanBuilderCompanyDetailTask huNanBuilderCompanyDetailTask;
     @Autowired
     private HuNanDesignCompanyDetailTask huNanDesignCompanyDetailTask;
+    @Autowired
+    private HuNanSurveyCompanyDetailTask huNanSurveyCompanyDetailTask;
+    @Autowired
+    private HuNanSupervisorCompanyDetailTask huNanSupervisorCompanyDetailTask;
 
     /**
-     * 列表
+     * 列表（包含列表、外省入湘、企业安许）
      * @throws Exception
      */
     @RequestMapping("/taskCompanyQualificationList")
@@ -46,6 +48,24 @@ public class CompanyController {
     @RequestMapping("/taskhuNanDesignCompanyDetail")
     public void huNanDesignCompanyDetailTask() throws Exception {
         huNanDesignCompanyDetailTask.taskDesignCompany();
+    }
+
+    /**
+     * 勘察
+     * @throws Exception
+     */
+    @RequestMapping("/taskhuNanSurveyCompanyDetail")
+    public void huNanSurveyCompanyDetailTask() throws Exception {
+        huNanSurveyCompanyDetailTask.taskSurveyCompany();
+    }
+
+    /**
+     * 监理
+     * @throws Exception
+     */
+    @RequestMapping("/taskhuNanSupervisorCompanyDetail")
+    public void HuNanSupervisorCompanyDetailTask() throws Exception {
+        huNanSupervisorCompanyDetailTask.taskSupervisorCompany();
     }
 
 

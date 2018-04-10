@@ -1,5 +1,35 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.silita.biaodaa.dao.TbProjectSupervisionMapper" >
+<mapper namespace="com.silita.biaodaa.dao.TbProjectSupervisionMapper">
+
+    <insert id="insertProjectSupervision" parameterType="com.silita.biaodaa.model.TbProjectSupervision">
+        <selectKey resultType="Integer" order="AFTER" keyProperty="pkid">
+            SELECT LAST_INSERT_ID() AS pkid
+        </selectKey>
+        INSERT INTO
+        hunanyitihua.tb_project_supervision(`jlbdxh`, `pro_id`, `pro_name`, `pro_type`, `com_id`,
+        `b_scope`, `super_org`, `bid_remark`, `contract_remark`, `contract_date`,
+        `contract_price`, `created`)
+        VALUES
+        (#{jlbdxh}, #{proId}, #{proName}, #{proType}, #{comId},
+        #{bScope}, #{superOrg}, #{bidRemark}, #{contractRemark}, #{contractDate},
+        #{contractPrice}, NOW())
+    </insert>
+
+    <select id="getTotalByJlbdxh" parameterType="String" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_project_supervision WHERE jlbdxh = #{jlbdxh}
+    </select>
+
+    <select id="getPkidByJlbdxh" parameterType="String" resultType="Integer">
+        SELECT pkid FROM hunanyitihua.tb_project_supervision WHERE jlbdxh = #{jlbdxh}
+    </select>
+
+    <select id="getTotalByProNameAndSuperOrg" parameterType="com.silita.biaodaa.model.TbProjectSupervision" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_project_supervision WHERE `pro_name` = #{proName} AND `super_org` = #{superOrg}
+    </select>
+
+    <select id="getPkidByProNameAndSuperOrg" parameterType="com.silita.biaodaa.model.TbProjectSupervision" resultType="Integer">
+        SELECT pkid FROM hunanyitihua.tb_project_supervision WHERE `pro_name` = #{proName} AND `super_org` = #{superOrg}
+    </select>
 
 </mapper>

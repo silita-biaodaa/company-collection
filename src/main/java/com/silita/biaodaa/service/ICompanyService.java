@@ -3,6 +3,7 @@ package com.silita.biaodaa.service;
 import com.silita.biaodaa.model.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by 91567 on 2018/4/2.
@@ -86,17 +87,65 @@ public interface ICompanyService {
     void insertPersonProject(TbPersonProject tbPersonProject);
 
     /**
-     * 添加施工图审查信息
-     * 根据施工图审查合格书编号判断是否添加
+     * 添加施工图审查信息(设计)
+     * 根据施工图审查合格书编号、设计单位判断是否添加
      * @param tbProjectDesign
      */
     int insertProjectDesign(TbProjectDesign tbProjectDesign);
 
     /**
-     * 添加设计人员名单
-     * 根据人员姓名、证书编号、安全证书编号判断是否添加
+     * 添加勘察设计人员名单
+     * 根据人员姓名、公司名称、角色判断是否添加
      * @param tbPersonDesign
      */
     void insertPersonDesign(TbPersonDesign tbPersonDesign);
+
+    /**
+     * 添加施工图审查信息(勘察)
+     * 根据施工图审查合格书编号、勘察单位判断是否添加
+     */
+    int insertProjectDesignTwo(TbProjectDesign tbProjectDesign);
+
+    /**
+     * 添加监理合同段信息
+     * 根据监理内部id判断是否添加
+     * @return
+     */
+    int insertProjectSupervisor(TbProjectSupervision tbProjectSupervision);
+
+
+    /**
+     *
+     * @param tableName
+     * @return
+     */
+    int getTotalCompanyQualificationByTabName(String tableName);
+
+    /**
+     *
+     * @param params
+     * @return
+     */
+    List<TbCompanyQualification> getCompanyQualification(Map<String, Object> params);
+
+    /**
+     *
+     * @param name
+     * @return
+     */
+    AllZh getAllZhByName(String name);
+
+    /**
+     *
+     * @param majorUuid
+     * @return
+     */
+    String getMajorNameBymajorUuid(String majorUuid);
+
+    /**
+     *
+     * @param tbCompanyAptitudes
+     */
+    void batchInsertCompanyAptitude(List<TbCompanyAptitude> tbCompanyAptitudes);
 
 }

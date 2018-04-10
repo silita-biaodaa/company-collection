@@ -18,4 +18,6 @@ public interface TbPersonDesignMapper extends MyMapper<TbPersonDesign> {
      */
     Integer getTotalByNameAndCompanyNameAndRole(TbPersonDesign tbPersonDesign);
 
+
+
 }

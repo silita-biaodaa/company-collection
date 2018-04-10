@@ -4,6 +4,7 @@ import com.silita.biaodaa.model.TbCompanyQualification;
 import com.silita.biaodaa.utils.MyMapper;
 
 import java.util.List;
+import java.util.Map;
 
 public interface TbCompanyQualificationMapper extends MyMapper<TbCompanyQualification> {
 
@@ -27,7 +28,7 @@ public interface TbCompanyQualificationMapper extends MyMapper<TbCompanyQualific
     Integer getTotalByCertNo(String certNo);
 
     /**
-     * 取得全部资质证书详情页面url
+     * 根据tabname取得全部资质证书详情页面url
      * @return
      */
     List<String> getAllCompanyQualificationUrlByTabName(String tableName);
@@ -38,4 +39,18 @@ public interface TbCompanyQualificationMapper extends MyMapper<TbCompanyQualific
      * @param companyQualification
      */
     void updateCompanyQualificationUrlByCorpid(TbCompanyQualification companyQualification);
+
+    /**
+     *  根据tabname取得资质证书个数
+     * @param tableName
+     * @return
+     */
+    Integer getTotalCompanyQualificationByTabName(String tableName);
+
+    /**
+     * 按批次取得企业资质证书
+     * @param params
+     * @return
+     */
+    List<TbCompanyQualification> getCompanyQualification(Map<String,Object> params);
 }

@@ -35,4 +35,13 @@
         SET qual_type = #{qualType}, cert_org = #{certOrg}, `range` = #{range}, com_id = #{comId}, created = NOW()
         WHERE corpid = #{corpid}
     </update>
+
+
+    <select id="getTotalCompanyQualificationByTabName" parameterType="String" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_company_qualification WHERE tab = #{tableName}
+    </select>
+
+    <select id="getCompanyQualification" parameterType="Map" resultType="com.silita.biaodaa.model.TbCompanyQualification">
+        SELECT * FROM hunanyitihua.tb_company_qualification WHERE tab = #{tableName} LIMIT #{start}, #{pageSize}
+    </select>
 </mapper>

@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,7 +43,7 @@ public class HuNanBuilderCompanyDetailTask {
         int every = urls.size() % threadCount == 0 ? urls.size() / threadCount : (urls.size() / threadCount) + 1;
         final CountDownLatch latch = new CountDownLatch(threadCount);
         for (int i = 0; i < threadCount; i++) {
-            new Thread(new HuNanCompanyDetailRun(i * every, (i + 1) * every, latch, urls, companyService)).start();
+            new Thread(new HuNanCompanyDetailRun(i * every, (i + 1) * every, latch, urls)).start();
         }
         try {
             latch.await();
@@ -66,7 +63,7 @@ public class HuNanBuilderCompanyDetailTask {
         private CountDownLatch latch;
         private List<String> CompanyQualificationUrls;
 
-        public HuNanCompanyDetailRun(int startNum, int endNum, CountDownLatch latch, List<String> CompanyQualificationUrls, ICompanyService companyService) {
+        public HuNanCompanyDetailRun(int startNum, int endNum, CountDownLatch latch, List<String> CompanyQualificationUrls) {
             this.startNum = startNum;
             this.endNum = endNum;
             this.latch = latch;
@@ -90,13 +87,15 @@ public class HuNanBuilderCompanyDetailTask {
                         Elements companyInfoTable = companyDetailDoc.select("#table1");
                         Elements CompanyAptitudeTable = companyDetailDoc.select("#tablelist").select("#table2").select("#ctl00_ContentPlaceHolder1_td_zzdetail").select("table");
                         //添加企业基本信息后 返回主键
-                        Integer comId = addCompanyInfo(companyInfoTable);
+//                        Integer comId = addCompanyInfo(companyInfoTable);
                         //更新企业资质证书
-                        addCompanyAptitude(CompanyAptitudeTable, corpid, comId);
+//                        addCompanyAptitude(CompanyAptitudeTable, corpid, comId);
                         //##########抓取人员start##########
-                        getPepleList(cookies, comId);
+//                        getPepleList(cookies, comId);
                         //##########抓取项目start##########
-                        getProjectList(cookies, comId);
+//                        getProjectList(cookies, comId);
+                        //##########拆分资质##############
+                        splitCompanyQualifications();
                     } else {
                         System.out.println("获取企业详情信息失败！" + CompanyQualificationUrl);
                     }
@@ -325,7 +324,7 @@ public class HuNanBuilderCompanyDetailTask {
                             String bdxh = projectInfoDetaiUrl.substring(projectInfoDetaiUrl.indexOf("=") + 1);
                             //施工合同段信息
                             int projectBuilderId = addProjectBuild(projectBuildDetailTable, companyId, projectId, bdxh);
-                            //添加项目部人员
+                            //添加项目部人员（施工）
                             addProjectPeople(projectBuilderPeopleTable, projectBuilderId, projectBuildUrl);
                         } else {
                             System.out.println("获取人员详情失败" + projectBuildUrl);
@@ -425,15 +424,16 @@ public class HuNanBuilderCompanyDetailTask {
 
     /**
      * 添加项目部人员
-     * @param eles      表格数据
+     *
+     * @param eles             表格数据
      * @param projectBuilderId 项目施工id
-     * @param projectBuildUrl 项目施工详情Url
+     * @param projectBuildUrl  项目施工详情Url
      */
     void addProjectPeople(Elements eles, Integer projectBuilderId, String projectBuildUrl) {
-        if(eles.size() > 2) {
+        if (eles.size() > 2) {
             TbPersonProject tbPersonProject;
             for (int i = 2; i < eles.size() - 1; i++) {
-                if(StringUtils.isNotNull(eles.get(i).text())) {
+                if (StringUtils.isNotNull(eles.get(i).text())) {
                     tbPersonProject = new TbPersonProject();
                     tbPersonProject.setName(eles.get(i).select("td").get(0).text());
                     tbPersonProject.setCategory(eles.get(i).select("td").get(1).text());
@@ -448,7 +448,72 @@ public class HuNanBuilderCompanyDetailTask {
                 }
             }
         } else {
-            System.out.println("无项目部人员" + projectBuildUrl);
+            System.out.println("无项目部人员（施工）" + projectBuildUrl);
+        }
+    }
+
+    /**
+     * 拆分企业资格证书资质
+     */
+    void splitCompanyQualifications() {
+        int page = 0;
+        int batchCount = 1000;
+        Integer count = companyService.getTotalCompanyQualificationByTabName("建筑业企业");
+        if (count % batchCount == 0) {
+            page = count / batchCount;
+        } else {
+            page = count / batchCount + 1;
+        }
+        Map<String, Object> params;
+        List<TbCompanyQualification> companyQualificationList;
+        //分页 一次1000
+        for (int pageNum = 0; pageNum < page; pageNum++) {
+            params = new HashMap<>();
+            params.put("tableName", "建筑业企业");
+            params.put("start", batchCount * pageNum);
+            params.put("pageSize", 1000);
+            companyQualificationList = companyService.getCompanyQualification(params);
+            //遍历证书
+            for (int i = 0; i < companyQualificationList.size(); i++) {
+                AllZh allZh;
+                List<TbCompanyAptitude> companyQualifications;
+                int qual_id = companyQualificationList.get(i).getPkid();
+                String qualRange = companyQualificationList.get(i).getRange();
+                TbCompanyAptitude companyAptitude;
+                //包含多个资质
+                if(StringUtils.isNotNull(qualRange)) {
+                    if (qualRange.contains("；")) {
+                        String[] qual = qualRange.split("；");
+                        companyQualifications = new ArrayList<>();
+                        for (int j = 0; j < qual.length; j++) {
+                            allZh = companyService.getAllZhByName(qual[j]);
+                            if(allZh != null) {
+                                companyAptitude = new TbCompanyAptitude();
+                                companyAptitude.setQualId(qual_id);
+                                companyAptitude.setAptitudeName(companyService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                                companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
+                                companyAptitude.setMainuuid(allZh.getMainuuid());
+                                companyAptitude.setType(allZh.getType());
+                                companyQualifications.add(companyAptitude);
+                            }
+                        }
+                        companyService.batchInsertCompanyAptitude(companyQualifications);
+                    } else {
+                        companyQualifications = new ArrayList<>();
+                        allZh = companyService.getAllZhByName(qualRange);
+                        if(allZh != null) {
+                            companyAptitude = new TbCompanyAptitude();
+                            companyAptitude.setQualId(qual_id);
+                            companyAptitude.setAptitudeName(companyService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                            companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
+                            companyAptitude.setMainuuid(allZh.getMainuuid());
+                            companyAptitude.setType(allZh.getType());
+                            companyQualifications.add(companyAptitude);
+                            companyService.batchInsertCompanyAptitude(companyQualifications);
+                        }
+                    }
+                }
+            }
         }
     }
 

@@ -39,12 +39,12 @@ public class HuNanDesignCompanyDetailTask {
      */
     public void taskDesignCompany() {
         int threadCount = THREAD_NUMBER;
-        List<String> urls = new ArrayList<String>(2000);
+        List<String> urls = new ArrayList<String>(1000);
         urls = companyService.getAllCompanyQualificationUrlByTab("工程设计企业");
         int every = urls.size() % threadCount == 0 ? urls.size() / threadCount : (urls.size() / threadCount) + 1;
         final CountDownLatch latch = new CountDownLatch(threadCount);
         for (int i = 0; i < threadCount; i++) {
-            new Thread(new HuNanCompanyDetailRun(i * every, (i + 1) * every, latch, urls, companyService)).start();
+            new Thread(new HuNanCompanyDetailRun(i * every, (i + 1) * every, latch, urls)).start();
         }
         try {
             latch.await();
@@ -63,7 +63,7 @@ public class HuNanDesignCompanyDetailTask {
         private CountDownLatch latch;
         private List<String> CompanyQualificationUrls;
 
-        public HuNanCompanyDetailRun(int startNum, int endNum, CountDownLatch latch, List<String> CompanyQualificationUrls, ICompanyService companyService) {
+        public HuNanCompanyDetailRun(int startNum, int endNum, CountDownLatch latch, List<String> CompanyQualificationUrls) {
             this.startNum = startNum;
             this.endNum = endNum;
             this.latch = latch;
@@ -320,9 +320,9 @@ public class HuNanDesignCompanyDetailTask {
                             //添加项目基本信息
                             Integer projectId = addProjectInfo(projectInfoDetaiUrl);
                             String bdxh = projectInfoDetaiUrl.substring(projectInfoDetaiUrl.indexOf("=") + 1);
-                            //添加施工图审查信息
+                            //添加施工图审查信息（设计）
                             int projectDesignId = addProjectDesign(projectBuildDetailTable, companyId, projectId, bdxh);
-                            //添加勘察设计人员名单
+                            //添加设计人员名单
                             addDesignPeople(projectDesignPeopleTable, projectDesignId, projectBuildUrl);
                         } else {
                             System.out.println("获取人员详情失败" + projectBuildUrl);
@@ -382,7 +382,7 @@ public class HuNanDesignCompanyDetailTask {
     }
 
     /**
-     * 添加设计项目
+     * 施工图审查信息（设计）
      * @param eles
      * @param companyId
      * @param projectId
@@ -406,7 +406,7 @@ public class HuNanDesignCompanyDetailTask {
     }
 
     /**
-     * 添加项目部人员
+     * 勘察设计人员名单(设计)
      * @param eles      表格数据
      * @param projectDesignId 项目设计id
      * @param projectDesignUrl 项目设计详情Url
@@ -428,7 +428,7 @@ public class HuNanDesignCompanyDetailTask {
                 }
             }
         } else {
-            System.out.println("无勘察设计人员名单人员" + projectDesignUrl);
+            System.out.println("无勘察设计人员名单人员（设计）" + projectDesignUrl);
         }
     }
 

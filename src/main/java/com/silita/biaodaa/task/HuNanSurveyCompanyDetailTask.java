@@ -2,6 +2,7 @@ package com.silita.biaodaa.task;
 
 import com.silita.biaodaa.model.*;
 import com.silita.biaodaa.service.ICompanyService;
+import com.silita.biaodaa.utils.StringUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -15,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * 遍历勘察企业列表数据库逐个抓取
@@ -28,7 +27,6 @@ public class HuNanSurveyCompanyDetailTask {
     private int min = 1;
     private int max = 5;
     private Random random = new Random();
-    String dateRegex = "(\\d{4}-\\d{1,2}-\\d{1,2})";
 
     private static final int THREAD_NUMBER = 1;
 
@@ -40,12 +38,12 @@ public class HuNanSurveyCompanyDetailTask {
      */
     public void taskSurveyCompany() {
         int threadCount = THREAD_NUMBER;
-        List<String> urls = new ArrayList<String>(2000);
+        List<String> urls = new ArrayList<String>(300);
         urls = companyService.getAllCompanyQualificationUrlByTab("工程勘察企业");
         int every = urls.size() % threadCount == 0 ? urls.size() / threadCount : (urls.size() / threadCount) + 1;
         final CountDownLatch latch = new CountDownLatch(threadCount);
         for (int i = 0; i < threadCount; i++) {
-            new Thread(new HuNanCompanyDetailRun(i * every, (i + 1) * every, latch, urls, companyService)).start();
+            new Thread(new HuNanCompanyDetailRun(i * every, (i + 1) * every, latch, urls)).start();
         }
         try {
             latch.await();
@@ -65,7 +63,7 @@ public class HuNanSurveyCompanyDetailTask {
         private CountDownLatch latch;
         private List<String> CompanyQualificationUrls;
 
-        public HuNanCompanyDetailRun(int startNum, int endNum, CountDownLatch latch, List<String> CompanyQualificationUrls, ICompanyService companyService) {
+        public HuNanCompanyDetailRun(int startNum, int endNum, CountDownLatch latch, List<String> CompanyQualificationUrls) {
             this.startNum = startNum;
             this.endNum = endNum;
             this.latch = latch;
@@ -317,12 +315,15 @@ public class HuNanSurveyCompanyDetailTask {
                         projectBuildDetailDoc = projectBuildDetailConn.get();
                         if (projectBuildDetailConn.response().statusCode() == 200) {
                             Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
+                            Elements projectBuilderPeopleTable = projectBuildDetailDoc.select("#ctl00_ContentPlaceHolder1_td_rylist").select("table").select("tr");
                             String projectInfoDetaiUrl = projectBuildDetailTable.select("a").first().absUrl("href");
                             //添加项目基本信息
                             Integer projectId = addProjectInfo(projectInfoDetaiUrl);
-                            //添加项目建造基本信息
                             String bdxh = projectInfoDetaiUrl.substring(projectInfoDetaiUrl.indexOf("=") + 1);
-                            addProjectBuild(projectBuildDetailTable, companyId, projectId, bdxh);
+                            //添加施工图审查信息（勘察）
+                            int projectSurveyId = addProjectSurvey(projectBuildDetailTable, companyId, projectId, bdxh);
+                            //勘察人员名单
+                            addSurveyPeople(projectBuilderPeopleTable, projectSurveyId, projectBuildUrl);
                         } else {
                             System.out.println("获取人员详情失败" + projectBuildUrl);
                         }
@@ -381,42 +382,55 @@ public class HuNanSurveyCompanyDetailTask {
     }
 
     /**
-     * 添加施工合同段信息
+     * 施工图审查信息（勘察）
      *
      * @param eles      表格数据
      * @param companyId 公司id
      * @param projectId 项目id
-     * @param bdxh      内部id
+     * @param sgtxh      内部id
      */
-    void addProjectBuild(Elements eles, Integer companyId, Integer projectId, String bdxh) {
-        TbProjectBuild tbProjectBuild = new TbProjectBuild();
-        tbProjectBuild.setProName(eles.select("#ctl00_ContentPlaceHolder1_hl_gcmc").text());
-        tbProjectBuild.setBName(eles.select("#ctl00_ContentPlaceHolder1_lbl_bdmc").text());
-        tbProjectBuild.setBScope(eles.select("#ctl00_ContentPlaceHolder1_lbl_bdgm").text());
-        tbProjectBuild.setBOrg(eles.select("#ctl00_ContentPlaceHolder1_td_sgdw").text());
-        //中标备案情况
-        String bidRemark = eles.select("#ctl00_ContentPlaceHolder1_lbl_zbba").text();
-        tbProjectBuild.setBidRemark(bidRemark);
-        if (bidRemark.contains("中标价格") && bidRemark.contains("万元")) {
-            tbProjectBuild.setBidPrice(bidRemark.substring(bidRemark.indexOf("中标价格") + 5, bidRemark.indexOf("万元")));
+    int addProjectSurvey(Elements eles, Integer companyId, Integer projectId, String sgtxh) {
+        TbProjectDesign tbProjectDesign = new TbProjectDesign();
+        tbProjectDesign.setProName(eles.select("#ctl00_ContentPlaceHolder1_hl_gcmc").text());
+        tbProjectDesign.setProScope(eles.select("#ctl00_ContentPlaceHolder1_lbl_gm").text());
+        tbProjectDesign.setExploreOrg(eles.select("#ctl00_ContentPlaceHolder1_td_kcdw").text());
+        tbProjectDesign.setDesignOrg(eles.select("#ctl00_ContentPlaceHolder1_td_sjdw").text());
+        tbProjectDesign.setCheckOrg(eles.select("#ctl00_ContentPlaceHolder1_td_scdw").text());
+        tbProjectDesign.setCheckNo(eles.select("#ctl00_ContentPlaceHolder1_lbl_sgtscbh").text());
+        tbProjectDesign.setCheckFinishDate(eles.select("#ctl00_ContentPlaceHolder1_lbl_scrq").text());
+        tbProjectDesign.setCheckPerson(eles.select("#ctl00_ContentPlaceHolder1_lbl_scryxm").text());
+        tbProjectDesign.setType("explore");
+        tbProjectDesign.setSgtxh(sgtxh);
+        tbProjectDesign.setComId(companyId);
+        tbProjectDesign.setProId(projectId);
+        return companyService.insertProjectDesignTwo(tbProjectDesign);
+    }
+
+    /**
+     * 勘察设计人员名单（勘察）
+     * @param eles      表格数据
+     * @param projectSurveyId 项目设计id
+     * @param projectDesignUrl 项目设计详情Url
+     */
+    void addSurveyPeople(Elements eles, Integer projectSurveyId, String projectDesignUrl) {
+        if(eles.size() > 2) {
+            TbPersonDesign tbProjectDesign;
+            for (int i = 2; i < eles.size() - 1; i++) {
+                if(StringUtils.isNotNull(eles.get(i).text())) {
+                    tbProjectDesign = new TbPersonDesign();
+                    tbProjectDesign.setName(eles.get(i).select("td").get(0).text());
+                    tbProjectDesign.setCategory(eles.get(i).select("td").get(1).text());
+                    tbProjectDesign.setComName(eles.get(i).select("td").get(2).text());
+                    tbProjectDesign.setRole(eles.get(i).select("td").get(3).text());
+                    String peopleDetailId = eles.get(i).select("td").get(0).select("a").attr("href");
+                    tbProjectDesign.setInnerid(peopleDetailId.substring(peopleDetailId.indexOf("=") + 1));
+                    tbProjectDesign.setPid(projectSurveyId);
+                    companyService.insertPersonDesign(tbProjectDesign);
+                }
+            }
+        } else {
+            System.out.println("无勘察设计人员名单人员（勘察）" + projectDesignUrl);
         }
-        tbProjectBuild.setContractRemark(eles.select("#ctl00_ContentPlaceHolder1_lbl_htba").text());
-        tbProjectBuild.setBLicence(eles.select("#ctl00_ContentPlaceHolder1_lbl_sgxkzh").text());
-        tbProjectBuild.setLicenceDate(eles.select("#ctl00_ContentPlaceHolder1_lbl_sgxkzrq").text());
-        //竣工验收备案情况
-        String completeRemark = eles.select("#ctl00_ContentPlaceHolder1_lbl_jgysbh").text();
-        tbProjectBuild.setCompleteRemark(completeRemark);
-        Pattern datePat = Pattern.compile(dateRegex);
-        Matcher dateMat = datePat.matcher(completeRemark);
-        while (dateMat.find()) {
-            //竣工时间
-            tbProjectBuild.setCompleteDate(dateMat.group());
-        }
-        tbProjectBuild.setSubContrace(eles.select("#ctl00_ContentPlaceHolder1_td_fblist").text());
-        tbProjectBuild.setBdxh(bdxh);
-        tbProjectBuild.setComId(companyId);
-        tbProjectBuild.setProId(projectId);
-        companyService.insertProjectBuild(tbProjectBuild);
     }
 
 }

@@ -2,6 +2,7 @@ package com.silita.biaodaa.task;
 
 import com.silita.biaodaa.model.*;
 import com.silita.biaodaa.service.ICompanyService;
+import com.silita.biaodaa.utils.StringUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -15,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * 遍历监理企业列表数据库逐个抓取
@@ -40,12 +39,12 @@ public class HuNanSupervisorCompanyDetailTask {
      */
     public void taskSupervisorCompany() {
         int threadCount = THREAD_NUMBER;
-        List<String> urls = new ArrayList<String>(2000);
+        List<String> urls = new ArrayList<String>(400);
         urls = companyService.getAllCompanyQualificationUrlByTab("工程监理企业");
         int every = urls.size() % threadCount == 0 ? urls.size() / threadCount : (urls.size() / threadCount) + 1;
         final CountDownLatch latch = new CountDownLatch(threadCount);
         for (int i = 0; i < threadCount; i++) {
-            new Thread(new HuNanCompanyDetailRun(i * every, (i + 1) * every, latch, urls, companyService)).start();
+            new Thread(new HuNanCompanyDetailRun(i * every, (i + 1) * every, latch, urls)).start();
         }
         try {
             latch.await();
@@ -65,7 +64,7 @@ public class HuNanSupervisorCompanyDetailTask {
         private CountDownLatch latch;
         private List<String> CompanyQualificationUrls;
 
-        public HuNanCompanyDetailRun(int startNum, int endNum, CountDownLatch latch, List<String> CompanyQualificationUrls, ICompanyService companyService) {
+        public HuNanCompanyDetailRun(int startNum, int endNum, CountDownLatch latch, List<String> CompanyQualificationUrls) {
             this.startNum = startNum;
             this.endNum = endNum;
             this.latch = latch;
@@ -317,12 +316,15 @@ public class HuNanSupervisorCompanyDetailTask {
                         projectBuildDetailDoc = projectBuildDetailConn.get();
                         if (projectBuildDetailConn.response().statusCode() == 200) {
                             Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
+                            Elements projectBuilderPeopleTable = projectBuildDetailDoc.select("#ctl00_ContentPlaceHolder1_td_rylist").select("table").select("tr");
                             String projectInfoDetaiUrl = projectBuildDetailTable.select("a").first().absUrl("href");
                             //添加项目基本信息
                             Integer projectId = addProjectInfo(projectInfoDetaiUrl);
-                            //添加项目建造基本信息
                             String bdxh = projectInfoDetaiUrl.substring(projectInfoDetaiUrl.indexOf("=") + 1);
-                            addProjectBuild(projectBuildDetailTable, companyId, projectId, bdxh);
+                            //监理合同段信息
+                            int projectSupervisorId = addProjectSupervisor(projectBuildDetailTable, companyId, projectId, bdxh);
+                            //添加项目部人员（监理）
+                            addProjectPeople(projectBuilderPeopleTable, projectSupervisorId, projectBuildUrl);
                         } else {
                             System.out.println("获取人员详情失败" + projectBuildUrl);
                         }
@@ -381,42 +383,60 @@ public class HuNanSupervisorCompanyDetailTask {
     }
 
     /**
-     * 添加施工合同段信息
+     * 添加监理合同段信息
      *
      * @param eles      表格数据
      * @param companyId 公司id
      * @param projectId 项目id
-     * @param bdxh      内部id
+     * @param jlbdxh    内部id
      */
-    void addProjectBuild(Elements eles, Integer companyId, Integer projectId, String bdxh) {
-        TbProjectBuild tbProjectBuild = new TbProjectBuild();
-        tbProjectBuild.setProName(eles.select("#ctl00_ContentPlaceHolder1_hl_gcmc").text());
-        tbProjectBuild.setBName(eles.select("#ctl00_ContentPlaceHolder1_lbl_bdmc").text());
-        tbProjectBuild.setBScope(eles.select("#ctl00_ContentPlaceHolder1_lbl_bdgm").text());
-        tbProjectBuild.setBOrg(eles.select("#ctl00_ContentPlaceHolder1_td_sgdw").text());
-        //中标备案情况
-        String bidRemark = eles.select("#ctl00_ContentPlaceHolder1_lbl_zbba").text();
-        tbProjectBuild.setBidRemark(bidRemark);
-        if (bidRemark.contains("中标价格") && bidRemark.contains("万元")) {
-            tbProjectBuild.setBidPrice(bidRemark.substring(bidRemark.indexOf("中标价格") + 5, bidRemark.indexOf("万元")));
+    int addProjectSupervisor(Elements eles, Integer companyId, Integer projectId, String jlbdxh) {
+        TbProjectSupervision tbProjectSupervision = new TbProjectSupervision();
+        tbProjectSupervision.setProName(eles.select("#ctl00_ContentPlaceHolder1_hl_gcmc").text());
+        tbProjectSupervision.setBScope(eles.select("#ctl00_ContentPlaceHolder1_lbl_bdgm").text());
+        tbProjectSupervision.setSuperOrg(eles.select("#ctl00_ContentPlaceHolder1_td_sgdw").text());
+        tbProjectSupervision.setBidRemark(eles.select("#ctl00_ContentPlaceHolder1_lbl_zbba").text());
+        String conteactRemarkStr = eles.select("#ctl00_ContentPlaceHolder1_lbl_htba").text();
+        tbProjectSupervision.setContractRemark(conteactRemarkStr);
+        if(StringUtils.isNotNull(conteactRemarkStr)) {
+            if(conteactRemarkStr.contains("合同日期") && conteactRemarkStr.contains("合同价格")) {
+                tbProjectSupervision.setContractDate(conteactRemarkStr.substring(conteactRemarkStr.indexOf("合同日期") + 5, conteactRemarkStr.indexOf("合同价格") - 1));
+                tbProjectSupervision.setContractPrice(conteactRemarkStr.substring(conteactRemarkStr.indexOf("合同价格") + 5, conteactRemarkStr.indexOf("万元")));
+            }
         }
-        tbProjectBuild.setContractRemark(eles.select("#ctl00_ContentPlaceHolder1_lbl_htba").text());
-        tbProjectBuild.setBLicence(eles.select("#ctl00_ContentPlaceHolder1_lbl_sgxkzh").text());
-        tbProjectBuild.setLicenceDate(eles.select("#ctl00_ContentPlaceHolder1_lbl_sgxkzrq").text());
-        //竣工验收备案情况
-        String completeRemark = eles.select("#ctl00_ContentPlaceHolder1_lbl_jgysbh").text();
-        tbProjectBuild.setCompleteRemark(completeRemark);
-        Pattern datePat = Pattern.compile(dateRegex);
-        Matcher dateMat = datePat.matcher(completeRemark);
-        while (dateMat.find()) {
-            //竣工时间
-            tbProjectBuild.setCompleteDate(dateMat.group());
+        tbProjectSupervision.setJlbdxh(jlbdxh);
+        tbProjectSupervision.setComId(companyId);
+        tbProjectSupervision.setProId(projectId);
+        return companyService.insertProjectSupervisor(tbProjectSupervision);
+    }
+
+    /**
+     * 添加项目部人员（监理）
+     * @param eles      表格数据
+     * @param projectBuilderId 项目施工id
+     * @param projectBuildUrl 项目施工详情Url
+     */
+    void addProjectPeople(Elements eles, Integer projectBuilderId, String projectBuildUrl) {
+        if(eles.size() > 2) {
+            TbPersonProject tbPersonProject;
+            for (int i = 2; i < eles.size() - 1; i++) {
+                if(StringUtils.isNotNull(eles.get(i).text())) {
+                    tbPersonProject = new TbPersonProject();
+                    tbPersonProject.setName(eles.get(i).select("td").get(0).text());
+                    tbPersonProject.setCategory(eles.get(i).select("td").get(1).text());
+                    tbPersonProject.setCertNo(eles.get(i).select("td").get(2).text());
+                    tbPersonProject.setSafeNo(eles.get(i).select("td").get(3).text());
+                    tbPersonProject.setStatus(eles.get(i).select("td").get(4).text());
+                    tbPersonProject.setType("supervision");
+                    String peopleDetailId = eles.get(i).select("td").get(0).select("a").attr("href");
+                    tbPersonProject.setInnerid(peopleDetailId.substring(peopleDetailId.indexOf("=") + 1));
+                    tbPersonProject.setPid(projectBuilderId);
+                    companyService.insertPersonProject(tbPersonProject);
+                }
+            }
+        } else {
+            System.out.println("无项目部人员（监理）" + projectBuildUrl);
         }
-        tbProjectBuild.setSubContrace(eles.select("#ctl00_ContentPlaceHolder1_td_fblist").text());
-        tbProjectBuild.setBdxh(bdxh);
-        tbProjectBuild.setComId(companyId);
-        tbProjectBuild.setProId(projectId);
-        companyService.insertProjectBuild(tbProjectBuild);
     }
 
 }

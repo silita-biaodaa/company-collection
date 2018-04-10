@@ -13,15 +13,31 @@ public interface TbProjectDesignMapper extends MyMapper<TbProjectDesign> {
 
     /**
      *
-     * @param checkNo
+     * @param tbProjectDesign
      * @return
      */
-    Integer getProjectDesignTotalByCheckNo(String checkNo);
+    Integer getProjectDesignTotalByCheckNoAndDesignOrg(TbProjectDesign tbProjectDesign);
 
     /**
      *
-     * @param checkNo
+     * @param tbProjectDesign
      * @return
      */
-    Integer getPkidByCheckNo(String checkNo);
+    Integer getPkidByCheckNoAndDesignOrg(TbProjectDesign tbProjectDesign);
+
+    /**
+     *
+     * @param tbProjectDesign
+     * @return
+     */
+    Integer getProjectDesignTotalByCheckNoAndExploreOrg(TbProjectDesign tbProjectDesign);
+
+    /**
+     *
+     * @param tbProjectDesign
+     * @return
+     */
+    Integer getPkidByCheckNoAndExploreOrg(TbProjectDesign tbProjectDesign);
+
+
 }
