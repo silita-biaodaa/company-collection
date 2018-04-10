@@ -3,6 +3,9 @@
 <mapper namespace="com.silita.biaodaa.dao.TbProjectBuildMapper">
 
     <insert id="insertProjectBuild" parameterType="com.silita.biaodaa.model.TbProjectBuild">
+        <selectKey resultType="Integer" order="AFTER" keyProperty="pkid">
+            SELECT LAST_INSERT_ID() AS pkid
+        </selectKey>
         INSERT INTO
         hunanyitihua.tb_project_build(`bdxh`, `pro_id`, `pro_name`, `pro_type`, `com_id`,
         `b_name`, `b_scope`, `b_org`, `bid_remark`, `bid_price`,
@@ -18,4 +21,27 @@
     <select id="getTotalByBLicence" parameterType="String" resultType="Integer">
         SELECT COUNT(*) FROM hunanyitihua.tb_project_build WHERE b_licence = #{bLicence}
     </select>
+
+    <select id="getPkidByBLicence" parameterType="String" resultType="Integer">
+        SELECT pkid FROM hunanyitihua.tb_project_build WHERE b_licence = #{bLicence}
+    </select>
+
+    <select id="getTotalByBNameAndBOrg" parameterType="com.silita.biaodaa.model.TbProjectBuild" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_project_build WHERE b_name = #{bName} AND b_org = #{bOrg}
+    </select>
+
+    <select id="getPkidByBNameAndBOrg" parameterType="com.silita.biaodaa.model.TbProjectBuild" resultType="Integer">
+        SELECT pkid FROM hunanyitihua.tb_project_build WHERE b_name = #{bName} AND b_org = #{bOrg}
+    </select>
+
+
+    <select id="getTotalByBdxh" parameterType="String" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_project_build WHERE b_name = #{bdxh}
+    </select>
+
+    <select id="getPkidByBdxh" parameterType="String" resultType="Integer">
+        SELECT pkid FROM hunanyitihua.tb_project_build WHERE b_name = #{bdxh}
+    </select>
+
+
 </mapper>

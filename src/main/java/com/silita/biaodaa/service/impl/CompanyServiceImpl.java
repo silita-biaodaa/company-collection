@@ -26,6 +26,13 @@ public class CompanyServiceImpl implements ICompanyService {
     private TbProjectMapper tbProjectMapper;
     @Autowired
     private TbProjectBuildMapper tbProjectBuildMapper;
+    @Autowired
+    private TbPersonProjectMapper tbPersonProjectMapper;
+    @Autowired
+    private TbProjectDesignMapper tbProjectDesignMapper;
+    @Autowired
+    private TbPersonDesignMapper tbPersonDesignMapper;
+
 
     @Override
     public void batchInsertCompanyQualification(List<TbCompanyQualification> companyQualifications) {
@@ -34,17 +41,15 @@ public class CompanyServiceImpl implements ICompanyService {
 
     @Override
     public void InsertCompanyQualification(TbCompanyQualification companyQualification) {
-        tbCompanyQualificationMapper.InsertCompanyQualification(companyQualification);
+        boolean flag = tbCompanyQualificationMapper.getTotalByCertNo(companyQualification.getCertNo()) > 0;
+        if(!flag) {
+            tbCompanyQualificationMapper.InsertCompanyQualification(companyQualification);
+        }
     }
 
     @Override
-    public boolean checkCompanyQualificationByCertNo(String certNo) {
-        return tbCompanyQualificationMapper.getTotalByCertNo(certNo) > 0;
-    }
-
-    @Override
-    public List<String> getAllCompanyQualificationUrl() {
-        return tbCompanyQualificationMapper.getAllCompanyQualificationUrl();
+    public List<String> getAllCompanyQualificationUrlByTab(String tableName) {
+        return tbCompanyQualificationMapper.getAllCompanyQualificationUrlByTabName(tableName);
     }
 
     @Override
@@ -98,14 +103,52 @@ public class CompanyServiceImpl implements ICompanyService {
     }
 
     @Override
-    public void insertProjectBuild(TbProjectBuild tbProjectBuild) {
+    public int insertProjectBuild(TbProjectBuild tbProjectBuild) {
         if ("无施工许可证信息".equals(tbProjectBuild.getBLicence())) {
-            tbProjectBuildMapper.insertProjectBuild(tbProjectBuild);
+            //无施工许可证编号用标段名称、施工单位判断
+//            boolean flag = tbProjectBuildMapper.getTotalByBNameAndBOrg(tbProjectBuild) > 0;
+            boolean flag = tbProjectBuildMapper.getTotalByBdxh(tbProjectBuild.getBdxh()) > 0;
+            if(!flag) {
+                tbProjectBuildMapper.insertProjectBuild(tbProjectBuild);
+                return tbProjectBuild.getPkid();
+            } else {
+//                return tbProjectBuildMapper.getPkidByBNameAndBOrg(tbProjectBuild);
+                return tbProjectBuildMapper.getPkidByBdxh(tbProjectBuild.getBdxh());
+            }
         } else {
             boolean flag = tbProjectBuildMapper.getTotalByBLicence(tbProjectBuild.getBLicence()) > 0;
             if (!flag) {
                 tbProjectBuildMapper.insertProjectBuild(tbProjectBuild);
+                return tbProjectBuild.getPkid();
+            } else {
+                return tbProjectBuildMapper.getPkidByBLicence(tbProjectBuild.getBLicence());
             }
+        }
+    }
+
+    public void insertPersonProject(TbPersonProject tbPersonProject) {
+        boolean flag = tbPersonProjectMapper.getPersionProjectTotalByNameAndCertNoAndSafeNo(tbPersonProject) > 0;
+        if(!flag) {
+            tbPersonProjectMapper.insertPersionProject(tbPersonProject);
+        }
+    }
+
+    @Override
+    public int insertProjectDesign(TbProjectDesign tbProjectDesign) {
+        boolean falg = tbProjectDesignMapper.getProjectDesignTotalByCheckNo(tbProjectDesign.getCheckNo()) > 0;
+        if(!falg) {
+            tbProjectDesignMapper.insertProjectDesign(tbProjectDesign);
+            return tbProjectDesign.getPkid();
+        } else {
+            return tbProjectDesignMapper.getPkidByCheckNo(tbProjectDesign.getCheckNo());
+        }
+    }
+
+    @Override
+    public void insertPersonDesign(TbPersonDesign tbPersonDesign) {
+        boolean flag = tbPersonDesignMapper.getTotalByNameAndCompanyNameAndRole(tbPersonDesign) > 0;
+        if(!flag) {
+            tbPersonDesignMapper.insertPersionDesign(tbPersonDesign);
         }
     }
 }

@@ -6,11 +6,11 @@
         INSERT INTO
         hunanyitihua.tb_person_qualification(`com_name`, `category`, `cert_no`, `seal_no`, `major`,
         `cert_date`, `valid_date`, `url`, `innerid`, `per_id`,
-        `com_id`)
+        `com_id`, `created`)
         VALUES
         (#{comName}, #{category}, #{certNo}, #{sealNo}, #{major},
         #{certDate}, #{validDate}, #{url}, #{innerid}, #{perId},
-        #{comId})
+        #{comId}, NOW())
     </insert>
 
     <select id="getTotalByCertNo" parameterType="String" resultType="Integer">

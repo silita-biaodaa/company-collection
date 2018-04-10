@@ -26,8 +26,8 @@
         SELECT COUNT(*) FROM hunanyitihua.tb_company_qualification WHERE cert_no = #{certNo}
     </select>
 
-    <select id="getAllCompanyQualificationUrl" resultType="String">
-        SELECT url FROM hunanyitihua.tb_company_qualification
+    <select id="getAllCompanyQualificationUrlByTabName" parameterType="String" resultType="String">
+        SELECT url FROM hunanyitihua.tb_company_qualification WHERE tab = #{tableName}
     </select>
 
     <update id="updateCompanyQualificationUrlByCorpid" parameterType="com.silita.biaodaa.model.TbCompanyQualification">

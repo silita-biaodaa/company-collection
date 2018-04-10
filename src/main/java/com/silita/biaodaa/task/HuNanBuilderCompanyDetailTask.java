@@ -2,6 +2,7 @@ package com.silita.biaodaa.task;
 
 import com.silita.biaodaa.model.*;
 import com.silita.biaodaa.service.ICompanyService;
+import com.silita.biaodaa.utils.StringUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -23,7 +24,7 @@ import java.util.regex.Pattern;
  * Created by 91567 on 2018/3/31.
  */
 @Component
-public class HuNanCompanyDetailTask {
+public class HuNanBuilderCompanyDetailTask {
 
     private int min = 1;
     private int max = 5;
@@ -35,10 +36,13 @@ public class HuNanCompanyDetailTask {
     @Autowired
     private ICompanyService companyService;
 
-    public void task() {
+    /**
+     * 建筑
+     */
+    public void taskBuilderCompany() {
         int threadCount = THREAD_NUMBER;
         List<String> urls = new ArrayList<String>(2000);
-        urls = companyService.getAllCompanyQualificationUrl();
+        urls = companyService.getAllCompanyQualificationUrlByTab("建筑业企业");
         int every = urls.size() % threadCount == 0 ? urls.size() / threadCount : (urls.size() / threadCount) + 1;
         final CountDownLatch latch = new CountDownLatch(threadCount);
         for (int i = 0; i < threadCount; i++) {
@@ -73,7 +77,7 @@ public class HuNanCompanyDetailTask {
         public void run() {
             Document companyDetailDoc;
             Connection companyDetailConn;
-            //企业cookie，抓取人员需要企业cookie
+            //企业cookie，抓取人员、项目需要企业cookie
             Map<String, String> cookies;
             try {
                 for (int i = startNum; i < endNum; i++) {
@@ -269,7 +273,7 @@ public class HuNanCompanyDetailTask {
                     tbPersonQualification.setMajor(eles.get(i).select("td").get(3).text());
 //                    2013-6-28(有效期：2019-6-28)
                     String dateStr = eles.get(i).select("td").get(4).text();
-                    if(dateStr.contains("有效期")) {
+                    if (dateStr.contains("有效期")) {
                         tbPersonQualification.setCertDate(dateStr.substring(0, dateStr.indexOf("有效期") - 1));
                         tbPersonQualification.setValidDate(dateStr.substring(dateStr.indexOf("有效期") + 4, dateStr.length() - 1));
                     }
@@ -314,12 +318,15 @@ public class HuNanCompanyDetailTask {
                         projectBuildDetailDoc = projectBuildDetailConn.get();
                         if (projectBuildDetailConn.response().statusCode() == 200) {
                             Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
+                            Elements projectBuilderPeopleTable = projectBuildDetailDoc.select("#ctl00_ContentPlaceHolder1_td_rylist").select("table").select("tr");
                             String projectInfoDetaiUrl = projectBuildDetailTable.select("a").first().absUrl("href");
                             //添加项目基本信息
                             Integer projectId = addProjectInfo(projectInfoDetaiUrl);
-                            //添加项目建造基本信息
-                            String bdxh =  projectInfoDetaiUrl.substring(projectInfoDetaiUrl.indexOf("=") + 1);
-                            addProjectBuild(projectBuildDetailTable, companyId, projectId, bdxh);
+                            String bdxh = projectInfoDetaiUrl.substring(projectInfoDetaiUrl.indexOf("=") + 1);
+                            //施工合同段信息
+                            int projectBuilderId = addProjectBuild(projectBuildDetailTable, companyId, projectId, bdxh);
+                            //添加项目部人员
+                            addProjectPeople(projectBuilderPeopleTable, projectBuilderId, projectBuildUrl);
                         } else {
                             System.out.println("获取人员详情失败" + projectBuildUrl);
                         }
@@ -338,6 +345,7 @@ public class HuNanCompanyDetailTask {
 
     /**
      * 根据项目详情Url取得项目基本信息
+     *
      * @param projectInfoUrl 项目详情Url
      */
     Integer addProjectInfo(String projectInfoUrl) {
@@ -382,9 +390,9 @@ public class HuNanCompanyDetailTask {
      * @param eles      表格数据
      * @param companyId 公司id
      * @param projectId 项目id
-     * @param bdxh 内部id
+     * @param bdxh      内部id
      */
-    void addProjectBuild(Elements eles, Integer companyId, Integer projectId, String bdxh) {
+    int addProjectBuild(Elements eles, Integer companyId, Integer projectId, String bdxh) {
         TbProjectBuild tbProjectBuild = new TbProjectBuild();
         tbProjectBuild.setProName(eles.select("#ctl00_ContentPlaceHolder1_hl_gcmc").text());
         tbProjectBuild.setBName(eles.select("#ctl00_ContentPlaceHolder1_lbl_bdmc").text());
@@ -393,7 +401,7 @@ public class HuNanCompanyDetailTask {
         //中标备案情况
         String bidRemark = eles.select("#ctl00_ContentPlaceHolder1_lbl_zbba").text();
         tbProjectBuild.setBidRemark(bidRemark);
-        if(bidRemark.contains("中标价格") && bidRemark.contains("万元")) {
+        if (bidRemark.contains("中标价格") && bidRemark.contains("万元")) {
             tbProjectBuild.setBidPrice(bidRemark.substring(bidRemark.indexOf("中标价格") + 5, bidRemark.indexOf("万元")));
         }
         tbProjectBuild.setContractRemark(eles.select("#ctl00_ContentPlaceHolder1_lbl_htba").text());
@@ -412,7 +420,36 @@ public class HuNanCompanyDetailTask {
         tbProjectBuild.setBdxh(bdxh);
         tbProjectBuild.setComId(companyId);
         tbProjectBuild.setProId(projectId);
-        companyService.insertProjectBuild(tbProjectBuild);
+        return companyService.insertProjectBuild(tbProjectBuild);
+    }
+
+    /**
+     * 添加项目部人员
+     * @param eles      表格数据
+     * @param projectBuilderId 项目施工id
+     * @param projectBuildUrl 项目施工详情Url
+     */
+    void addProjectPeople(Elements eles, Integer projectBuilderId, String projectBuildUrl) {
+        if(eles.size() > 2) {
+            TbPersonProject tbPersonProject;
+            for (int i = 2; i < eles.size() - 1; i++) {
+                if(StringUtils.isNotNull(eles.get(i).text())) {
+                    tbPersonProject = new TbPersonProject();
+                    tbPersonProject.setName(eles.get(i).select("td").get(0).text());
+                    tbPersonProject.setCategory(eles.get(i).select("td").get(1).text());
+                    tbPersonProject.setCertNo(eles.get(i).select("td").get(2).text());
+                    tbPersonProject.setSafeNo(eles.get(i).select("td").get(3).text());
+                    tbPersonProject.setStatus(eles.get(i).select("td").get(4).text());
+                    tbPersonProject.setType("build");
+                    String peopleDetailId = eles.get(i).select("td").get(0).select("a").attr("href");
+                    tbPersonProject.setInnerid(peopleDetailId.substring(peopleDetailId.indexOf("=") + 1));
+                    tbPersonProject.setPid(projectBuilderId);
+                    companyService.insertPersonProject(tbPersonProject);
+                }
+            }
+        } else {
+            System.out.println("无项目部人员" + projectBuildUrl);
+        }
     }
 
 }

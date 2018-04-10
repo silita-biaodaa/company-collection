@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.silita.biaodaa.dao.TbSafetyCertificateMapper">
+
+    <insert id="batchInsertSafetyCertificate" parameterType="com.silita.biaodaa.model.TbSafetyCertificate">
+        INSERT INTO
+        hunanyitihua.tb_safety_certificate(`com_name`, `cert_no`, `cert_date`, `valid_date`, `created`)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.comName}, #{item.certNo}, #{item.certDate}, #{item.validDate}, NOW())
+        </foreach>
+    </insert>
+
+    <insert id="InsertSafetyCertificate" parameterType="com.silita.biaodaa.model.TbSafetyCertificate">
+        INSERT INTO
+        hunanyitihua.tb_safety_certificate(`com_name`, `cert_no`, `cert_date`, `valid_date`, `created`)
+        VALUES
+        (#{comName}, #{certNo}, #{certDate}, #{validDate}, NOW())
+    </insert>
+
+    <select id="getTotalByCertNo" parameterType="String" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_safety_certificate WHERE cert_no = #{certNo}
+    </select>
+
+</mapper>

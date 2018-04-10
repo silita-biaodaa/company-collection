@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.silita.biaodaa.dao.TbPersonProjectMapper">
+
+    <insert id="insertPersionProject" parameterType="com.silita.biaodaa.model.TbPersonProject">
+       INSERT INTO
+       hunanyitihua.tb_person_project(`innerid`, `pid`, `name`, `category`, `cert_no`,
+      `safe_no`, `status`, `type`, `created`)
+       VALUES
+        (#{innerid}, #{pid}, #{name}, #{category}, #{certNo},
+        #{safeNo}, #{status}, #{type}, NOW())
+    </insert>
+
+    <select id="getPersionProjectTotalByNameAndCertNoAndSafeNo" parameterType="com.silita.biaodaa.model.TbPersonProject" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_person_project WHERE `name` = #{name} AND `cert_no` = #{certNo} AND `safe_no` = #{safeNo}
+    </select>
+
+</mapper>

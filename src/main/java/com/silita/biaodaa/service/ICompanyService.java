@@ -8,6 +8,7 @@ import java.util.List;
  * Created by 91567 on 2018/4/2.
  */
 public interface ICompanyService {
+
     /**
      * 批量添加企业资质证书列表页数据
      *
@@ -23,19 +24,11 @@ public interface ICompanyService {
     void InsertCompanyQualification(TbCompanyQualification companyQualification);
 
     /**
-     * 根据证书编号判断是否已抓取企业资质证书
-     *
-     * @param certNo
-     * @return
-     */
-    boolean checkCompanyQualificationByCertNo(String certNo);
-
-    /**
-     * 取得全部资质证书详情页面url
+     * 根据tab类型取得全部资质证书详情页面url
      *
      * @return
      */
-    List<String> getAllCompanyQualificationUrl();
+    List<String> getAllCompanyQualificationUrlByTab(String tableName);
 
     /**
      * 更新企业资质证书详情信息
@@ -83,6 +76,27 @@ public interface ICompanyService {
      *
      * @param tbProjectBuild
      */
-    void insertProjectBuild(TbProjectBuild tbProjectBuild);
+    int insertProjectBuild(TbProjectBuild tbProjectBuild);
+
+    /**
+     * 添加施工人员信息或监理人员信息
+     * 根据人员姓名、证书编号、安全证书编号判断是否添加
+     * @param tbPersonProject
+     */
+    void insertPersonProject(TbPersonProject tbPersonProject);
+
+    /**
+     * 添加施工图审查信息
+     * 根据施工图审查合格书编号判断是否添加
+     * @param tbProjectDesign
+     */
+    int insertProjectDesign(TbProjectDesign tbProjectDesign);
+
+    /**
+     * 添加设计人员名单
+     * 根据人员姓名、证书编号、安全证书编号判断是否添加
+     * @param tbPersonDesign
+     */
+    void insertPersonDesign(TbPersonDesign tbPersonDesign);
 
 }

@@ -30,7 +30,7 @@ public interface TbCompanyQualificationMapper extends MyMapper<TbCompanyQualific
      * 取得全部资质证书详情页面url
      * @return
      */
-    List<String> getAllCompanyQualificationUrl();
+    List<String> getAllCompanyQualificationUrlByTabName(String tableName);
 
     /**
      * 根据企业资质证书内部id更新企业资质证书内部

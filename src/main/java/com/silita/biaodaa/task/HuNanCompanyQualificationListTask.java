@@ -1,7 +1,12 @@
 package com.silita.biaodaa.task;
 
+import com.silita.biaodaa.model.TbCompanyInto;
 import com.silita.biaodaa.model.TbCompanyQualification;
+import com.silita.biaodaa.model.TbSafetyCertificate;
+import com.silita.biaodaa.service.ICompanyIntoService;
 import com.silita.biaodaa.service.ICompanyService;
+import com.silita.biaodaa.service.ISafetyCertificateService;
+import com.silita.biaodaa.utils.StringUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -14,7 +19,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * 抓取湖南四库一平台公司列表数据(企业证书列表)
+ * 抓取湖南四库一平台企业列表数据
  * http://qyryjg.hunanjz.com/public/EnterpriseList.aspx
  * Created by 91567 on 2018/3/31.
  */
@@ -27,12 +32,14 @@ public class HuNanCompanyQualificationListTask {
 
     @Autowired
     ICompanyService companyService;
+    @Autowired
+    ISafetyCertificateService safetyCertificateService;
+    @Autowired
+    ICompanyIntoService companyIntoService;
 
     public void getCompanyList() throws Exception {
-        Document doc = null;
-        Connection conn = null;
-        TbCompanyQualification companyQualification = null;
-        List<TbCompanyQualification> companyQualifications = null;
+        Document doc;
+        Connection conn;
 
         String __VIEWSTATE = null;
         String __EVENTVALIDATION = null;
@@ -45,7 +52,7 @@ public class HuNanCompanyQualificationListTask {
                 "设计施工一体化企业", "工程造价咨询企业", "施工图审查机构", "质量检测机构", "安全生产许可证",
                 "外省入湘备案"};
 
-        for (int tab = 0; tab < codes.length; tab++) {
+        for (int tab = 0; tab < tabs.length; tab++) {
             int page = 1;
             conn = Jsoup.connect(url).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
             if (tab == 0) {
@@ -62,7 +69,7 @@ public class HuNanCompanyQualificationListTask {
                 doc = conn.post();
             }
 
-            for (int pageTemp = 1; pageTemp <= page; pageTemp++) {
+            for (int pageTemp = 1; pageTemp <= 1; pageTemp++) {
                 if (pageTemp == 1) {
                     String pageStr = doc.select("#ctl00_ContentPlaceHolder1_lbl_count").select("i").last().text().trim();
                     page = Integer.parseInt(pageStr);
@@ -86,29 +93,114 @@ public class HuNanCompanyQualificationListTask {
                 Elements trs = doc.select("#ctl00_ContentPlaceHolder1_div_list").select("#table").select("tr");
                 //安全生产许可
                 if (tab == 9) {
-                    System.out.println("@@@@@还未抓取安全生产许可证@@@@@");
+                    insertCompanySafetyCert(trs);
                 } else if (tab == 10) {
-                    System.out.println("@@@@@@还未抓取外省入湘备案@@@@@@");
+                    insertCompanyInto(trs);
                 } else {
-                    companyQualifications = new ArrayList<>(25);
-                    for (int row = 1; row < trs.size(); row++) {
-                        companyQualification = new TbCompanyQualification();
-                        companyQualification.setComName(trs.get(row).select("td").get(0).select("a").text());
-                        companyQualification.setCertNo(trs.get(row).select("td").get(1).text());
-                        companyQualification.setCertDate(trs.get(row).select("td").get(2).text());
-                        companyQualification.setValidDate(trs.get(row).select("td").get(3).text());
-                        companyQualification.setTab(tabs[tab]);
-                        String companyQualificationUrl = trs.get(row).select("td").get(0).select("a").first().absUrl("href");
-                        companyQualification.setUrl(companyQualificationUrl);
-                        companyQualification.setCorpid(companyQualificationUrl.substring(companyQualificationUrl.indexOf("=") + 1));
-                        companyQualifications.add(companyQualification);
-                    }
-                    companyService.batchInsertCompanyQualification(companyQualifications);
-                    companyQualifications.clear();
+                    insertCompanyQualification(trs, tabs[tab]);
                 }
                 //随机暂停几秒
                 Thread.sleep(1000 * (random.nextInt(max) % (max - min + 1)));
             }
         }
     }
+
+
+    /**
+     * 添加企业资质证书
+     *
+     * @param trs
+     * @param tableName
+     */
+    void insertCompanyQualification(Elements trs, String tableName) {
+        TbCompanyQualification companyQualification;
+        List<TbCompanyQualification> companyQualifications = new ArrayList<>(25);
+        for (int row = 1; row < trs.size(); row++) {
+            companyQualification = new TbCompanyQualification();
+            companyQualification.setComName(trs.get(row).select("td").get(0).select("a").text());
+            companyQualification.setCertNo(trs.get(row).select("td").get(1).text());
+            companyQualification.setCertDate(trs.get(row).select("td").get(2).text());
+            companyQualification.setValidDate(trs.get(row).select("td").get(3).text());
+            companyQualification.setTab(tableName);
+            String companyQualificationUrl = trs.get(row).select("td").get(0).select("a").first().absUrl("href");
+            companyQualification.setUrl(companyQualificationUrl);
+            companyQualification.setCorpid(companyQualificationUrl.substring(companyQualificationUrl.indexOf("=") + 1));
+            companyQualifications.add(companyQualification);
+        }
+//        companyService.batchInsertCompanyQualification(companyQualifications);
+        companyQualifications.clear();
+    }
+
+
+    /**
+     * 添加企业安全证书
+     *
+     * @param trs
+     */
+    void insertCompanySafetyCert(Elements trs) {
+        TbSafetyCertificate safetyCertificate;
+//        List<TbSafetyCertificate> safetyCertificates = new ArrayList<>(25);
+        for (int row = 1; row < trs.size(); row++) {
+            safetyCertificate = new TbSafetyCertificate();
+            safetyCertificate.setComName(trs.get(row).select("td").get(0).text());
+            safetyCertificate.setCertNo(trs.get(row).select("td").get(1).text());
+            safetyCertificate.setCertDate(trs.get(row).select("td").get(2).text());
+            safetyCertificate.setValidDate(trs.get(row).select("td").get(3).text());
+            safetyCertificateService.insertSafetyCertificate(safetyCertificate);
+//            safetyCertificates.add(safetyCertificate);
+        }
+//        safetyCertificateService.batchInsertSafetyCertificate(safetyCertificates);
+//        safetyCertificates.clear();
+    }
+
+    /**
+     * 抓取外省入湘企业
+     *
+     * @param trs
+     */
+    void insertCompanyInto(Elements trs) {
+        Document companyIntoDoc;
+        Connection companyIntoConn;
+        String companyIntoUrl = "";
+        try {
+            TbCompanyInto companyInto;
+            for (int row = 1; row < trs.size(); row++) {
+                companyIntoUrl = trs.get(row).select("td").select("a").first().absUrl("href");
+                companyIntoConn = Jsoup.connect(companyIntoUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
+                companyIntoDoc = companyIntoConn.get();
+                if(companyIntoConn.response().statusCode() == 200) {
+                    companyInto = new TbCompanyInto();
+                    companyInto.setComName(companyIntoDoc.select("#table1").select("#ctl00_ContentPlaceHolder1_lbl_qymc").text());
+                    companyInto.setOrgCode(companyIntoDoc.select("#table1").select("#ctl00_ContentPlaceHolder1_lbl_jgdm").text());
+                    companyInto.setBusinessNum(companyIntoDoc.select("#table1").select("#ctl00_ContentPlaceHolder1_lbl_yyzz").text());
+                    companyInto.setRegisAddress(companyIntoDoc.select("#table1").select("#ctl00_ContentPlaceHolder1_lbl_sz").text());
+                    companyInto.setComAddress(companyIntoDoc.select("#table1").select("#ctl00_ContentPlaceHolder1_lbl_dwdz").text());
+                    companyInto.setLegalPerson(companyIntoDoc.select("#table1").select("#ctl00_ContentPlaceHolder1_lbl_fddbr").text());
+                    //入湘登证号
+                    String IntoStr = companyIntoDoc.select("#table1").select("#ctl00_ContentPlaceHolder1_lbl_jjlx").text();
+                    if(StringUtils.isNotNull(IntoStr)) {
+                        companyInto.setIntoNo(IntoStr.substring(0, IntoStr.indexOf("有效期")-1));
+                        companyInto.setIntoValidDate(IntoStr.substring(IntoStr.indexOf("有效期") + 4, IntoStr.indexOf("至")));
+                        companyInto.setRegisCapital(companyIntoDoc.select("#table1").select("#ctl00_ContentPlaceHolder1_lbl_zczb").text());
+                        companyInto.setCertNo(companyIntoDoc.select("#table1").select("#ctl00_ContentPlaceHolder1_lbl_zsbh").text());
+                    }
+                    //安全生产许可证
+                    String safetyCertStr = companyIntoDoc.select("#table1").select("#ctl00_ContentPlaceHolder1_lbl_rxba").text();
+                    if(StringUtils.isNotNull(safetyCertStr)) {
+                        companyInto.setSafeCertNo(safetyCertStr.substring(safetyCertStr.indexOf("安全生产许可证") + 8, safetyCertStr.indexOf("有效期") - 1));
+                        companyInto.setSafeValidDate(safetyCertStr.substring(safetyCertStr.indexOf("有效期") + 5));
+                    }
+                    companyInto.setRang(companyIntoDoc.select("#table2").select("#ctl00_ContentPlaceHolder1_rxbazz").text());
+                    companyInto.setQybm(companyIntoUrl.substring(companyIntoUrl.indexOf("=") + 1));
+                    companyIntoService.insertCompanyInto(companyInto);
+                } else {
+                    System.out.println("获取外省入湘企详情数据失败！" + companyIntoUrl);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+        }
+    }
+
 }
