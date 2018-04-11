@@ -19,6 +19,11 @@ public class TbCompanyAptitude {
     private Integer qualId;
 
     /**
+     * 企业id
+     */
+    private Integer comId;
+
+    /**
      * 资质名称
      */
     private String aptitudeName;

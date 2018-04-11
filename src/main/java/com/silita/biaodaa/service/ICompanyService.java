@@ -126,7 +126,7 @@ public interface ICompanyService {
      * @param params
      * @return
      */
-    List<TbCompanyQualification> getCompanyQualification(Map<String, Object> params);
+    List<Map<String, Object>> getCompanyQualification(Map<String, Object> params);
 
     /**
      *
@@ -147,5 +147,7 @@ public interface ICompanyService {
      * @param tbCompanyAptitudes
      */
     void batchInsertCompanyAptitude(List<TbCompanyAptitude> tbCompanyAptitudes);
+
+//    List<TbCompanyAptitude>
 
 }

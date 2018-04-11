@@ -69,10 +69,13 @@ public class HuNanCompanyQualificationListTask {
                 doc = conn.post();
             }
 
-            for (int pageTemp = 1; pageTemp <= 1; pageTemp++) {
+            for (int pageTemp = 1; pageTemp <= page; pageTemp++) {
                 if (pageTemp == 1) {
                     String pageStr = doc.select("#ctl00_ContentPlaceHolder1_lbl_count").select("i").last().text().trim();
                     page = Integer.parseInt(pageStr);
+                    if(page > 5) {
+                        page = 5;
+                    }
                 } else {
                     conn = Jsoup.connect(url).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                     conn.data("ctl00_ScriptManager1_HiddenField", "");
@@ -127,7 +130,7 @@ public class HuNanCompanyQualificationListTask {
             companyQualification.setCorpid(companyQualificationUrl.substring(companyQualificationUrl.indexOf("=") + 1));
             companyQualifications.add(companyQualification);
         }
-//        companyService.batchInsertCompanyQualification(companyQualifications);
+        companyService.batchInsertCompanyQualification(companyQualifications);
         companyQualifications.clear();
     }
 

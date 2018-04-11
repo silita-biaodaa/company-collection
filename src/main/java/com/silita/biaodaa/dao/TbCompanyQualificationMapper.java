@@ -52,5 +52,5 @@ public interface TbCompanyQualificationMapper extends MyMapper<TbCompanyQualific
      * @param params
      * @return
      */
-    List<TbCompanyQualification> getCompanyQualification(Map<String,Object> params);
+    List<Map<String, Object>> getCompanyQualification(Map<String,Object> params);
 }

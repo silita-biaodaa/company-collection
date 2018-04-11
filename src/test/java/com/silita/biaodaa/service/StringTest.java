@@ -1,5 +1,7 @@
 package com.silita.biaodaa.service;
 
+import com.silita.biaodaa.utils.CNNumberFormat;
+
 /**
  * Created by 91567 on 2018/4/3.
  */
@@ -20,7 +22,11 @@ public class StringTest {
 //        System.out.println(str2.substring(str2.indexOf("安全生产许可证") + 8, str2.indexOf("有效期") - 1));
 //        System.out.println(str2.substring(str2.indexOf("有效期") + 5));
 
-        System.out.println(str3.substring(str3.indexOf("合同日期") + 5, str3.indexOf("合同价格") - 1));
-        System.out.println(str3.substring(str3.indexOf("合同价格") + 5, str3.indexOf("万元")));
+//        System.out.println(str3.substring(str3.indexOf("合同日期") + 5, str3.indexOf("合同价格") - 1));
+//        System.out.println(str3.substring(str3.indexOf("合同价格") + 5, str3.indexOf("万元")));
+
+
+        String test = "8100.000万元人民币";
+        System.out.println(CNNumberFormat.ChnStringToNumber(test.replace("人民币", "").replace("元", "")));
     }
 }

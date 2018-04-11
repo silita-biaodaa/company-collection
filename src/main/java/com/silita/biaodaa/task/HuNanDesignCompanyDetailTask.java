@@ -314,16 +314,20 @@ public class HuNanDesignCompanyDetailTask {
                         projectBuildDetailConn = Jsoup.connect(projectBuildUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                         projectBuildDetailDoc = projectBuildDetailConn.get();
                         if (projectBuildDetailConn.response().statusCode() == 200) {
-                            Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
-                            Elements projectDesignPeopleTable = projectBuildDetailDoc.select("#ctl00_ContentPlaceHolder1_td_rylist").select("tr");
-                            String projectInfoDetaiUrl = projectBuildDetailTable.select("a").first().absUrl("href");
-                            //添加项目基本信息
-                            Integer projectId = addProjectInfo(projectInfoDetaiUrl);
-                            String bdxh = projectInfoDetaiUrl.substring(projectInfoDetaiUrl.indexOf("=") + 1);
-                            //添加施工图审查信息（设计）
-                            int projectDesignId = addProjectDesign(projectBuildDetailTable, companyId, projectId, bdxh);
-                            //添加设计人员名单
-                            addDesignPeople(projectDesignPeopleTable, projectDesignId, projectBuildUrl);
+                            if(StringUtils.isNotNull(projectBuildDetailDoc.select("#table1").text())) {
+                                Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
+                                Elements projectDesignPeopleTable = projectBuildDetailDoc.select("#ctl00_ContentPlaceHolder1_td_rylist").select("tr");
+                                String projectInfoDetaiUrl = projectBuildDetailTable.select("a").first().absUrl("href");
+                                //添加项目基本信息
+                                Integer projectId = addProjectInfo(projectInfoDetaiUrl);
+                                String bdxh = projectInfoDetaiUrl.substring(projectInfoDetaiUrl.indexOf("=") + 1);
+                                //添加施工图审查信息（设计）
+                                int projectDesignId = addProjectDesign(projectBuildDetailTable, companyId, projectId, bdxh);
+                                //添加设计人员名单
+                                addDesignPeople(projectDesignPeopleTable, projectDesignId, projectBuildUrl);
+                            } else {
+                                System.out.println("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
+                            }
                         } else {
                             System.out.println("获取人员详情失败" + projectBuildUrl);
                         }

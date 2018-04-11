@@ -3,6 +3,6 @@
 <mapper namespace="com.silita.biaodaa.dao.AllZhMapper" >
 
   <select id="getAllZhByName" parameterType="String" resultType="com.silita.biaodaa.model.AllZh">
-    SELECT * FROM hunanyitihua.all_zh WHERE `name` = #{name}
+    SELECT * FROM hunanyitihua.all_zh WHERE `name` = #{name} AND finalUuid is not null
   </select>
 </mapper>

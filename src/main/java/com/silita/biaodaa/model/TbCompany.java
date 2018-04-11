@@ -59,6 +59,16 @@ public class TbCompany {
     private String skillLeader;
 
     /**
+     * 企业资质
+     */
+    private String range;
+
+    /**
+     * 企业logo
+     */
+    private String logo;
+
+    /**
      * 创建时间
      */
     private Date created;

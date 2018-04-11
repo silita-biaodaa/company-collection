@@ -188,7 +188,7 @@ public class CompanyServiceImpl implements ICompanyService {
     }
 
     @Override
-    public List<TbCompanyQualification> getCompanyQualification(Map<String, Object> params) {
+    public List<Map<String, Object>> getCompanyQualification(Map<String, Object> params) {
         return tbCompanyQualificationMapper.getCompanyQualification(params);
     }
 

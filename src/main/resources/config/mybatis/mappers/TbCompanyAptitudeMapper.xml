@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.silita.biaodaa.dao.TbCompanyAptitudeMapper" >
+<mapper namespace="com.silita.biaodaa.dao.TbCompanyAptitudeMapper">
     <insert id="batchInsertCompanyAptitude" parameterType="com.silita.biaodaa.model.TbCompanyAptitude">
         INSERT INTO
-        hunanyitihua.tb_company_aptitude(`qual_id`, `aptitude_name`, `aptitude_uuid`, `mainUuid`, `type`,
-        `created`)
+        hunanyitihua.tb_company_aptitude(`qual_id`, `com_id`, `aptitude_name`, `aptitude_uuid`, `mainUuid`,
+        `type`, `created`)
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
-            (#{item.qualId}, #{item.aptitudeName}, #{item.aptitudeUuid}, #{item.mainuuid}, #{item.type},
-            NOW())
+            (#{item.qualId}, #{item.comId}, #{item.aptitudeName}, #{item.aptitudeUuid}, #{item.mainuuid},
+            #{item.type}, NOW())
         </foreach>
     </insert>
+
+    <select id="getCompanyAptitudeByCompanyName" parameterType="String" resultType="com.silita.biaodaa.model.TbCompanyAptitude">
+        SELECT a.* FROM hunanyitihua.tb_company_aptitude AS a
+        LEFT JOIN hunanyitihua.tb_company as c ON a.com_id = c.com_id
+        WHERE c.com_name = #{companyName}
+    </select>
 </mapper>
