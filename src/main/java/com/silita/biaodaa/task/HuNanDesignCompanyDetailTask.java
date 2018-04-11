@@ -7,14 +7,12 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -23,6 +21,8 @@ import java.util.concurrent.CountDownLatch;
  */
 @Component
 public class HuNanDesignCompanyDetailTask {
+
+    Logger logger = org.slf4j.LoggerFactory.getLogger(this.getClass());
 
     private int min = 1;
     private int max = 5;
@@ -86,20 +86,24 @@ public class HuNanDesignCompanyDetailTask {
                         String corpid = CompanyQualificationUrl.substring(CompanyQualificationUrl.indexOf("=") + 1);
                         Elements companyInfoTable = companyDetailDoc.select("#table1");
                         Elements CompanyAptitudeTable = companyDetailDoc.select("#tablelist").select("#table2").select("#ctl00_ContentPlaceHolder1_td_zzdetail").select("table");
-                        //添加企业基本信息后 返回主键
+                       /* //添加企业基本信息后 返回主键
                         Integer comId = addCompanyInfo(companyInfoTable);
                         //更新企业资质证书
                         addCompanyAptitude(CompanyAptitudeTable, corpid, comId);
                         //##########抓取人员start##########
                         getPepleList(cookies, comId);
                         //##########抓取项目start##########
-                        getProjectList(cookies, comId);
+                        getProjectList(cookies, comId);*/
                     } else {
                         System.out.println("获取企业详情信息失败！" + CompanyQualificationUrl);
                     }
                     //随机暂停几秒
-                    Thread.sleep(1000 * (random.nextInt(max) % (max - min + 1)));
+//                    Thread.sleep(1000 * (random.nextInt(max) % (max - min + 1)));
                 }
+                //##########拆分资质##############
+                splitCompanyQualifications();
+                //##########添加企业资质##########
+//                updateCompanyAptitudeRange();
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -178,6 +182,7 @@ public class HuNanDesignCompanyDetailTask {
                             peopleDetailConn = Jsoup.connect(PersonQualificationUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                             peopleDetailDoc = peopleDetailConn.get();
                             if (peopleDetailConn.response().statusCode() == 200) {
+                                logger.error(PersonQualificationUrl);
                                 Elements peopleInfoTable = peopleDetailDoc.select("#table1");
                                 Elements peopleRegisteredTable = peopleDetailDoc.select("#tablelist").select("#table2").select("#ctl00_ContentPlaceHolder1_td_zzdetail").select("tr");
                                 Elements peopleOtherQualificationsTable = peopleDetailDoc.select("#tablelist").select("#table3").select("#ctl00_ContentPlaceHolder1_td_rylist").select("tr");
@@ -262,7 +267,7 @@ public class HuNanDesignCompanyDetailTask {
         void addProjectOtherCert(Elements eles, String PersonQualificationUrl, Integer companyId, Integer peopleId) {
             if (eles.size() > 1) {
                 TbPersonQualification tbPersonQualification = null;
-                for (int i = 0; i < eles.size(); i++) {
+                for (int i = 1; i < eles.size(); i++) {
                     tbPersonQualification = new TbPersonQualification();
                     tbPersonQualification.setCategory(eles.get(i).select("td").get(0).text());
                     tbPersonQualification.setComName(eles.get(i).select("td").get(1).text());
@@ -273,6 +278,8 @@ public class HuNanDesignCompanyDetailTask {
                     if (dateStr.contains("有效期")) {
                         tbPersonQualification.setCertDate(dateStr.substring(0, dateStr.indexOf("有效期") - 1));
                         tbPersonQualification.setValidDate(dateStr.substring(dateStr.indexOf("有效期") + 4, dateStr.length() - 1));
+                    } else {
+                        tbPersonQualification.setCertDate(dateStr);
                     }
                     tbPersonQualification.setUrl(PersonQualificationUrl);
                     tbPersonQualification.setInnerid(PersonQualificationUrl.substring(PersonQualificationUrl.indexOf("=") + 1));
@@ -314,6 +321,7 @@ public class HuNanDesignCompanyDetailTask {
                         projectBuildDetailConn = Jsoup.connect(projectBuildUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                         projectBuildDetailDoc = projectBuildDetailConn.get();
                         if (projectBuildDetailConn.response().statusCode() == 200) {
+                            logger.error(projectBuildUrl);
                             if(StringUtils.isNotNull(projectBuildDetailDoc.select("#table1").text())) {
                                 Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
                                 Elements projectDesignPeopleTable = projectBuildDetailDoc.select("#ctl00_ContentPlaceHolder1_td_rylist").select("tr");
@@ -433,6 +441,144 @@ public class HuNanDesignCompanyDetailTask {
             }
         } else {
             System.out.println("无勘察设计人员名单人员（设计）" + projectDesignUrl);
+        }
+    }
+
+    /**
+     * 拆分企业资格证书资质
+     */
+    void splitCompanyQualifications() {
+        int page = 0;
+        int batchCount = 1000;
+        Integer count = companyService.getCompanyQualificationTotalByTabName("工程设计企业");
+        if (count % batchCount == 0) {
+            page = count / batchCount;
+        } else {
+            page = count / batchCount + 1;
+        }
+        Map<String, Object> params;
+        List<TbCompanyQualification> companyQualificationList;
+        //分页 一次1000
+        for (int pageNum = 0; pageNum < page; pageNum++) {
+            params = new HashMap<>();
+            params.put("tableName", "工程设计企业");
+            params.put("start", batchCount * pageNum);
+            params.put("pageSize", 1000);
+            companyQualificationList = companyService.getCompanyQualifications(params);
+            //遍历证书
+            for (int i = 0; i < companyQualificationList.size(); i++) {
+                int qualId = companyQualificationList.get(i).getPkid();
+                String qualRange = companyQualificationList.get(i).getRange();
+                int comId =  companyQualificationList.get(i).getComId();
+                //有资质
+                if (StringUtils.isNotNull(qualRange)) {
+                    AllZh allZh;
+                    TbCompanyAptitude companyAptitude;
+                    List<TbCompanyAptitude> companyQualifications = new ArrayList<>();
+                    if (qualRange.contains("；")) {
+                        //拆分资质
+                        String[] qual = qualRange.split("；");
+                        for (int j = 0; j < qual.length; j++) {
+                            allZh = companyService.getAllZhByName(qual[j]);
+                            if (allZh != null) {
+                                companyAptitude = new TbCompanyAptitude();
+                                companyAptitude.setQualId(qualId);
+                                companyAptitude.setComId(comId);
+                                companyAptitude.setAptitudeName(companyService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                                companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
+                                companyAptitude.setMainuuid(allZh.getMainuuid());
+                                companyAptitude.setType(allZh.getType());
+                                companyQualifications.add(companyAptitude);
+                            }
+                        }
+                    } else if (qualRange.contains(";")) {
+                        //拆分资质
+                        String[] qual = qualRange.split(";");
+                        for (int j = 0; j < qual.length; j++) {
+                            allZh = companyService.getAllZhByName(qual[j]);
+                            if (allZh != null) {
+                                companyAptitude = new TbCompanyAptitude();
+                                companyAptitude.setQualId(qualId);
+                                companyAptitude.setComId(comId);
+                                companyAptitude.setAptitudeName(companyService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                                companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
+                                companyAptitude.setMainuuid(allZh.getMainuuid());
+                                companyAptitude.setType(allZh.getType());
+                                companyQualifications.add(companyAptitude);
+                            }
+                        }
+                    } else {
+                        allZh = companyService.getAllZhByName(qualRange);
+                        if (allZh != null) {
+                            companyAptitude = new TbCompanyAptitude();
+                            companyAptitude.setQualId(qualId);
+                            companyAptitude.setComId(comId);
+                            companyAptitude.setAptitudeName(companyService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                            companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
+                            companyAptitude.setMainuuid(allZh.getMainuuid());
+                            companyAptitude.setType(allZh.getType());
+                            companyQualifications.add(companyAptitude);
+                        }
+                    }
+                    if (companyQualifications != null && companyQualifications.size() > 0) {
+                        companyService.batchInsertCompanyAptitude(companyQualifications);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     *
+     */
+    void updateCompanyAptitudeRange() {
+        int page = 0;
+        int batchCount = 1000;
+        Integer count = companyService.getCompanyAptitudeTotal();
+        if (count % batchCount == 0) {
+            page = count / batchCount;
+        } else {
+            page = count / batchCount + 1;
+        }
+        Map<String, Object> params;
+        List<TbCompanyAptitude> tbCompanyAptitudes ;
+        //分页
+        for (int pageNum = 0; pageNum < page; pageNum++) {
+            params = new HashMap<>();
+            params.put("start", batchCount * pageNum);
+            params.put("pageSize", 1000);
+            tbCompanyAptitudes = companyService.listCompanyAptitude(params);
+            TbCompany tbCompany;
+            TbCompanyAptitude tbCompanyAptitude;
+            int comId;
+            String allType;
+            String allAptitudeUuid;
+            StringBuilder sb ;
+            //遍历
+            for (int i = 0; i < tbCompanyAptitudes.size(); i++) {
+                tbCompanyAptitude = tbCompanyAptitudes.get(i);
+                comId = tbCompanyAptitude.getComId();
+                allType = tbCompanyAptitude.getType();
+                allAptitudeUuid = tbCompanyAptitude.getAptitudeUuid();
+                if(StringUtils.isNotNull(allType) && StringUtils.isNotNull(allAptitudeUuid)) {
+                    sb = new StringBuilder();
+                    String[] typeArr = allType.split(",");
+                    String[] aptitudeUuidArr = allAptitudeUuid.split(",");
+                    if(typeArr.length > 0 && aptitudeUuidArr.length > 0 && typeArr.length == aptitudeUuidArr.length) {
+                        for (int j = 0; j < typeArr.length; j++) {
+                            if(j == typeArr.length - 1) {
+                                sb.append(typeArr[j]).append("/").append(aptitudeUuidArr[j]);
+                            } else {
+                                sb.append(typeArr[j]).append("/").append(aptitudeUuidArr[j]).append(",");
+                            }
+                        }
+                    }
+                    tbCompany = new TbCompany();
+                    tbCompany.setComId(comId);
+                    tbCompany.setRange(sb.toString());
+                    companyService.updateCompanyRangeByComId(tbCompany);
+                }
+            }
         }
     }
 

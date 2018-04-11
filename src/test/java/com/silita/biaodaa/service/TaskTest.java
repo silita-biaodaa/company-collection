@@ -24,7 +24,8 @@ public class TaskTest {
     private HuNanSurveyCompanyDetailTask huNanSurveyCompanyDetailTask;
     @Autowired
     private HuNanSupervisorCompanyDetailTask huNanSupervisorCompanyDetailTask;
-
+    @Autowired
+    private CompanyQualificationsRangeTask companyQualificationsRangeTask;
 
     /**
      * 列表（包含列表、外省入湘、企业安许）
@@ -70,4 +71,15 @@ public class TaskTest {
     public void HuNanSupervisorCompanyDetailTask() throws Exception {
         huNanSupervisorCompanyDetailTask.taskSupervisorCompany();
     }
+
+    /**
+     * 业务更新企业资质（最后执行）
+     * @throws Exception
+     */
+    @Test
+    public void CompanyQualificationsRangeTask() throws Exception {
+        companyQualificationsRangeTask.updateCompanyAptitudeRange();
+    }
+
+
 }

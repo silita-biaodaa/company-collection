@@ -85,7 +85,11 @@ public class HuNanCompanyQualificationListTask {
                     conn.data("__EVENTVALIDATION", __EVENTVALIDATION);
                     conn.data("ctl00$ContentPlaceHolder1$txtqymc", "");
                     conn.data("ctl00$ContentPlaceHolder1$txtzsbh", "");
-                    conn.data("ctl00$ContentPlaceHolder1$ddlsz", "0");
+                    //外省入湘翻页不要这个！！！！！
+                    if(tab != 10) {
+                        conn.data("ctl00$ContentPlaceHolder1$ddlsz", "0");
+                    }
+
                     doc = conn.post();
                 }
                 System.out.println("########抓取" + tabs[tab] + "栏目第" + pageTemp + "页########");
@@ -96,11 +100,11 @@ public class HuNanCompanyQualificationListTask {
                 Elements trs = doc.select("#ctl00_ContentPlaceHolder1_div_list").select("#table").select("tr");
                 //安全生产许可
                 if (tab == 9) {
-                    insertCompanySafetyCert(trs);
+//                    insertCompanySafetyCert(trs);
                 } else if (tab == 10) {
                     insertCompanyInto(trs);
                 } else {
-                    insertCompanyQualification(trs, tabs[tab]);
+//                    insertCompanyQualification(trs, tabs[tab]);
                 }
                 //随机暂停几秒
                 Thread.sleep(1000 * (random.nextInt(max) % (max - min + 1)));

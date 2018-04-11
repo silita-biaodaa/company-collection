@@ -7,6 +7,7 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +23,8 @@ import java.util.regex.Pattern;
  */
 @Component
 public class HuNanBuilderCompanyDetailTask {
+
+    Logger logger = org.slf4j.LoggerFactory.getLogger(this.getClass());
 
     private int min = 1;
     private int max = 5;
@@ -103,7 +106,7 @@ public class HuNanBuilderCompanyDetailTask {
                 //##########拆分资质##############
                 splitCompanyQualifications();
                 //##########添加企业资质##########
-                updateCompanyAptitudeRange();
+//                updateCompanyAptitudeRange();
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -182,6 +185,7 @@ public class HuNanBuilderCompanyDetailTask {
                             peopleDetailConn = Jsoup.connect(PersonQualificationUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                             peopleDetailDoc = peopleDetailConn.get();
                             if (peopleDetailConn.response().statusCode() == 200) {
+                                logger.error(PersonQualificationUrl);
                                 Elements peopleInfoTable = peopleDetailDoc.select("#table1");
                                 Elements peopleRegisteredTable = peopleDetailDoc.select("#tablelist").select("#table2").select("#ctl00_ContentPlaceHolder1_td_zzdetail").select("tr");
                                 Elements peopleOtherQualificationsTable = peopleDetailDoc.select("#tablelist").select("#table3").select("#ctl00_ContentPlaceHolder1_td_rylist").select("tr");
@@ -266,7 +270,7 @@ public class HuNanBuilderCompanyDetailTask {
         void addProjectOtherCert(Elements eles, String PersonQualificationUrl, Integer companyId, Integer peopleId) {
             if (eles.size() > 1) {
                 TbPersonQualification tbPersonQualification = null;
-                for (int i = 0; i < eles.size(); i++) {
+                for (int i = 1; i < eles.size(); i++) {
                     tbPersonQualification = new TbPersonQualification();
                     tbPersonQualification.setCategory(eles.get(i).select("td").get(0).text());
                     tbPersonQualification.setComName(eles.get(i).select("td").get(1).text());
@@ -277,6 +281,8 @@ public class HuNanBuilderCompanyDetailTask {
                     if (dateStr.contains("有效期")) {
                         tbPersonQualification.setCertDate(dateStr.substring(0, dateStr.indexOf("有效期") - 1));
                         tbPersonQualification.setValidDate(dateStr.substring(dateStr.indexOf("有效期") + 4, dateStr.length() - 1));
+                    } else {
+                        tbPersonQualification.setCertDate(dateStr);
                     }
                     tbPersonQualification.setUrl(PersonQualificationUrl);
                     tbPersonQualification.setInnerid(PersonQualificationUrl.substring(PersonQualificationUrl.indexOf("=") + 1));
@@ -318,18 +324,23 @@ public class HuNanBuilderCompanyDetailTask {
                         projectBuildDetailConn = Jsoup.connect(projectBuildUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                         projectBuildDetailDoc = projectBuildDetailConn.get();
                         if (projectBuildDetailConn.response().statusCode() == 200) {
-                            Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
-                            Elements projectBuilderPeopleTable = projectBuildDetailDoc.select("#ctl00_ContentPlaceHolder1_td_rylist").select("table").select("tr");
-                            String projectInfoDetaiUrl = projectBuildDetailTable.select("a").first().absUrl("href");
-                            //添加项目基本信息
-                            Integer projectId = addProjectInfo(projectInfoDetaiUrl);
-                            String bdxh = projectInfoDetaiUrl.substring(projectInfoDetaiUrl.indexOf("=") + 1);
-                            //施工合同段信息
-                            int projectBuilderId = addProjectBuild(projectBuildDetailTable, companyId, projectId, bdxh);
-                            //添加项目部人员（施工）
-                            addProjectPeople(projectBuilderPeopleTable, projectBuilderId, projectBuildUrl);
+                            if (StringUtils.isNotNull(projectBuildDetailDoc.select("#table1").text())) {
+                                logger.error(projectBuildUrl);
+                                Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
+                                Elements projectBuilderPeopleTable = projectBuildDetailDoc.select("#ctl00_ContentPlaceHolder1_td_rylist").select("table").select("tr");
+                                String projectInfoDetaiUrl = projectBuildDetailTable.select("a").first().absUrl("href");
+                                //添加项目基本信息
+                                Integer projectId = addProjectInfo(projectInfoDetaiUrl);
+                                String bdxh = projectInfoDetaiUrl.substring(projectInfoDetaiUrl.indexOf("=") + 1);
+                                //施工合同段信息
+                                int projectBuilderId = addProjectBuild(projectBuildDetailTable, companyId, projectId, bdxh);
+                                //添加项目部人员（施工）
+                                addProjectPeople(projectBuilderPeopleTable, projectBuilderId, projectBuildUrl);
+                            } else {
+                                System.out.println("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
+                            }
                         } else {
-                            System.out.println("获取人员详情失败" + projectBuildUrl);
+                            System.out.println("获取项目详情失败" + projectBuildUrl);
                         }
                     }
                 } else {
@@ -479,7 +490,7 @@ public class HuNanBuilderCompanyDetailTask {
             for (int i = 0; i < companyQualificationList.size(); i++) {
                 int qualId = companyQualificationList.get(i).getPkid();
                 String qualRange = companyQualificationList.get(i).getRange();
-                int comId =  companyQualificationList.get(i).getComId();
+                int comId = companyQualificationList.get(i).getComId();
                 //有资质
                 if (StringUtils.isNotNull(qualRange)) {
                     AllZh allZh;
@@ -551,7 +562,7 @@ public class HuNanBuilderCompanyDetailTask {
             page = count / batchCount + 1;
         }
         Map<String, Object> params;
-        List<TbCompanyAptitude> tbCompanyAptitudes ;
+        List<TbCompanyAptitude> tbCompanyAptitudes;
         //分页
         for (int pageNum = 0; pageNum < page; pageNum++) {
             params = new HashMap<>();
@@ -563,20 +574,20 @@ public class HuNanBuilderCompanyDetailTask {
             int comId;
             String allType;
             String allAptitudeUuid;
-            StringBuilder sb ;
+            StringBuilder sb;
             //遍历
             for (int i = 0; i < tbCompanyAptitudes.size(); i++) {
                 tbCompanyAptitude = tbCompanyAptitudes.get(i);
                 comId = tbCompanyAptitude.getComId();
                 allType = tbCompanyAptitude.getType();
                 allAptitudeUuid = tbCompanyAptitude.getAptitudeUuid();
-                if(StringUtils.isNotNull(allType) && StringUtils.isNotNull(allAptitudeUuid)) {
+                if (StringUtils.isNotNull(allType) && StringUtils.isNotNull(allAptitudeUuid)) {
                     sb = new StringBuilder();
                     String[] typeArr = allType.split(",");
                     String[] aptitudeUuidArr = allAptitudeUuid.split(",");
-                    if(typeArr.length > 0 && aptitudeUuidArr.length > 0 && typeArr.length == aptitudeUuidArr.length) {
+                    if (typeArr.length > 0 && aptitudeUuidArr.length > 0 && typeArr.length == aptitudeUuidArr.length) {
                         for (int j = 0; j < typeArr.length; j++) {
-                            if(j == typeArr.length - 1) {
+                            if (j == typeArr.length - 1) {
                                 sb.append(typeArr[j]).append("/").append(aptitudeUuidArr[j]);
                             } else {
                                 sb.append(typeArr[j]).append("/").append(aptitudeUuidArr[j]).append(",");
