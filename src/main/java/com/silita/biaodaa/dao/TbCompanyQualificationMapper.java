@@ -45,12 +45,12 @@ public interface TbCompanyQualificationMapper extends MyMapper<TbCompanyQualific
      * @param tableName
      * @return
      */
-    Integer getTotalCompanyQualificationByTabName(String tableName);
+    Integer getCompanyQualificationTotalByTabName(String tableName);
 
     /**
      * 按批次取得企业资质证书
      * @param params
      * @return
      */
-    List<Map<String, Object>> getCompanyQualification(Map<String,Object> params);
+    List<TbCompanyQualification> listCompanyQualification(Map<String,Object> params);
 }

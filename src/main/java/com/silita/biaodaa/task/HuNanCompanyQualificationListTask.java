@@ -73,7 +73,7 @@ public class HuNanCompanyQualificationListTask {
                 if (pageTemp == 1) {
                     String pageStr = doc.select("#ctl00_ContentPlaceHolder1_lbl_count").select("i").last().text().trim();
                     page = Integer.parseInt(pageStr);
-                    if(page > 5) {
+                    if(page > 20) {
                         page = 5;
                     }
                 } else {

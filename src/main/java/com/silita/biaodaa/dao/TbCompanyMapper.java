@@ -24,4 +24,10 @@ public interface TbCompanyMapper extends MyMapper<TbCompany> {
      * @return
      */
     Integer getCompanyIdByOrgCodeAndBusinessNum(TbCompany tbCompany);
+
+    /**
+     * 添加企业资质到企业基本信息表（方便业务查询）
+     * @param tbCompany
+     */
+    void updateCompanyRangeByComId(TbCompany tbCompany);
 }

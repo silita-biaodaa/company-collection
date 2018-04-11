@@ -114,40 +114,57 @@ public interface ICompanyService {
     int insertProjectSupervisor(TbProjectSupervision tbProjectSupervision);
 
 
+    //####################以下为拆分资质相关业务########################
+
     /**
      *
      * @param tableName
      * @return
      */
-    int getTotalCompanyQualificationByTabName(String tableName);
+    int getCompanyQualificationTotalByTabName(String tableName);
 
     /**
      *
      * @param params
      * @return
      */
-    List<Map<String, Object>> getCompanyQualification(Map<String, Object> params);
+    List<TbCompanyQualification> getCompanyQualifications(Map<String, Object> params);
 
     /**
-     *
+     * 根据资质别名取得资质
      * @param name
      * @return
      */
     AllZh getAllZhByName(String name);
 
     /**
-     *
+     * 根据资质别名id取得资质标准名称
      * @param majorUuid
      * @return
      */
     String getMajorNameBymajorUuid(String majorUuid);
 
     /**
-     *
+     * 批量插入拆分后的企业证书资质
      * @param tbCompanyAptitudes
      */
     void batchInsertCompanyAptitude(List<TbCompanyAptitude> tbCompanyAptitudes);
 
-//    List<TbCompanyAptitude>
+    /**
+     * 取得拆分后的企业证书资质
+     * @return
+     */
+    Integer getCompanyAptitudeTotal();
+
+    /**
+     * 按批次取拆分后的企业证书资质
+     */
+    List<TbCompanyAptitude> listCompanyAptitude(Map<String, Object> params);
+
+    /**
+     * 添加企业资质到企业基本信息表（方便业务查询）
+     * @param tbCompany
+     */
+    void updateCompanyRangeByComId(TbCompany tbCompany);
 
 }

@@ -12,9 +12,14 @@
         </foreach>
     </insert>
 
-    <select id="getCompanyAptitudeByCompanyName" parameterType="String" resultType="com.silita.biaodaa.model.TbCompanyAptitude">
-        SELECT a.* FROM hunanyitihua.tb_company_aptitude AS a
-        LEFT JOIN hunanyitihua.tb_company as c ON a.com_id = c.com_id
-        WHERE c.com_name = #{companyName}
+    <select id="getCompanyAptitudeTotal" parameterType="String" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_company_aptitude
+    </select>
+
+    <select id="listCompanyAptitude" parameterType="Map" resultType="com.silita.biaodaa.model.TbCompanyAptitude">
+        SELECT com_id AS `com_id`, group_concat(`type`) AS `type`, group_concat(`aptitude_uuid`) AS `aptitude_uuid`
+        FROM hunanyitihua.tb_company_aptitude
+        GROUP BY com_id LIMIT
+        #{start}, #{pageSize}
     </select>
 </mapper>

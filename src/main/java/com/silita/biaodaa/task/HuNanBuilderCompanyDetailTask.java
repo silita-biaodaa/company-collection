@@ -86,14 +86,14 @@ public class HuNanBuilderCompanyDetailTask {
                         String corpid = CompanyQualificationUrl.substring(CompanyQualificationUrl.indexOf("=") + 1);
                         Elements companyInfoTable = companyDetailDoc.select("#table1");
                         Elements CompanyAptitudeTable = companyDetailDoc.select("#tablelist").select("#table2").select("#ctl00_ContentPlaceHolder1_td_zzdetail").select("table");
-                      /*  //###添加企业基本信息后 返回主键###
+                        //###添加企业基本信息后 返回主键###
                         Integer comId = addCompanyInfo(companyInfoTable);
                         //########更新企业资质证书#########
                         addCompanyAptitude(CompanyAptitudeTable, corpid, comId);
                         //##########抓取人员start##########
                         getPepleList(cookies, comId);
                         //##########抓取项目start##########
-                        getProjectList(cookies, comId);*/
+                        getProjectList(cookies, comId);
                     } else {
                         System.out.println("获取企业详情信息失败！" + CompanyQualificationUrl);
                     }
@@ -102,6 +102,8 @@ public class HuNanBuilderCompanyDetailTask {
                 }
                 //##########拆分资质##############
                 splitCompanyQualifications();
+                //##########添加企业资质##########
+                updateCompanyAptitudeRange();
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -458,26 +460,26 @@ public class HuNanBuilderCompanyDetailTask {
     void splitCompanyQualifications() {
         int page = 0;
         int batchCount = 1000;
-        Integer count = companyService.getTotalCompanyQualificationByTabName("建筑业企业");
+        Integer count = companyService.getCompanyQualificationTotalByTabName("建筑业企业");
         if (count % batchCount == 0) {
             page = count / batchCount;
         } else {
             page = count / batchCount + 1;
         }
         Map<String, Object> params;
-        List<Map<String, Object>> companyQualificationList;
+        List<TbCompanyQualification> companyQualificationList;
         //分页 一次1000
         for (int pageNum = 0; pageNum < page; pageNum++) {
             params = new HashMap<>();
             params.put("tableName", "建筑业企业");
             params.put("start", batchCount * pageNum);
             params.put("pageSize", 1000);
-            companyQualificationList = companyService.getCompanyQualification(params);
+            companyQualificationList = companyService.getCompanyQualifications(params);
             //遍历证书
             for (int i = 0; i < companyQualificationList.size(); i++) {
-                int qualId = (int) companyQualificationList.get(i).get("pkid");
-                String qualRange = String.valueOf(companyQualificationList.get(i).get("range"));
-                int comId = (int) companyQualificationList.get(i).get("com_id");
+                int qualId = companyQualificationList.get(i).getPkid();
+                String qualRange = companyQualificationList.get(i).getRange();
+                int comId =  companyQualificationList.get(i).getComId();
                 //有资质
                 if (StringUtils.isNotNull(qualRange)) {
                     AllZh allZh;
@@ -540,7 +542,55 @@ public class HuNanBuilderCompanyDetailTask {
      *
      */
     void updateCompanyAptitudeRange() {
-//        List<TbCompanyAptitude> companyAptitudes  = companyService
+        int page = 0;
+        int batchCount = 1000;
+        Integer count = companyService.getCompanyAptitudeTotal();
+        if (count % batchCount == 0) {
+            page = count / batchCount;
+        } else {
+            page = count / batchCount + 1;
+        }
+        Map<String, Object> params;
+        List<TbCompanyAptitude> tbCompanyAptitudes ;
+        //分页
+        for (int pageNum = 0; pageNum < page; pageNum++) {
+            params = new HashMap<>();
+            params.put("tableName", "建筑业企业");
+            params.put("start", batchCount * pageNum);
+            params.put("pageSize", 1000);
+            tbCompanyAptitudes = companyService.listCompanyAptitude(params);
+            TbCompany tbCompany;
+            TbCompanyAptitude tbCompanyAptitude;
+            int comId;
+            String allType;
+            String allAptitudeUuid;
+            StringBuilder sb ;
+            //遍历
+            for (int i = 0; i < tbCompanyAptitudes.size(); i++) {
+                tbCompanyAptitude = tbCompanyAptitudes.get(i);
+                comId = tbCompanyAptitude.getComId();
+                allType = tbCompanyAptitude.getType();
+                allAptitudeUuid = tbCompanyAptitude.getAptitudeUuid();
+                if(StringUtils.isNotNull(allType) && StringUtils.isNotNull(allAptitudeUuid)) {
+                    sb = new StringBuilder();
+                    String[] typeArr = allType.split(",");
+                    String[] aptitudeUuidArr = allAptitudeUuid.split(",");
+                    if(typeArr.length > 0 && aptitudeUuidArr.length > 0 && typeArr.length == aptitudeUuidArr.length) {
+                        for (int j = 0; j < typeArr.length; j++) {
+                            if(j == typeArr.length - 1) {
+                                sb.append(typeArr[j]).append("/").append(aptitudeUuidArr[j]);
+                            } else {
+                                sb.append(typeArr[j]).append("/").append(aptitudeUuidArr[j]).append(",");
+                            }
+                        }
+                    }
+                    tbCompany = new TbCompany();
+                    tbCompany.setComId(comId);
+                    tbCompany.setRange(sb.toString());
+                    companyService.updateCompanyRangeByComId(tbCompany);
+                }
+            }
+        }
     }
 
 }

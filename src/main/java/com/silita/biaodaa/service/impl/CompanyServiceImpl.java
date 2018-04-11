@@ -183,13 +183,13 @@ public class CompanyServiceImpl implements ICompanyService {
     }
 
     @Override
-    public int getTotalCompanyQualificationByTabName(String tableName) {
-        return tbCompanyQualificationMapper.getTotalCompanyQualificationByTabName(tableName);
+    public int getCompanyQualificationTotalByTabName(String tableName) {
+        return tbCompanyQualificationMapper.getCompanyQualificationTotalByTabName(tableName);
     }
 
     @Override
-    public List<Map<String, Object>> getCompanyQualification(Map<String, Object> params) {
-        return tbCompanyQualificationMapper.getCompanyQualification(params);
+    public List<TbCompanyQualification> getCompanyQualifications(Map<String, Object> params) {
+        return tbCompanyQualificationMapper.listCompanyQualification(params);
     }
 
     @Override
@@ -205,5 +205,20 @@ public class CompanyServiceImpl implements ICompanyService {
     @Override
     public void batchInsertCompanyAptitude(List<TbCompanyAptitude> tbCompanyAptitudes) {
         tbCompanyAptitudeMapper.batchInsertCompanyAptitude(tbCompanyAptitudes);
+    }
+
+    @Override
+    public Integer getCompanyAptitudeTotal() {
+        return tbCompanyAptitudeMapper.getCompanyAptitudeTotal();
+    }
+
+    @Override
+    public List<TbCompanyAptitude> listCompanyAptitude(Map<String, Object> params) {
+        return tbCompanyAptitudeMapper.listCompanyAptitude(params);
+    }
+
+    @Override
+    public void updateCompanyRangeByComId(TbCompany tbCompany) {
+        tbCompanyMapper.updateCompanyRangeByComId(tbCompany);
     }
 }

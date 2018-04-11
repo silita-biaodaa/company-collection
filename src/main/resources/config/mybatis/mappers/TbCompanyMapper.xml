@@ -21,4 +21,10 @@
     <select id="getCompanyIdByOrgCodeAndBusinessNum" parameterType="com.silita.biaodaa.model.TbCompany" resultType="Integer">
         SELECT com_id FROM hunanyitihua.tb_company WHERE org_code = #{orgCode} AND business_num = #{businessNum}
     </select>
+
+    <update id="updateCompanyRangeByComId" parameterType="com.silita.biaodaa.model.TbCompany">
+        UPDATE hunanyitihua.tb_company
+        SET `range` = #{range}
+        WHERE `com_id` = #{comId}
+    </update>
 </mapper>
