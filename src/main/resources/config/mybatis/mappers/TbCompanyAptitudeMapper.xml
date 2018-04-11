@@ -19,7 +19,7 @@
     <select id="listCompanyAptitude" parameterType="Map" resultType="com.silita.biaodaa.model.TbCompanyAptitude">
         SELECT com_id AS `com_id`, group_concat(`type`) AS `type`, group_concat(`aptitude_uuid`) AS `aptitude_uuid`
         FROM hunanyitihua.tb_company_aptitude
-        GROUP BY com_id LIMIT
-        #{start}, #{pageSize}
+        GROUP BY com_id
+        LIMIT #{start}, #{pageSize}
     </select>
 </mapper>

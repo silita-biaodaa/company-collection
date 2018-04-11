@@ -555,7 +555,6 @@ public class HuNanBuilderCompanyDetailTask {
         //分页
         for (int pageNum = 0; pageNum < page; pageNum++) {
             params = new HashMap<>();
-            params.put("tableName", "建筑业企业");
             params.put("start", batchCount * pageNum);
             params.put("pageSize", 1000);
             tbCompanyAptitudes = companyService.listCompanyAptitude(params);
