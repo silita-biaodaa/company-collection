@@ -73,9 +73,6 @@ public class HuNanCompanyQualificationListTask {
                 if (pageTemp == 1) {
                     String pageStr = doc.select("#ctl00_ContentPlaceHolder1_lbl_count").select("i").last().text().trim();
                     page = Integer.parseInt(pageStr);
-                    if(page > 20) {
-                        page = 5;
-                    }
                 } else {
                     conn = Jsoup.connect(url).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                     conn.data("ctl00_ScriptManager1_HiddenField", "");
@@ -89,7 +86,6 @@ public class HuNanCompanyQualificationListTask {
                     if(tab != 10) {
                         conn.data("ctl00$ContentPlaceHolder1$ddlsz", "0");
                     }
-
                     doc = conn.post();
                 }
                 System.out.println("########抓取" + tabs[tab] + "栏目第" + pageTemp + "页########");
@@ -100,11 +96,12 @@ public class HuNanCompanyQualificationListTask {
                 Elements trs = doc.select("#ctl00_ContentPlaceHolder1_div_list").select("#table").select("tr");
                 //安全生产许可
                 if (tab == 9) {
-//                    insertCompanySafetyCert(trs);
+                    insertCompanySafetyCert(trs);
                 } else if (tab == 10) {
+                    //外省入湘
                     insertCompanyInto(trs);
                 } else {
-//                    insertCompanyQualification(trs, tabs[tab]);
+                    insertCompanyQualification(trs, tabs[tab]);
                 }
                 //随机暂停几秒
                 Thread.sleep(1000 * (random.nextInt(max) % (max - min + 1)));

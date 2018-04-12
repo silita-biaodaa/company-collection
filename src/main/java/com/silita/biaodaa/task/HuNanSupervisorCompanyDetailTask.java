@@ -175,27 +175,33 @@ public class HuNanSupervisorCompanyDetailTask {
                 if (peopleListConn.response().statusCode() == 200) {
                     Elements peopleList = peopleListDoc.select("table").select("tr");
                     if (peopleList.size() > 2) {
+                        String validDate;
+                        String PersonQualificationUrl;
                         Document peopleDetailDoc;
                         Connection peopleDetailConn;
                         //遍历人员列表url 进入详情页面
                         for (int i = 2; i < peopleList.size(); i++) {
-                            String PersonQualificationUrl = peopleList.get(i).select("a").first().absUrl("href");
-                            peopleDetailConn = Jsoup.connect(PersonQualificationUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
-                            peopleDetailDoc = peopleDetailConn.get();
-                            if (peopleDetailConn.response().statusCode() == 200) {
-                                logger.error(PersonQualificationUrl);
-                                Elements peopleInfoTable = peopleDetailDoc.select("#table1");
-                                Elements peopleRegisteredTable = peopleDetailDoc.select("#tablelist").select("#table2").select("#ctl00_ContentPlaceHolder1_td_zzdetail").select("tr");
-                                Elements peopleOtherQualificationsTable = peopleDetailDoc.select("#tablelist").select("#table3").select("#ctl00_ContentPlaceHolder1_td_rylist").select("tr");
-                                //添加人员基本信息后 返回主键
-                                Integer pkid = addPeopleInfo(peopleInfoTable);
-                                //注册执业信息
-                                addPeopleRegistered(peopleRegisteredTable, PersonQualificationUrl, companyId, pkid);
-                                //其他资格信息
-                                addProjectOtherCert(peopleOtherQualificationsTable, PersonQualificationUrl, companyId, pkid);
-
+                            validDate = peopleList.get(i).select("td").last().text();
+                            PersonQualificationUrl = peopleList.get(i).select("a").first().absUrl("href");
+                            if(companyService.checkPersonQualificationExist(PersonQualificationUrl)) {
+                                System.out.println("已抓取这个人员的证书" + PersonQualificationUrl);
                             } else {
-                                System.out.println("获取人员详情失败" + PersonQualificationUrl);
+                                peopleDetailConn = Jsoup.connect(PersonQualificationUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
+                                peopleDetailDoc = peopleDetailConn.get();
+                                if (peopleDetailConn.response().statusCode() == 200) {
+                                    logger.error(PersonQualificationUrl);
+                                    Elements peopleInfoTable = peopleDetailDoc.select("#table1");
+                                    Elements peopleRegisteredTable = peopleDetailDoc.select("#tablelist").select("#table2").select("#ctl00_ContentPlaceHolder1_td_zzdetail").select("tr");
+                                    Elements peopleOtherQualificationsTable = peopleDetailDoc.select("#tablelist").select("#table3").select("#ctl00_ContentPlaceHolder1_td_rylist").select("tr");
+                                    //添加人员基本信息后 返回主键
+                                    Integer pkid = addPeopleInfo(peopleInfoTable);
+                                    //注册执业信息
+                                    addPeopleRegistered(peopleRegisteredTable, PersonQualificationUrl, companyId, pkid, validDate);
+                                    //其他资格信息
+                                    addProjectOtherCert(peopleOtherQualificationsTable, PersonQualificationUrl, companyId, pkid);
+                                } else {
+                                    System.out.println("获取人员详情失败" + PersonQualificationUrl);
+                                }
                             }
                         }
                     } else {
@@ -235,7 +241,7 @@ public class HuNanSupervisorCompanyDetailTask {
          * @param companyId              公司id
          * @param peopleId               人员id
          */
-        void addPeopleRegistered(Elements eles, String PersonQualificationUrl, Integer companyId, Integer peopleId) {
+        void addPeopleRegistered(Elements eles, String PersonQualificationUrl, Integer companyId, Integer peopleId, String validDate) {
             TbPersonQualification tbPersonQualification = null;
             if (eles.size() > 1) {
                 for (int i = 1; i < eles.size(); i++) {
@@ -245,6 +251,7 @@ public class HuNanSupervisorCompanyDetailTask {
                     tbPersonQualification.setCertNo(eles.get(i).select("td").get(2).text());
                     tbPersonQualification.setMajor(eles.get(i).select("td").get(3).text());
                     tbPersonQualification.setCertDate(eles.get(i).select("td").get(4).text());
+                    tbPersonQualification.setValidDate(validDate);
                     tbPersonQualification.setUrl(PersonQualificationUrl);
                     tbPersonQualification.setInnerid(PersonQualificationUrl.substring(PersonQualificationUrl.indexOf("=") + 1));
                     tbPersonQualification.setPerId(peopleId);
@@ -314,31 +321,39 @@ public class HuNanSupervisorCompanyDetailTask {
             if (projectListConn.response().statusCode() == 200) {
                 Elements projectList = projectListDoc.select("table").select("tr");
                 if (projectList.size() > 1) {
+                    String proType;
+                    String projectBuildUrl;
                     Document projectBuildDetailDoc;
                     Connection projectBuildDetailConn;
                     //遍历公司项目列表url 进入详情页面
                     for (int i = 1; i < projectList.size(); i++) {
-                        String projectBuildUrl = projectList.get(i).select("a").first().absUrl("href");
-                        projectBuildDetailConn = Jsoup.connect(projectBuildUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
-                        projectBuildDetailDoc = projectBuildDetailConn.get();
-                        if (projectBuildDetailConn.response().statusCode() == 200) {
-                            if (StringUtils.isNotNull(projectBuildDetailDoc.select("#table1").text())) {
-                                logger.error(projectBuildUrl);
-                                Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
-                                Elements projectBuilderPeopleTable = projectBuildDetailDoc.select("#ctl00_ContentPlaceHolder1_td_rylist").select("table").select("tr");
-                                String projectInfoDetaiUrl = projectBuildDetailTable.select("a").first().absUrl("href");
-                                //添加项目基本信息
-                                Integer projectId = addProjectInfo(projectInfoDetaiUrl);
-                                String bdxh = projectInfoDetaiUrl.substring(projectInfoDetaiUrl.indexOf("=") + 1);
-                                //监理合同段信息
-                                int projectSupervisorId = addProjectSupervisor(projectBuildDetailTable, companyId, projectId, bdxh);
-                                //添加项目部人员（监理）
-                                addProjectPeople(projectBuilderPeopleTable, projectSupervisorId, projectBuildUrl);
-                            } else {
-                                System.out.println("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
-                            }
+                        proType = projectList.get(i).select("td").first().text();
+                        projectBuildUrl = projectList.get(i).select("a").first().absUrl("href");
+                        //监理合同段信息内部id
+                        String jlbdxh = projectBuildUrl.substring(projectBuildUrl.indexOf("=") + 1);
+                        if(companyService.checkProjectSupervisionExist(jlbdxh)) {
+                            System.out.println("该证书下的监理项目已存在" + projectBuildUrl);
                         } else {
-                            System.out.println("获取人员详情失败" + projectBuildUrl);
+                            projectBuildDetailConn = Jsoup.connect(projectBuildUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
+                            projectBuildDetailDoc = projectBuildDetailConn.get();
+                            if (projectBuildDetailConn.response().statusCode() == 200) {
+                                if (StringUtils.isNotNull(projectBuildDetailDoc.select("#table1").text())) {
+                                    logger.error(projectBuildUrl);
+                                    Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
+                                    Elements projectBuilderPeopleTable = projectBuildDetailDoc.select("#ctl00_ContentPlaceHolder1_td_rylist").select("table").select("tr");
+                                    String projectInfoDetaiUrl = projectBuildDetailTable.select("a").first().absUrl("href");
+                                    //添加项目基本信息
+                                    Integer projectId = addProjectInfo(projectInfoDetaiUrl);
+                                    //监理合同段信息
+                                    int projectSupervisorId = addProjectSupervisor(projectBuildDetailTable, companyId, projectId, jlbdxh, proType);
+                                    //添加项目部人员（监理）
+                                    addProjectPeople(projectBuilderPeopleTable, projectSupervisorId, projectBuildUrl);
+                                } else {
+                                    System.out.println("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
+                                }
+                            } else {
+                                System.out.println("获取人员详情失败" + projectBuildUrl);
+                            }
                         }
                     }
                 } else {
@@ -402,7 +417,7 @@ public class HuNanSupervisorCompanyDetailTask {
      * @param projectId 项目id
      * @param jlbdxh    内部id
      */
-    int addProjectSupervisor(Elements eles, Integer companyId, Integer projectId, String jlbdxh) {
+    int addProjectSupervisor(Elements eles, Integer companyId, Integer projectId, String jlbdxh, String proType) {
         TbProjectSupervision tbProjectSupervision = new TbProjectSupervision();
         tbProjectSupervision.setProName(eles.select("#ctl00_ContentPlaceHolder1_hl_gcmc").text());
         tbProjectSupervision.setBScope(eles.select("#ctl00_ContentPlaceHolder1_lbl_bdgm").text());
@@ -416,6 +431,7 @@ public class HuNanSupervisorCompanyDetailTask {
                 tbProjectSupervision.setContractPrice(conteactRemarkStr.substring(conteactRemarkStr.indexOf("合同价格") + 5, conteactRemarkStr.indexOf("万元")));
             }
         }
+        tbProjectSupervision.setProType(proType);
         tbProjectSupervision.setJlbdxh(jlbdxh);
         tbProjectSupervision.setComId(companyId);
         tbProjectSupervision.setProId(projectId);

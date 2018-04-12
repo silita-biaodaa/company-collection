@@ -3,6 +3,7 @@ package com.silita.biaodaa.task;
 import com.silita.biaodaa.model.*;
 import com.silita.biaodaa.service.ICompanyService;
 import com.silita.biaodaa.utils.StringUtils;
+import org.apache.commons.collections.map.HashedMap;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -86,14 +87,14 @@ public class HuNanDesignCompanyDetailTask {
                         String corpid = CompanyQualificationUrl.substring(CompanyQualificationUrl.indexOf("=") + 1);
                         Elements companyInfoTable = companyDetailDoc.select("#table1");
                         Elements CompanyAptitudeTable = companyDetailDoc.select("#tablelist").select("#table2").select("#ctl00_ContentPlaceHolder1_td_zzdetail").select("table");
-                       /* //添加企业基本信息后 返回主键
+                        //添加企业基本信息后 返回主键
                         Integer comId = addCompanyInfo(companyInfoTable);
                         //更新企业资质证书
                         addCompanyAptitude(CompanyAptitudeTable, corpid, comId);
                         //##########抓取人员start##########
                         getPepleList(cookies, comId);
                         //##########抓取项目start##########
-                        getProjectList(cookies, comId);*/
+                        getProjectList(cookies, comId);
                     } else {
                         System.out.println("获取企业详情信息失败！" + CompanyQualificationUrl);
                     }
@@ -174,27 +175,33 @@ public class HuNanDesignCompanyDetailTask {
                 if (peopleListConn.response().statusCode() == 200) {
                     Elements peopleList = peopleListDoc.select("table").select("tr");
                     if (peopleList.size() > 2) {
+                        String validDate;
+                        String PersonQualificationUrl;
                         Document peopleDetailDoc;
                         Connection peopleDetailConn;
                         //遍历人员列表url 进入详情页面
                         for (int i = 2; i < peopleList.size(); i++) {
-                            String PersonQualificationUrl = peopleList.get(i).select("a").first().absUrl("href");
-                            peopleDetailConn = Jsoup.connect(PersonQualificationUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
-                            peopleDetailDoc = peopleDetailConn.get();
-                            if (peopleDetailConn.response().statusCode() == 200) {
-                                logger.error(PersonQualificationUrl);
-                                Elements peopleInfoTable = peopleDetailDoc.select("#table1");
-                                Elements peopleRegisteredTable = peopleDetailDoc.select("#tablelist").select("#table2").select("#ctl00_ContentPlaceHolder1_td_zzdetail").select("tr");
-                                Elements peopleOtherQualificationsTable = peopleDetailDoc.select("#tablelist").select("#table3").select("#ctl00_ContentPlaceHolder1_td_rylist").select("tr");
-                                //添加人员基本信息后 返回主键
-                                Integer pkid = addPeopleInfo(peopleInfoTable);
-                                //注册执业信息
-                                addPeopleRegistered(peopleRegisteredTable, PersonQualificationUrl, companyId, pkid);
-                                //其他资格信息
-                                addProjectOtherCert(peopleOtherQualificationsTable, PersonQualificationUrl, companyId, pkid);
-
+                            validDate = peopleList.get(i).select("td").last().text();
+                            PersonQualificationUrl = peopleList.get(i).select("a").first().absUrl("href");
+                            if(companyService.checkPersonQualificationExist(PersonQualificationUrl)) {
+                                System.out.println("已抓取这个人员的证书" + PersonQualificationUrl);
                             } else {
-                                System.out.println("获取人员详情失败" + PersonQualificationUrl);
+                                peopleDetailConn = Jsoup.connect(PersonQualificationUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
+                                peopleDetailDoc = peopleDetailConn.get();
+                                if (peopleDetailConn.response().statusCode() == 200) {
+                                    logger.error(PersonQualificationUrl);
+                                    Elements peopleInfoTable = peopleDetailDoc.select("#table1");
+                                    Elements peopleRegisteredTable = peopleDetailDoc.select("#tablelist").select("#table2").select("#ctl00_ContentPlaceHolder1_td_zzdetail").select("tr");
+                                    Elements peopleOtherQualificationsTable = peopleDetailDoc.select("#tablelist").select("#table3").select("#ctl00_ContentPlaceHolder1_td_rylist").select("tr");
+                                    //添加人员基本信息后 返回主键
+                                    Integer pkid = addPeopleInfo(peopleInfoTable);
+                                    //注册执业信息
+                                    addPeopleRegistered(peopleRegisteredTable, PersonQualificationUrl, companyId, pkid, validDate);
+                                    //其他资格信息
+                                    addProjectOtherCert(peopleOtherQualificationsTable, PersonQualificationUrl, companyId, pkid);
+                                } else {
+                                    System.out.println("获取人员详情失败" + PersonQualificationUrl);
+                                }
                             }
                         }
                     } else {
@@ -234,7 +241,7 @@ public class HuNanDesignCompanyDetailTask {
          * @param companyId              公司id
          * @param peopleId               人员id
          */
-        void addPeopleRegistered(Elements eles, String PersonQualificationUrl, Integer companyId, Integer peopleId) {
+        void addPeopleRegistered(Elements eles, String PersonQualificationUrl, Integer companyId, Integer peopleId, String validDate) {
             TbPersonQualification tbPersonQualification = null;
             if (eles.size() > 1) {
                 for (int i = 1; i < eles.size(); i++) {
@@ -244,6 +251,7 @@ public class HuNanDesignCompanyDetailTask {
                     tbPersonQualification.setCertNo(eles.get(i).select("td").get(2).text());
                     tbPersonQualification.setMajor(eles.get(i).select("td").get(3).text());
                     tbPersonQualification.setCertDate(eles.get(i).select("td").get(4).text());
+                    tbPersonQualification.setValidDate(validDate);
                     tbPersonQualification.setUrl(PersonQualificationUrl);
                     tbPersonQualification.setInnerid(PersonQualificationUrl.substring(PersonQualificationUrl.indexOf("=") + 1));
                     tbPersonQualification.setPerId(peopleId);
@@ -313,31 +321,43 @@ public class HuNanDesignCompanyDetailTask {
             if (projectListConn.response().statusCode() == 200) {
                 Elements projectList = projectListDoc.select("table").select("tr");
                 if (projectList.size() > 1) {
+                    String proType;
+                    String projectBuildUrl;
+                    Map<String, Object> param;
                     Document projectBuildDetailDoc;
                     Connection projectBuildDetailConn;
                     //遍历公司项目列表url 进入详情页面
                     for (int i = 1; i < projectList.size(); i++) {
-                        String projectBuildUrl = projectList.get(i).select("a").first().absUrl("href");
-                        projectBuildDetailConn = Jsoup.connect(projectBuildUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
-                        projectBuildDetailDoc = projectBuildDetailConn.get();
-                        if (projectBuildDetailConn.response().statusCode() == 200) {
-                            logger.error(projectBuildUrl);
-                            if(StringUtils.isNotNull(projectBuildDetailDoc.select("#table1").text())) {
-                                Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
-                                Elements projectDesignPeopleTable = projectBuildDetailDoc.select("#ctl00_ContentPlaceHolder1_td_rylist").select("tr");
-                                String projectInfoDetaiUrl = projectBuildDetailTable.select("a").first().absUrl("href");
-                                //添加项目基本信息
-                                Integer projectId = addProjectInfo(projectInfoDetaiUrl);
-                                String bdxh = projectInfoDetaiUrl.substring(projectInfoDetaiUrl.indexOf("=") + 1);
-                                //添加施工图审查信息（设计）
-                                int projectDesignId = addProjectDesign(projectBuildDetailTable, companyId, projectId, bdxh);
-                                //添加设计人员名单
-                                addDesignPeople(projectDesignPeopleTable, projectDesignId, projectBuildUrl);
-                            } else {
-                                System.out.println("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
-                            }
+                        proType = projectList.get(i).select("td").first().text();
+                        projectBuildUrl = projectList.get(i).select("a").first().absUrl("href");
+                        //施工图审查信息内部id（设计）
+                        String sgtxh = projectBuildUrl.substring(projectBuildUrl.indexOf("=") + 1);
+                        param = new HashedMap();
+                        param.put("sgtxh", sgtxh);
+                        param.put("pro_type", proType);
+                        if(companyService.checkProjectDesignExist(param)) {
+                            System.out.println("该证书下的设计项目已存在" + projectBuildUrl);
                         } else {
-                            System.out.println("获取人员详情失败" + projectBuildUrl);
+                            projectBuildDetailConn = Jsoup.connect(projectBuildUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
+                            projectBuildDetailDoc = projectBuildDetailConn.get();
+                            if (projectBuildDetailConn.response().statusCode() == 200) {
+                                logger.error(projectBuildUrl);
+                                if(StringUtils.isNotNull(projectBuildDetailDoc.select("#table1").text())) {
+                                    Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
+                                    Elements projectDesignPeopleTable = projectBuildDetailDoc.select("#ctl00_ContentPlaceHolder1_td_rylist").select("tr");
+                                    String projectInfoDetaiUrl = projectBuildDetailTable.select("a").first().absUrl("href");
+                                    //添加项目基本信息
+                                    Integer projectId = addProjectInfo(projectInfoDetaiUrl);
+                                    //添加施工图审查信息（设计）
+                                    int projectDesignId = addProjectDesign(projectBuildDetailTable, companyId, projectId, sgtxh, proType);
+                                    //添加设计人员名单
+                                    addDesignPeople(projectDesignPeopleTable, projectDesignId, projectBuildUrl);
+                                } else {
+                                    System.out.println("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
+                                }
+                            } else {
+                                System.out.println("获取人员详情失败" + projectBuildUrl);
+                            }
                         }
                     }
                 } else {
@@ -400,7 +420,7 @@ public class HuNanDesignCompanyDetailTask {
      * @param projectId
      * @param sgtxh
      */
-    int addProjectDesign(Elements eles, Integer companyId, Integer projectId, String sgtxh) {
+    int addProjectDesign(Elements eles, Integer companyId, Integer projectId, String sgtxh, String proType) {
         TbProjectDesign tbProjectDesign = new TbProjectDesign();
         tbProjectDesign.setProName(eles.select("#ctl00_ContentPlaceHolder1_hl_gcmc").text());
         tbProjectDesign.setProScope(eles.select("#ctl00_ContentPlaceHolder1_lbl_gm").text());
@@ -411,6 +431,7 @@ public class HuNanDesignCompanyDetailTask {
         tbProjectDesign.setCheckFinishDate(eles.select("#ctl00_ContentPlaceHolder1_lbl_scrq").text());
         tbProjectDesign.setCheckPerson(eles.select("#ctl00_ContentPlaceHolder1_lbl_scryxm").text());
         tbProjectDesign.setType("design");
+        tbProjectDesign.setProType(proType);
         tbProjectDesign.setSgtxh(sgtxh);
         tbProjectDesign.setComId(companyId);
         tbProjectDesign.setProId(projectId);

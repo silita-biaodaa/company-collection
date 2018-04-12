@@ -112,7 +112,8 @@ public class CompanyServiceImpl implements ICompanyService {
 
     @Override
     public int insertProjectBuild(TbProjectBuild tbProjectBuild) {
-        if ("无施工许可证信息".equals(tbProjectBuild.getBLicence())) {
+        //有的施工许可证信息为空白
+        if ("无施工许可证信息".equals(tbProjectBuild.getBLicence()) || "".equals(tbProjectBuild.getBLicence())) {
             //无施工许可证编号用标段名称、施工单位判断
 //            boolean flag = tbProjectBuildMapper.getTotalByBNameAndBOrg(tbProjectBuild) > 0;
             boolean flag = tbProjectBuildMapper.getTotalByBdxh(tbProjectBuild.getBdxh()) > 0;
@@ -135,7 +136,7 @@ public class CompanyServiceImpl implements ICompanyService {
     }
 
     public void insertPersonProject(TbPersonProject tbPersonProject) {
-        boolean flag = tbPersonProjectMapper.getPersionProjectTotalByNameAndCertNoAndSafeNo(tbPersonProject) > 0;
+        boolean flag = tbPersonProjectMapper.getPersionProjectTotalByNameAndCertNoAndCategory(tbPersonProject) > 0;
         if(!flag) {
             tbPersonProjectMapper.insertPersionProject(tbPersonProject);
         }
@@ -154,7 +155,7 @@ public class CompanyServiceImpl implements ICompanyService {
 
     @Override
     public void insertPersonDesign(TbPersonDesign tbPersonDesign) {
-        boolean flag = tbPersonDesignMapper.getTotalByNameAndCompanyNameAndRole(tbPersonDesign) > 0;
+        boolean flag = tbPersonDesignMapper.getTotalByNameAndCategoryAndRole(tbPersonDesign) > 0;
         if(!flag) {
             tbPersonDesignMapper.insertPersionDesign(tbPersonDesign);
         }
@@ -181,6 +182,27 @@ public class CompanyServiceImpl implements ICompanyService {
             return tbProjectSupervisionMapper.getPkidByJlbdxh(tbProjectSupervision.getJlbdxh());
         }
     }
+
+    public boolean checkPersonQualificationExist(String url) {
+        return tbPersonQualificationMapper.getTolalByPersonQualificationUrl(url) > 0;
+    }
+
+    public boolean checkProjectBuildExist(String bdxh) {
+        return tbProjectBuildMapper.getTotalByBdxh(bdxh) > 0;
+    }
+
+    @Override
+    public boolean checkProjectDesignExist(Map<String, Object> params) {
+        return tbProjectDesignMapper.getTotalBySgtxhAndProType(params) > 0;
+    }
+
+    @Override
+    public boolean checkProjectSupervisionExist(String jlbdxh) {
+        return tbProjectSupervisionMapper.getTotalByJlbdxh(jlbdxh) > 0;
+    }
+
+
+    //####################以下为拆分资质相关业务########################
 
     @Override
     public int getCompanyQualificationTotalByTabName(String tableName) {

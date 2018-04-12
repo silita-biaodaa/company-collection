@@ -11,8 +11,8 @@
         #{safeNo}, #{status}, #{type}, NOW())
     </insert>
 
-    <select id="getPersionProjectTotalByNameAndCertNoAndSafeNo" parameterType="com.silita.biaodaa.model.TbPersonProject" resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_person_project WHERE `name` = #{name} AND `cert_no` = #{certNo} AND `safe_no` = #{safeNo}
+    <select id="getPersionProjectTotalByNameAndCertNoAndCategory" parameterType="com.silita.biaodaa.model.TbPersonProject" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_person_project WHERE `name` = #{name} AND `category` = #{category} AND `cert_no` = #{certNo}
     </select>
 
 </mapper>

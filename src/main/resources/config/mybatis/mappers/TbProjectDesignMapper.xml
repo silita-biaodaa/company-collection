@@ -32,4 +32,8 @@
         SELECT pkid FROM hunanyitihua.tb_project_design WHERE check_no = #{checkNo} AND explore_org = #{exploreOrg}
     </select>
 
+    <select id="getTotalBySgtxhAndProType" parameterType="Map" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_project_design WHERE sgtxh = #{sgtxh} AND `pro_type` = #{proType}
+    </select>
+
 </mapper>

@@ -27,7 +27,7 @@
     </select>
 
     <select id="getAllCompanyQualificationUrlByTabName" parameterType="String" resultType="String">
-        SELECT url FROM hunanyitihua.tb_company_qualification WHERE tab = #{tableName}
+        SELECT url FROM hunanyitihua.tb_company_qualification WHERE tab = #{tableName} AND created IS NULL
     </select>
 
     <update id="updateCompanyQualificationUrlByCorpid" parameterType="com.silita.biaodaa.model.TbCompanyQualification">

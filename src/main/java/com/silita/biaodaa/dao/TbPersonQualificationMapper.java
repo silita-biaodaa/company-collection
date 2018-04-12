@@ -18,5 +18,13 @@ public interface TbPersonQualificationMapper extends MyMapper<TbPersonQualificat
      */
     Integer getTotalByCertNo(String certNo);
 
+    /**
+     * 根据人员证书url判断是否已经抓取
+     * 一个公司有多个资质证书、多个证书对应一个公司的人员证书
+     * @param url
+     * @return
+     */
+    Integer getTolalByPersonQualificationUrl(String url);
+
 
 }

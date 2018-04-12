@@ -3,6 +3,8 @@ package com.silita.biaodaa.dao;
 import com.silita.biaodaa.model.TbProjectDesign;
 import com.silita.biaodaa.utils.MyMapper;
 
+import java.util.Map;
+
 public interface TbProjectDesignMapper extends MyMapper<TbProjectDesign> {
 
     /**
@@ -38,6 +40,13 @@ public interface TbProjectDesignMapper extends MyMapper<TbProjectDesign> {
      * @return
      */
     Integer getPkidByCheckNoAndExploreOrg(TbProjectDesign tbProjectDesign);
+
+    /**
+     *
+     * @param params
+     * @return
+     */
+    Integer getTotalBySgtxhAndProType(Map<String, Object> params);
 
 
 }

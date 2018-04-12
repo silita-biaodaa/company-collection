@@ -16,4 +16,8 @@
     <select id="getTotalByCertNo" parameterType="String" resultType="Integer">
       SELECT COUNT(*) FROM hunanyitihua.tb_person_qualification WHERE cert_no = #{certNo}
     </select>
+
+    <select id="getTolalByPersonQualificationUrl" parameterType="String" resultType="Integer">
+      SELECT COUNT(*) FROM hunanyitihua.tb_person_qualification WHERE url = #{url}
+    </select>
 </mapper>

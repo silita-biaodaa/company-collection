@@ -23,9 +23,17 @@ public class SafetyCertificateServiceImpl implements ISafetyCertificateService {
     }
 
     public void insertSafetyCertificate(TbSafetyCertificate safetyCertificates) {
-        boolean flag = tbSafetyCertificateMapper.getTotalByCertNo(safetyCertificates.getCertNo()) > 0;
+        boolean flag = tbSafetyCertificateMapper.getTotalByCertNoAndCompanyName(safetyCertificates) > 0;
         if(!flag) {
-            tbSafetyCertificateMapper.InsertSafetyCertificate(safetyCertificates);
+            tbSafetyCertificateMapper.insertSafetyCertificate(safetyCertificates);
+        } else {
+            TbSafetyCertificate old = tbSafetyCertificateMapper.getSafetyCertificateByCertNoAndCompanyName(safetyCertificates);
+            Integer oldDate = Integer.parseInt(old.getValidDate().replaceAll("-", ""));
+            Integer newDate = Integer.parseInt(safetyCertificates.getValidDate().replaceAll("-", ""));
+            //替换有效期小的
+            if(newDate > oldDate) {
+                tbSafetyCertificateMapper.updateSafetyCertificate(safetyCertificates);
+            }
         }
     }
 }

@@ -16,8 +16,6 @@ public interface TbPersonDesignMapper extends MyMapper<TbPersonDesign> {
      * @param tbPersonDesign
      * @return
      */
-    Integer getTotalByNameAndCompanyNameAndRole(TbPersonDesign tbPersonDesign);
-
-
+    Integer getTotalByNameAndCategoryAndRole(TbPersonDesign tbPersonDesign);
 
 }

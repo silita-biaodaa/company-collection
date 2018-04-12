@@ -17,13 +17,25 @@ public interface TbSafetyCertificateMapper extends MyMapper<TbSafetyCertificate>
      *
      * @param tbSafetyCertificate
      */
-    void InsertSafetyCertificate(TbSafetyCertificate tbSafetyCertificate);
+    void insertSafetyCertificate(TbSafetyCertificate tbSafetyCertificate);
 
     /**
      *
-     * @param certNo
+     * @param tbSafetyCertificate
      * @return
      */
-    Integer getTotalByCertNo(String certNo);
+    Integer getTotalByCertNoAndCompanyName(TbSafetyCertificate tbSafetyCertificate);
 
+    /**
+     *
+     * @param tbSafetyCertificate
+     */
+    void updateSafetyCertificate(TbSafetyCertificate tbSafetyCertificate);
+
+    /**
+     *
+     * @param tbSafetyCertificate
+     * @return
+     */
+    TbSafetyCertificate getSafetyCertificateByCertNoAndCompanyName(TbSafetyCertificate tbSafetyCertificate);
 }

@@ -51,4 +51,12 @@ public interface TbProjectBuildMapper extends MyMapper<TbProjectBuild> {
      */
     Integer getPkidByBdxh(String bdxh);
 
+    /**
+     * 施工类企业证书有多个施工项目
+     * 根据施工项目内部id判断该施工项目是否已抓取
+     * @param bdxh
+     * @return
+     */
+    Integer getTotalByBdxhTwo(String bdxh);
+
 }

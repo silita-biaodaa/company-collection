@@ -113,6 +113,36 @@ public interface ICompanyService {
      */
     int insertProjectSupervisor(TbProjectSupervision tbProjectSupervision);
 
+    /**
+     * 根据人员证书url判断是否已经抓取
+     * 一个公司有多个资质证书、多个证书对应一个公司的人员证书
+     * @param url 人员证书URL
+     * @return true存在
+     */
+    boolean checkPersonQualificationExist(String url);
+
+    /**
+     * 根据施工项目内部id判断该施工项目是否已抓取
+     * 一个施工类企业有多个施工类证书、多个施工类证书对应一个公司的多个施工项目
+     * @param bdxh
+     * @return
+     */
+    boolean checkProjectBuildExist(String bdxh);
+
+    /**
+     * 设计、勘察
+     * @param
+     * @return
+     */
+    boolean checkProjectDesignExist(Map<String, Object> params);
+
+    /**
+     * 监理
+     * @param jlbdxh
+     * @return
+     */
+    boolean checkProjectSupervisionExist(String jlbdxh);
+
 
     //####################以下为拆分资质相关业务########################
 
