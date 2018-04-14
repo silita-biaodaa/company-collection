@@ -31,7 +31,7 @@ public class HuNanBuilderCompanyDetailTask {
     private Random random = new Random();
     String dateRegex = "(\\d{4}-\\d{1,2}-\\d{1,2})";
 
-    private static final int THREAD_NUMBER = 1;
+    private static final int THREAD_NUMBER = 4;
 
     @Autowired
     private ICompanyService companyService;
@@ -98,13 +98,13 @@ public class HuNanBuilderCompanyDetailTask {
                         //##########抓取项目start##########
                         getProjectList(cookies, comId);
                     } else {
-                        System.out.println("获取企业详情信息失败！" + CompanyQualificationUrl);
+                        logger.error("获取企业详情信息失败！" + CompanyQualificationUrl);
                     }
                     //随机暂停几秒
 //                    Thread.sleep(1000 * (random.nextInt(max) % (max - min + 1)));
                 }
                 //##########拆分资质##############
-                splitCompanyQualifications();
+//                splitCompanyQualifications();
                 //##########添加企业资质##########
 //                updateCompanyAptitudeRange();
             } catch (Exception e) {
@@ -191,7 +191,8 @@ public class HuNanBuilderCompanyDetailTask {
                                 peopleDetailConn = Jsoup.connect(PersonQualificationUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                                 peopleDetailDoc = peopleDetailConn.get();
                                 if (peopleDetailConn.response().statusCode() == 200) {
-                                    logger.error(PersonQualificationUrl);
+                                    System.out.println(PersonQualificationUrl);
+//                                    logger.error(PersonQualificationUrl);
                                     Elements peopleInfoTable = peopleDetailDoc.select("#table1");
                                     Elements peopleRegisteredTable = peopleDetailDoc.select("#tablelist").select("#table2").select("#ctl00_ContentPlaceHolder1_td_zzdetail").select("tr");
                                     Elements peopleOtherQualificationsTable = peopleDetailDoc.select("#tablelist").select("#table3").select("#ctl00_ContentPlaceHolder1_td_rylist").select("tr");
@@ -202,7 +203,7 @@ public class HuNanBuilderCompanyDetailTask {
                                     //其他资格信息
                                     addProjectOtherCert(peopleOtherQualificationsTable, PersonQualificationUrl, companyId, pkid);
                                 } else {
-                                    System.out.println("获取人员详情失败" + PersonQualificationUrl);
+                                    logger.error("获取人员详情失败" + PersonQualificationUrl);
                                 }
                             }
                         }
@@ -210,7 +211,7 @@ public class HuNanBuilderCompanyDetailTask {
                         System.out.println("该企业注册人员数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
                     }
                 } else {
-                    System.out.println("获取人员证书列表页失败" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                    logger.error("获取人员证书列表页失败" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -340,7 +341,8 @@ public class HuNanBuilderCompanyDetailTask {
                             projectBuildDetailDoc = projectBuildDetailConn.get();
                             if (projectBuildDetailConn.response().statusCode() == 200) {
                                 if (StringUtils.isNotNull(projectBuildDetailDoc.select("#table1").text())) {
-                                    logger.error(projectBuildUrl);
+                                    System.out.println(projectBuildUrl);
+//                                    logger.error(projectBuildUrl);
                                     Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
                                     Elements projectBuilderPeopleTable = projectBuildDetailDoc.select("#ctl00_ContentPlaceHolder1_td_rylist").select("table").select("tr");
                                     String projectInfoDetaiUrl = projectBuildDetailTable.select("a").first().absUrl("href");
@@ -354,7 +356,7 @@ public class HuNanBuilderCompanyDetailTask {
                                     System.out.println("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
                                 }
                             } else {
-                                System.out.println("获取项目详情失败" + projectBuildUrl);
+                                logger.error("获取项目详情失败" + projectBuildUrl);
                             }
                         }
                     }
@@ -362,7 +364,7 @@ public class HuNanBuilderCompanyDetailTask {
                     System.out.println("该企业项目数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
                 }
             } else {
-                System.out.println("获取企业项目列表页失败" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                logger.error("获取企业项目列表页失败" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -401,7 +403,7 @@ public class HuNanBuilderCompanyDetailTask {
                 tbProject.setXmid(projectInfoUrl.substring(projectInfoUrl.indexOf("=") + 1));
                 return companyService.insertProjectInfo(tbProject);
             } else {
-                System.out.println("获取项目基本信息失败" + projectInfoUrl);
+                logger.error("获取项目基本信息失败" + projectInfoUrl);
                 return -1;
             }
         } catch (Exception e) {

@@ -1,12 +1,15 @@
 package com.silita.biaodaa.task;
 
+import com.silita.biaodaa.model.AllZh;
 import com.silita.biaodaa.model.TbCompany;
 import com.silita.biaodaa.model.TbCompanyAptitude;
+import com.silita.biaodaa.model.TbCompanyQualification;
 import com.silita.biaodaa.service.ICompanyRangeService;
 import com.silita.biaodaa.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +22,89 @@ public class CompanyQualificationsRangeTask {
 
     @Autowired
     ICompanyRangeService companyRangeService;
+
+
+    void splitCompanyQualifications() {
+        int page = 0;
+        int batchCount = 1000;
+        Integer count = companyRangeService.getCompanyQualificationTotalByTabName("建筑业企业");
+        if (count % batchCount == 0) {
+            page = count / batchCount;
+        } else {
+            page = count / batchCount + 1;
+        }
+        Map<String, Object> params;
+        List<TbCompanyQualification> companyQualificationList;
+        //分页 一次1000
+        for (int pageNum = 0; pageNum < page; pageNum++) {
+            params = new HashMap<>();
+            params.put("tableName", "建筑业企业");
+            params.put("start", batchCount * pageNum);
+            params.put("pageSize", 1000);
+            companyQualificationList = companyRangeService.getCompanyQualifications(params);
+            //遍历证书
+            for (int i = 0; i < companyQualificationList.size(); i++) {
+                int qualId = companyQualificationList.get(i).getPkid();
+                String qualRange = companyQualificationList.get(i).getRange();
+                int comId = companyQualificationList.get(i).getComId();
+                //有资质
+                if (StringUtils.isNotNull(qualRange)) {
+                    AllZh allZh;
+                    TbCompanyAptitude companyAptitude;
+                    List<TbCompanyAptitude> companyQualifications = new ArrayList<>();
+                    if (qualRange.contains("；")) {
+                        //拆分资质
+                        String[] qual = qualRange.split("；");
+                        for (int j = 0; j < qual.length; j++) {
+                            allZh = companyRangeService.getAllZhByName(qual[j]);
+                            if (allZh != null) {
+                                companyAptitude = new TbCompanyAptitude();
+                                companyAptitude.setQualId(qualId);
+                                companyAptitude.setComId(comId);
+                                companyAptitude.setAptitudeName(companyRangeService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                                companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
+                                companyAptitude.setMainuuid(allZh.getMainuuid());
+                                companyAptitude.setType(allZh.getType());
+                                companyQualifications.add(companyAptitude);
+                            }
+                        }
+                    } else if (qualRange.contains(";")) {
+                        //拆分资质
+                        String[] qual = qualRange.split(";");
+                        for (int j = 0; j < qual.length; j++) {
+                            allZh = companyRangeService.getAllZhByName(qual[j]);
+                            if (allZh != null) {
+                                companyAptitude = new TbCompanyAptitude();
+                                companyAptitude.setQualId(qualId);
+                                companyAptitude.setComId(comId);
+                                companyAptitude.setAptitudeName(companyRangeService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                                companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
+                                companyAptitude.setMainuuid(allZh.getMainuuid());
+                                companyAptitude.setType(allZh.getType());
+                                companyQualifications.add(companyAptitude);
+                            }
+                        }
+                    } else {
+                        allZh = companyRangeService.getAllZhByName(qualRange);
+                        if (allZh != null) {
+                            companyAptitude = new TbCompanyAptitude();
+                            companyAptitude.setQualId(qualId);
+                            companyAptitude.setComId(comId);
+                            companyAptitude.setAptitudeName(companyRangeService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                            companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
+                            companyAptitude.setMainuuid(allZh.getMainuuid());
+                            companyAptitude.setType(allZh.getType());
+                            companyQualifications.add(companyAptitude);
+                        }
+                    }
+                    if (companyQualifications != null && companyQualifications.size() > 0) {
+                        companyRangeService.batchInsertCompanyAptitude(companyQualifications);
+                    }
+                }
+            }
+        }
+    }
+
 
     /**
      * 最后更新资质到企业基本信息表
