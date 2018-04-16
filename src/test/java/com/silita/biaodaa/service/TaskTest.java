@@ -78,6 +78,7 @@ public class TaskTest {
      */
     @Test
     public void CompanyQualificationsRangeTask() throws Exception {
+        companyQualificationsRangeTask.splitCompanyQualifications();
         companyQualificationsRangeTask.updateCompanyAptitudeRange();
     }
 

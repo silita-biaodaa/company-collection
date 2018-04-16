@@ -54,20 +54,7 @@ public class TbPerson {
     private Date updated;
 
     /**
-     * 获取人主键
-     *
-     * @return pkid - 人主键
+     * 业务
      */
-    public Integer getPkid() {
-        return pkid;
-    }
-
-    /**
-     * 设置人主键
-     *
-     * @param pkid 人主键
-     */
-    public void setPkid(Integer pkid) {
-        this.pkid = pkid;
-    }
+    public Integer companyId;
 }

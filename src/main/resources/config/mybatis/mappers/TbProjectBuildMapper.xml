@@ -36,11 +36,11 @@
 
 
     <select id="getTotalByBdxh" parameterType="String" resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_project_build WHERE b_name = #{bdxh}
+        SELECT COUNT(*) FROM hunanyitihua.tb_project_build WHERE bdxh = #{bdxh}
     </select>
 
     <select id="getPkidByBdxh" parameterType="String" resultType="Integer">
-        SELECT pkid FROM hunanyitihua.tb_project_build WHERE b_name = #{bdxh}
+        SELECT pkid FROM hunanyitihua.tb_project_build WHERE bdxh = #{bdxh}
     </select>
 
 </mapper>

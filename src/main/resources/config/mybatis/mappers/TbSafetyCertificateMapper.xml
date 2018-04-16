@@ -24,7 +24,7 @@
 
     <update id="updateSafetyCertificate" parameterType="com.silita.biaodaa.model.TbSafetyCertificate">
         UPDATE hunanyitihua.tb_safety_certificate
-        SET `cert_date` = {certDate}, `valid_date` = #{validDate}
+        SET `cert_date` = #{certDate}, `valid_date` = #{validDate}
         WHERE `cert_no` = #{certNo} AND `com_name` = #{comName}
     </update>
 

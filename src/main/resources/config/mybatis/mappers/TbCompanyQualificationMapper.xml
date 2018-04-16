@@ -27,20 +27,25 @@
     </select>
 
     <select id="getAllCompanyQualificationUrlByTabName" parameterType="String" resultType="String">
-        SELECT url FROM hunanyitihua.tb_company_qualification WHERE tab = #{tableName} AND created IS NULL
+        (SELECT url FROM hunanyitihua.tb_company_qualification
+        WHERE tab = #{tableName} AND created IS NOT NULL
+        ORDER BY created DESC  LIMIT 0,6)
+        UNION ALL
+        (SELECT url FROM hunanyitihua.tb_company_qualification
+        WHERE tab = #{tableName} AND created IS NULL)
     </select>
 
     <update id="updateCompanyQualificationUrlByCorpid" parameterType="com.silita.biaodaa.model.TbCompanyQualification">
         UPDATE hunanyitihua.tb_company_qualification
         SET qual_type = #{qualType}, cert_org = #{certOrg}, `range` = #{range}, com_id = #{comId}, created = NOW()
-        WHERE corpid = #{corpid}
+        WHERE `cert_no` = #{certNo} AND `corpid` = #{corpid}
     </update>
 
     <select id="getCompanyQualificationTotalByTabName" parameterType="String" resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_company_qualification WHERE tab = #{tableName}
+        SELECT COUNT(*) FROM hunanyitihua.tb_company_qualification  WHERE tab = #{tableName} AND `created` IS NOT NULL
     </select>
 
     <select id="listCompanyQualification" parameterType="Map" resultType="com.silita.biaodaa.model.TbCompanyQualification">
-        SELECT * FROM hunanyitihua.tb_company_qualification WHERE tab = #{tableName} LIMIT #{start}, #{pageSize}
+        SELECT * FROM hunanyitihua.tb_company_qualification WHERE tab = #{tableName} AND `created` IS NOT NULL LIMIT #{start}, #{pageSize}
     </select>
 </mapper>

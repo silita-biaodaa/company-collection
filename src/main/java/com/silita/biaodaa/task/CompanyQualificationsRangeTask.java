@@ -24,7 +24,10 @@ public class CompanyQualificationsRangeTask {
     ICompanyRangeService companyRangeService;
 
 
-    void splitCompanyQualifications() {
+    /**
+     * 拆资质
+     */
+    public void splitCompanyQualifications() {
         int page = 0;
         int batchCount = 1000;
         Integer count = companyRangeService.getCompanyQualificationTotalByTabName("建筑业企业");

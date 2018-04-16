@@ -169,7 +169,7 @@ public class HuNanSurveyCompanyDetailTask {
             String peopleListUrl = "http://qyryjg.hunanjz.com/public/EnterpriseRegPerson.ashx";
             try {
                 //进入人员证书列表
-                peopleListConn = Jsoup.connect(peopleListUrl).userAgent("Mozilla").timeout(10000 * 60).ignoreHttpErrors(true);
+                peopleListConn = Jsoup.connect(peopleListUrl).userAgent("Mozilla").timeout(6000 * 60).ignoreHttpErrors(true);
                 peopleListConn.cookies(cookies);
                 peopleListDoc = peopleListConn.get();
                 if (peopleListConn.response().statusCode() == 200) {
@@ -195,7 +195,7 @@ public class HuNanSurveyCompanyDetailTask {
                                     Elements peopleRegisteredTable = peopleDetailDoc.select("#tablelist").select("#table2").select("#ctl00_ContentPlaceHolder1_td_zzdetail").select("tr");
                                     Elements peopleOtherQualificationsTable = peopleDetailDoc.select("#tablelist").select("#table3").select("#ctl00_ContentPlaceHolder1_td_rylist").select("tr");
                                     //添加人员基本信息后 返回主键
-                                    Integer pkid = addPeopleInfo(peopleInfoTable);
+                                    Integer pkid = addPeopleInfo(peopleInfoTable, companyId);
                                     //注册执业信息
                                     addPeopleRegistered(peopleRegisteredTable, PersonQualificationUrl, companyId, pkid, validDate);
                                     //其他资格信息
@@ -204,6 +204,7 @@ public class HuNanSurveyCompanyDetailTask {
                                     logger.error("获取人员详情失败" + PersonQualificationUrl);
                                 }
                             }
+                            Thread.sleep(200);
                         }
                     } else {
                         System.out.println("该企业注册人员数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
@@ -211,7 +212,7 @@ public class HuNanSurveyCompanyDetailTask {
                 } else {
                     logger.error("获取人员证书列表页失败" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             } finally {
             }
@@ -222,7 +223,7 @@ public class HuNanSurveyCompanyDetailTask {
          *
          * @param eles 表单数据
          */
-        Integer addPeopleInfo(Elements eles) {
+        Integer addPeopleInfo(Elements eles, Integer companyId) {
             TbPerson tbPerson = new TbPerson();
             tbPerson.setName(eles.select("#ctl00_ContentPlaceHolder1_lbl_xm").text());
             tbPerson.setNation(eles.select("#ctl00_ContentPlaceHolder1_lbl_mc").text());
@@ -230,6 +231,7 @@ public class HuNanSurveyCompanyDetailTask {
             tbPerson.setIdCard(eles.select("#ctl00_ContentPlaceHolder1_lbl_sfzh").text());
             tbPerson.setEducation(eles.select("#ctl00_ContentPlaceHolder1_lbl_xl").text());
             tbPerson.setDegree(eles.select("#ctl00_ContentPlaceHolder1_lbl_xw").text());
+            tbPerson.setCompanyId(companyId);
             return companyService.insertPersionInfo(tbPerson);
         }
 
@@ -316,7 +318,7 @@ public class HuNanSurveyCompanyDetailTask {
         String peopleListUrl = "http://qyryjg.hunanjz.com/public/EnterpriseProject.ashx";
         try {
             //进入公司项目列表
-            projectListConn = Jsoup.connect(peopleListUrl).userAgent("Mozilla").timeout(10000 * 60).ignoreHttpErrors(true);
+            projectListConn = Jsoup.connect(peopleListUrl).userAgent("Mozilla").timeout(6000 * 60).ignoreHttpErrors(true);
             projectListConn.cookies(cookies);
             projectListDoc = projectListConn.get();
             if (projectListConn.response().statusCode() == 200) {
@@ -334,7 +336,7 @@ public class HuNanSurveyCompanyDetailTask {
                         String sgtxh = projectBuildUrl.substring(projectBuildUrl.indexOf("=") + 1);
                         param = new HashedMap();
                         param.put("sgtxh", sgtxh);
-                        param.put("pro_type", proType);
+                        param.put("proType", proType);
                         if(companyService.checkProjectDesignExist(param)) {
                             System.out.println("该证书下的勘察项目已存在" + projectBuildUrl);
                         } else {
@@ -361,6 +363,7 @@ public class HuNanSurveyCompanyDetailTask {
                                 logger.error("获取项目详情失败" + projectBuildUrl);
                             }
                         }
+                        Thread.sleep(200);
                     }
                 } else {
                     System.out.println("该企业项目数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
@@ -368,7 +371,7 @@ public class HuNanSurveyCompanyDetailTask {
             } else {
                 logger.error("获取企业项目列表页失败" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
         }
@@ -384,7 +387,7 @@ public class HuNanSurveyCompanyDetailTask {
         Connection projectInfoConn;
         try {
             //进入项目基本信息
-            projectInfoConn = Jsoup.connect(projectInfoUrl).userAgent("Mozilla").timeout(10000 * 60).ignoreHttpErrors(true);
+            projectInfoConn = Jsoup.connect(projectInfoUrl).userAgent("Mozilla").timeout(6000 * 60).ignoreHttpErrors(true);
             projectInfoDoc = projectInfoConn.get();
             if (projectInfoConn.response().statusCode() == 200) {
                 Elements projectTable = projectInfoDoc.select("#table1");
