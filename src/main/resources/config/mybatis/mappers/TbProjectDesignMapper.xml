@@ -16,12 +16,12 @@
         #{checkFinishDate}, #{checkPerson}, #{type}, NOW())
     </insert>
 
-    <select id="getProjectDesignTotalByCheckNoAndDesignOrg" parameterType="com.silita.biaodaa.model.TbProjectDesign" resultType="Integer">
-      SELECT COUNT(*) FROM hunanyitihua.tb_project_design WHERE check_no = #{checkNo} AND design_org = #{designOrg}
+    <select id="getTotalBySgtxhAndComIdCheckNo" parameterType="com.silita.biaodaa.model.TbProjectDesign" resultType="Integer">
+      SELECT COUNT(*) FROM hunanyitihua.tb_project_design WHERE sgtxh = #{sgtxh} AND com_id = #{comId} AND check_no = #{checkNo}
     </select>
 
-    <select id="getPkidByCheckNoAndDesignOrg" parameterType="com.silita.biaodaa.model.TbProjectDesign" resultType="Integer">
-        SELECT pkid FROM hunanyitihua.tb_project_design WHERE check_no = #{checkNo} AND design_org = #{designOrg}
+    <select id="getPkidBySgtxhAndComIdCheckNo" parameterType="com.silita.biaodaa.model.TbProjectDesign" resultType="Integer">
+        SELECT pkid FROM hunanyitihua.tb_project_design WHERE sgtxh = #{sgtxh} AND com_id = #{comId} AND check_no = #{checkNo}
     </select>
 
     <select id="getProjectDesignTotalByCheckNoAndExploreOrg" parameterType="com.silita.biaodaa.model.TbProjectDesign" resultType="Integer">
@@ -32,8 +32,8 @@
         SELECT pkid FROM hunanyitihua.tb_project_design WHERE check_no = #{checkNo} AND explore_org = #{exploreOrg}
     </select>
 
-    <select id="getTotalBySgtxhAndProType" parameterType="Map" resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_project_design WHERE sgtxh = #{sgtxh} AND `pro_type` = #{proType}
+    <select id="getTotalBySgtxhAndProTypeAndComId" parameterType="Map" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_project_design WHERE sgtxh = #{sgtxh} AND com_id = #{comId} AND `pro_type` = #{proType}
     </select>
 
 </mapper>

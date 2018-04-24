@@ -18,14 +18,14 @@ public interface TbProjectDesignMapper extends MyMapper<TbProjectDesign> {
      * @param tbProjectDesign
      * @return
      */
-    Integer getProjectDesignTotalByCheckNoAndDesignOrg(TbProjectDesign tbProjectDesign);
+    Integer getTotalBySgtxhAndComIdCheckNo(TbProjectDesign tbProjectDesign);
 
     /**
      *
      * @param tbProjectDesign
      * @return
      */
-    Integer getPkidByCheckNoAndDesignOrg(TbProjectDesign tbProjectDesign);
+    Integer getPkidBySgtxhAndComIdCheckNo(TbProjectDesign tbProjectDesign);
 
     /**
      *
@@ -46,7 +46,7 @@ public interface TbProjectDesignMapper extends MyMapper<TbProjectDesign> {
      * @param params
      * @return
      */
-    Integer getTotalBySgtxhAndProType(Map<String, Object> params);
+    Integer getTotalBySgtxhAndProTypeAndComId(Map<String, Object> params);
 
 
 }

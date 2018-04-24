@@ -5,6 +5,7 @@ import com.silita.biaodaa.model.TbSafetyCertificate;
 import com.silita.biaodaa.service.ISafetyCertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -28,11 +29,13 @@ public class SafetyCertificateServiceImpl implements ISafetyCertificateService {
             tbSafetyCertificateMapper.insertSafetyCertificate(safetyCertificates);
         } else {
             TbSafetyCertificate old = tbSafetyCertificateMapper.getSafetyCertificateByCertNoAndCompanyName(safetyCertificates);
-            Integer oldDate = Integer.parseInt(old.getValidDate().replaceAll("-", ""));
-            Integer newDate = Integer.parseInt(safetyCertificates.getValidDate().replaceAll("-", ""));
-            //替换有效期小的
-            if(newDate > oldDate) {
-                tbSafetyCertificateMapper.updateSafetyCertificate(safetyCertificates);
+            if(!StringUtils.isEmpty(old.getValidDate()) && !StringUtils.isEmpty(safetyCertificates.getValidDate())) {
+                Integer oldDate = Integer.parseInt(old.getValidDate().replaceAll("-", ""));
+                Integer newDate = Integer.parseInt(safetyCertificates.getValidDate().replaceAll("-", ""));
+                //替换有效期小的
+                if(newDate > oldDate) {
+                    tbSafetyCertificateMapper.updateSafetyCertificate(safetyCertificates);
+                }
             }
         }
     }

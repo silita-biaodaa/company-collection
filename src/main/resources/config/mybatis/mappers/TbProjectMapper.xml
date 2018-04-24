@@ -18,11 +18,11 @@
         #{proUse}, NOW())
     </insert>
 
-    <select id="getProjectTotalByProjectNo" parameterType="String" resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_project WHERE pro_no = #{proNo}
+    <select id="getProjectTotalByProjectNoAndXmid" parameterType="String" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_project WHERE pro_no = #{proNo} AND xmid = #{xmid}
     </select>
 
-    <select id="getProIdByProNo" parameterType="String" resultType="Integer">
-        SELECT pro_id FROM hunanyitihua.tb_project WHERE pro_no = #{proNo}
+    <select id="getProIdByProNoAndXmid" parameterType="String" resultType="Integer">
+        SELECT pro_id FROM hunanyitihua.tb_project WHERE pro_no = #{proNo} AND xmid = #{xmid}
     </select>
 </mapper>

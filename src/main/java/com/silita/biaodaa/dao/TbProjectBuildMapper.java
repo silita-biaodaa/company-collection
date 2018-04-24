@@ -3,6 +3,8 @@ package com.silita.biaodaa.dao;
 import com.silita.biaodaa.model.TbProjectBuild;
 import com.silita.biaodaa.utils.MyMapper;
 
+import java.util.Map;
+
 public interface TbProjectBuildMapper extends MyMapper<TbProjectBuild> {
 
     /**
@@ -11,31 +13,17 @@ public interface TbProjectBuildMapper extends MyMapper<TbProjectBuild> {
     void insertProjectBuild(TbProjectBuild tbProjectBuild);
 
     /**
-     * 根据施工许可证取得项目施工合同个数
+     * 根据施工许可证和施工内部id取得项目施工合同个数
      * @return
      */
-    Integer getTotalByBLicence(String bLicence);
+    Integer getTotalByBdxhAndComIdAndBLicence(TbProjectBuild tbProjectBuild);
 
     /**
-     * 根据施工许可证取得项目施工合同id
-     * @param bLicence
-     * @return
-     */
-    Integer getPkidByBLicence(String bLicence);
-
-    /**
-     * 根据标段名称、施工单位取得项目施工合同个数
+     * 根据施工许可证和施工内部id取得项目施工合同id
      * @param tbProjectBuild
      * @return
      */
-    Integer getTotalByBNameAndBOrg(TbProjectBuild tbProjectBuild);
-
-    /**
-     * 根据标段名称、施工单位取得项目施工合同id
-     * @param tbProjectBuild
-     * @return
-     */
-    Integer getPkidByBNameAndBOrg(TbProjectBuild tbProjectBuild);
+    Integer getPkidByBdxhAndComIdAndBLicence(TbProjectBuild tbProjectBuild);
 
     /**
      * 根据施工合同内部id取得项目施工合同个数
@@ -52,11 +40,9 @@ public interface TbProjectBuildMapper extends MyMapper<TbProjectBuild> {
     Integer getPkidByBdxh(String bdxh);
 
     /**
-     * 施工类企业证书有多个施工项目
-     * 根据施工项目内部id判断该施工项目是否已抓取
-     * @param bdxh
+     *
      * @return
      */
-    Integer getTotalByBdxhTwo(String bdxh);
+    Integer getTotalByBdxhAndComId(Map<String, Object> params);
 
 }

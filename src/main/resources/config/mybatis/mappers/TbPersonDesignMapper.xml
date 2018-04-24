@@ -11,7 +11,7 @@
         #{role},  NOW())
     </insert>
 
-    <select id="getTotalByNameAndCategoryAndRole" parameterType="com.silita.biaodaa.model.TbPersonDesign" resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_person_design WHERE `name` = #{name} AND `category` = #{category} AND role = #{role}
+    <select id="getTotalByNameAndCategoryAndPid" parameterType="com.silita.biaodaa.model.TbPersonDesign" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_person_design WHERE pid = #{pid} AND `name` = #{name} AND `category` = #{category}
     </select>
 </mapper>

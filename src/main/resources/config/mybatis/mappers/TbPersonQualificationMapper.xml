@@ -6,18 +6,18 @@
         INSERT INTO
         hunanyitihua.tb_person_qualification(`com_name`, `category`, `cert_no`, `seal_no`, `major`,
         `cert_date`, `valid_date`, `url`, `innerid`, `per_id`,
-        `com_id`, `created`)
+        `type`, `com_id`, `created`)
         VALUES
         (#{comName}, #{category}, #{certNo}, #{sealNo}, #{major},
         #{certDate}, #{validDate}, #{url}, #{innerid}, #{perId},
-        #{comId}, NOW())
+        #{type}, #{comId}, NOW())
     </insert>
 
-    <select id="getTotalByCertNo" parameterType="String" resultType="Integer">
-      SELECT COUNT(*) FROM hunanyitihua.tb_person_qualification WHERE cert_no = #{certNo}
+    <select id="getTotalByCertNoAndComId" parameterType="com.silita.biaodaa.model.TbPersonQualification" resultType="Integer">
+      SELECT COUNT(*) FROM hunanyitihua.tb_person_qualification WHERE cert_no = #{certNo} AND com_id = #{comId}
     </select>
 
-    <select id="getTolalByPersonQualificationUrl" parameterType="String" resultType="Integer">
-      SELECT COUNT(*) FROM hunanyitihua.tb_person_qualification WHERE url = #{url}
+    <select id="getTolalByPersonQualificationUrlAndComId" parameterType="Map" resultType="Integer">
+      SELECT COUNT(*) FROM hunanyitihua.tb_person_qualification WHERE com_id = #{comId} AND url = #{url}
     </select>
 </mapper>

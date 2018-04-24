@@ -18,22 +18,13 @@
         #{subContrace}, NOW())
     </insert>
 
-    <select id="getTotalByBLicence" parameterType="String" resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_project_build WHERE b_licence = #{bLicence}
+    <select id="getTotalByBdxhAndComIdAndBLicence" parameterType="com.silita.biaodaa.model.TbProjectBuild" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_project_build WHERE bdxh = #{bdxh} AND com_id = #{comId} AND b_licence = #{bLicence}
     </select>
 
-    <select id="getPkidByBLicence" parameterType="String" resultType="Integer">
-        SELECT pkid FROM hunanyitihua.tb_project_build WHERE b_licence = #{bLicence}
+    <select id="getPkidByBdxhAndComIdAndBLicence" parameterType="com.silita.biaodaa.model.TbProjectBuild" resultType="Integer">
+        SELECT pkid FROM hunanyitihua.tb_project_build WHERE bdxh = #{bdxh} AND com_id = #{comId} AND b_licence = #{bLicence}
     </select>
-
-    <select id="getTotalByBNameAndBOrg" parameterType="com.silita.biaodaa.model.TbProjectBuild" resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_project_build WHERE b_name = #{bName} AND b_org = #{bOrg}
-    </select>
-
-    <select id="getPkidByBNameAndBOrg" parameterType="com.silita.biaodaa.model.TbProjectBuild" resultType="Integer">
-        SELECT pkid FROM hunanyitihua.tb_project_build WHERE b_name = #{bName} AND b_org = #{bOrg}
-    </select>
-
 
     <select id="getTotalByBdxh" parameterType="String" resultType="Integer">
         SELECT COUNT(*) FROM hunanyitihua.tb_project_build WHERE bdxh = #{bdxh}
@@ -41,6 +32,10 @@
 
     <select id="getPkidByBdxh" parameterType="String" resultType="Integer">
         SELECT pkid FROM hunanyitihua.tb_project_build WHERE bdxh = #{bdxh}
+    </select>
+
+    <select id="getTotalByBdxhAndComId" parameterType="Map" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_project_build WHERE bdxh = #{bdxh} AND com_id = #{comId}
     </select>
 
 </mapper>

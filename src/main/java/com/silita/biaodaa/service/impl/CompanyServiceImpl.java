@@ -41,6 +41,10 @@ public class CompanyServiceImpl implements ICompanyService {
     private AptitudeDictionaryMapper aptitudeDictionaryMapper;
     @Autowired
     private TbCompanyAptitudeMapper tbCompanyAptitudeMapper;
+    @Autowired
+    private TbPersonChangeMapper tbPersonChangeMapper;
+    @Autowired
+    private TbExceptionUrlMapper tbExceptionUrlMapper;
 
     @Override
     public void batchInsertCompanyQualification(List<TbCompanyQualification> companyQualifications) {
@@ -50,7 +54,7 @@ public class CompanyServiceImpl implements ICompanyService {
     @Override
     public void InsertCompanyQualification(TbCompanyQualification companyQualification) {
         boolean flag = tbCompanyQualificationMapper.getTotalByCertNo(companyQualification.getCertNo()) > 0;
-        if(!flag) {
+        if (!flag) {
             tbCompanyQualificationMapper.InsertCompanyQualification(companyQualification);
         }
     }
@@ -93,7 +97,7 @@ public class CompanyServiceImpl implements ICompanyService {
 
     @Override
     public void insertPersonQualification(TbPersonQualification tbPersonQualification) {
-        boolean flag = tbPersonQualificationMapper.getTotalByCertNo(tbPersonQualification.getCertNo()) > 0;
+        boolean flag = tbPersonQualificationMapper.getTotalByCertNoAndComId(tbPersonQualification) > 0;
         if (!flag) {
             tbPersonQualificationMapper.insertPersonQualification(tbPersonQualification);
         }
@@ -101,104 +105,107 @@ public class CompanyServiceImpl implements ICompanyService {
 
     @Override
     public int insertProjectInfo(TbProject tbProject) {
-        boolean flag = tbProjectMapper.getProjectTotalByProjectNo(tbProject.getProNo()) > 0;
+        boolean flag = tbProjectMapper.getProjectTotalByProjectNoAndXmid(tbProject.getProNo()) > 0;
         if (!flag) {
             tbProjectMapper.insertProjectInfo(tbProject);
             return tbProject.getProId();
         } else {
-            return tbProjectMapper.getProIdByProNo(tbProject.getProNo());
+            return tbProjectMapper.getProIdByProNoAndXmid(tbProject.getProNo());
         }
     }
 
     @Override
     public int insertProjectBuild(TbProjectBuild tbProjectBuild) {
-        //有的施工许可证信息为空白
-        if ("无施工许可证信息".equals(tbProjectBuild.getBLicence()) || "".equals(tbProjectBuild.getBLicence())) {
-            //无施工许可证编号用标段名称、施工单位判断
-//            boolean flag = tbProjectBuildMapper.getTotalByBNameAndBOrg(tbProjectBuild) > 0;
-            boolean flag = tbProjectBuildMapper.getTotalByBdxh(tbProjectBuild.getBdxh()) > 0;
-            if(!flag) {
-                tbProjectBuildMapper.insertProjectBuild(tbProjectBuild);
-                return tbProjectBuild.getPkid();
-            } else {
-//                return tbProjectBuildMapper.getPkidByBNameAndBOrg(tbProjectBuild);
-                return tbProjectBuildMapper.getPkidByBdxh(tbProjectBuild.getBdxh());
-            }
+        boolean flag = tbProjectBuildMapper.getTotalByBdxhAndComIdAndBLicence(tbProjectBuild) > 0;
+        if (!flag) {
+            tbProjectBuildMapper.insertProjectBuild(tbProjectBuild);
+            return tbProjectBuild.getPkid();
         } else {
-            boolean flag = tbProjectBuildMapper.getTotalByBLicence(tbProjectBuild.getBLicence()) > 0;
-            if (!flag) {
-                tbProjectBuildMapper.insertProjectBuild(tbProjectBuild);
-                return tbProjectBuild.getPkid();
-            } else {
-                return tbProjectBuildMapper.getPkidByBLicence(tbProjectBuild.getBLicence());
-            }
+            return tbProjectBuildMapper.getPkidByBdxhAndComIdAndBLicence(tbProjectBuild);
         }
     }
 
     public void insertPersonProject(TbPersonProject tbPersonProject) {
-        boolean flag = tbPersonProjectMapper.getPersionProjectTotalByNameAndCertNoAndCategory(tbPersonProject) > 0;
-        if(!flag) {
+        boolean flag = tbPersonProjectMapper.getPersionProjectTotalByCertNoAndPid(tbPersonProject) > 0;
+        if (!flag) {
             tbPersonProjectMapper.insertPersionProject(tbPersonProject);
         }
     }
 
     @Override
     public int insertProjectDesign(TbProjectDesign tbProjectDesign) {
-        boolean falg = tbProjectDesignMapper.getProjectDesignTotalByCheckNoAndDesignOrg(tbProjectDesign) > 0;
-        if(!falg) {
+        boolean falg = tbProjectDesignMapper.getTotalBySgtxhAndComIdCheckNo(tbProjectDesign) > 0;
+        if (!falg) {
             tbProjectDesignMapper.insertProjectDesign(tbProjectDesign);
             return tbProjectDesign.getPkid();
         } else {
-            return tbProjectDesignMapper.getPkidByCheckNoAndDesignOrg(tbProjectDesign);
+            return tbProjectDesignMapper.getPkidBySgtxhAndComIdCheckNo(tbProjectDesign);
         }
     }
 
     @Override
     public void insertPersonDesign(TbPersonDesign tbPersonDesign) {
-        boolean flag = tbPersonDesignMapper.getTotalByNameAndCategoryAndRole(tbPersonDesign) > 0;
-        if(!flag) {
+        boolean flag = tbPersonDesignMapper.getTotalByNameAndCategoryAndPid(tbPersonDesign) > 0;
+        if (!flag) {
             tbPersonDesignMapper.insertPersionDesign(tbPersonDesign);
         }
     }
 
     @Override
     public int insertProjectDesignTwo(TbProjectDesign tbProjectDesign) {
-        boolean falg = tbProjectDesignMapper.getProjectDesignTotalByCheckNoAndExploreOrg(tbProjectDesign) > 0;
-        if(!falg) {
+        boolean falg = tbProjectDesignMapper.getTotalBySgtxhAndComIdCheckNo(tbProjectDesign) > 0;
+        if (!falg) {
             tbProjectDesignMapper.insertProjectDesign(tbProjectDesign);
             return tbProjectDesign.getPkid();
         } else {
-            return tbProjectDesignMapper.getPkidByCheckNoAndExploreOrg(tbProjectDesign);
+            return tbProjectDesignMapper.getPkidBySgtxhAndComIdCheckNo(tbProjectDesign);
         }
     }
 
     @Override
     public int insertProjectSupervisor(TbProjectSupervision tbProjectSupervision) {
-        boolean falg = tbProjectSupervisionMapper.getTotalByJlbdxh(tbProjectSupervision.getJlbdxh()) > 0;
-        if(!falg) {
+        boolean falg = tbProjectSupervisionMapper.getTotalByJlbdxhAndComIdTwo(tbProjectSupervision) > 0;
+        if (!falg) {
             tbProjectSupervisionMapper.insertProjectSupervision(tbProjectSupervision);
             return tbProjectSupervision.getPkid();
         } else {
-            return tbProjectSupervisionMapper.getPkidByJlbdxh(tbProjectSupervision.getJlbdxh());
+            return tbProjectSupervisionMapper.getPkidByJlbdxhAndComIdTwo(tbProjectSupervision);
         }
     }
 
-    public boolean checkPersonQualificationExist(String url) {
-        return tbPersonQualificationMapper.getTolalByPersonQualificationUrl(url) > 0;
+    public boolean checkPersonQualificationExist(Map<String, Object> params) {
+        return tbPersonQualificationMapper.getTolalByPersonQualificationUrlAndComId(params) > 0;
     }
 
-    public boolean checkProjectBuildExist(String bdxh) {
-        return tbProjectBuildMapper.getTotalByBdxh(bdxh) > 0;
+    public boolean checkProjectBuildExist(Map<String, Object> params) {
+        return tbProjectBuildMapper.getTotalByBdxhAndComId(params) > 0;
     }
 
     @Override
     public boolean checkProjectDesignExist(Map<String, Object> params) {
-        return tbProjectDesignMapper.getTotalBySgtxhAndProType(params) > 0;
+        return tbProjectDesignMapper.getTotalBySgtxhAndProTypeAndComId(params) > 0;
     }
 
     @Override
-    public boolean checkProjectSupervisionExist(String jlbdxh) {
-        return tbProjectSupervisionMapper.getTotalByJlbdxh(jlbdxh) > 0;
+    public boolean checkProjectSupervisionExist(Map<String, Object> params) {
+        return tbProjectSupervisionMapper.getTotalByJlbdxhAndComId(params) > 0;
+    }
+
+    public void batchInsertPeopleChange(List<TbPersonChange> tbPersonChanges) {
+        tbPersonChangeMapper.batchInsertPeopleChange(tbPersonChanges);
+    }
+
+    @Override
+    public void insertPeopleChange(TbPersonChange tbPersonChange) {
+        boolean flag = tbPersonChangeMapper.getTotalByPerIdChangeDate(tbPersonChange) > 0;
+        if (!flag) {
+            tbPersonChangeMapper.insertPeopleChange(tbPersonChange);
+        }
+    }
+
+    @Override
+    public void insertException(TbExceptionUrl tbExceptionUrl) {
+        tbExceptionUrlMapper.insertExceptionUrl(tbExceptionUrl);
     }
 
 

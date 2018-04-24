@@ -16,5 +16,5 @@ public interface TbPersonProjectMapper extends MyMapper<TbPersonProject> {
      * @param tbPersonProject
      * @return
      */
-    Integer getPersionProjectTotalByNameAndCertNoAndCategory(TbPersonProject tbPersonProject);
+    Integer getPersionProjectTotalByCertNoAndPid(TbPersonProject tbPersonProject);
 }

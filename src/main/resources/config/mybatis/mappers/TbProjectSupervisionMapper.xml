@@ -16,12 +16,12 @@
         #{contractPrice}, NOW())
     </insert>
 
-    <select id="getTotalByJlbdxh" parameterType="String" resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_project_supervision WHERE jlbdxh = #{jlbdxh}
+    <select id="getTotalByJlbdxhAndComIdTwo" parameterType="com.silita.biaodaa.model.TbProjectSupervision" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_project_supervision WHERE jlbdxh = #{jlbdxh} AND com_id = #{comId}
     </select>
 
-    <select id="getPkidByJlbdxh" parameterType="String" resultType="Integer">
-        SELECT pkid FROM hunanyitihua.tb_project_supervision WHERE jlbdxh = #{jlbdxh}
+    <select id="getPkidByJlbdxhAndComIdTwo" parameterType="com.silita.biaodaa.model.TbProjectSupervision" resultType="Integer">
+        SELECT pkid FROM hunanyitihua.tb_project_supervision WHERE jlbdxh = #{jlbdxh} AND com_id = #{comId}
     </select>
 
     <select id="getTotalByProNameAndSuperOrg" parameterType="com.silita.biaodaa.model.TbProjectSupervision" resultType="Integer">
@@ -30,6 +30,10 @@
 
     <select id="getPkidByProNameAndSuperOrg" parameterType="com.silita.biaodaa.model.TbProjectSupervision" resultType="Integer">
         SELECT pkid FROM hunanyitihua.tb_project_supervision WHERE `pro_name` = #{proName} AND `super_org` = #{superOrg}
+    </select>
+
+    <select id="getTotalByJlbdxhAndComId" parameterType="String" resultType="Integer">
+        SELECT COUNT(*) FROM hunanyitihua.tb_project_supervision WHERE jlbdxh = #{jlbdxh} AND com_id = #{comId}
     </select>
 
 </mapper>

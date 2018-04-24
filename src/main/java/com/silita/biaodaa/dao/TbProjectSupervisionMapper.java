@@ -3,6 +3,8 @@ package com.silita.biaodaa.dao;
 import com.silita.biaodaa.model.TbProjectSupervision;
 import com.silita.biaodaa.utils.MyMapper;
 
+import java.util.Map;
+
 public interface TbProjectSupervisionMapper extends MyMapper<TbProjectSupervision> {
 
     /**
@@ -13,17 +15,17 @@ public interface TbProjectSupervisionMapper extends MyMapper<TbProjectSupervisio
 
     /**
      *
-     * @param jlbdxh
+     * @param tbProjectSupervision
      * @return
      */
-    Integer getTotalByJlbdxh(String jlbdxh);
+    Integer getTotalByJlbdxhAndComIdTwo(TbProjectSupervision tbProjectSupervision);
 
     /**
      *
-     * @param jlbdxh
+     * @param tbProjectSupervision
      * @return
      */
-    Integer getPkidByJlbdxh(String jlbdxh);
+    Integer getPkidByJlbdxhAndComIdTwo(TbProjectSupervision tbProjectSupervision);
 
     /**
      *
@@ -39,5 +41,11 @@ public interface TbProjectSupervisionMapper extends MyMapper<TbProjectSupervisio
      */
     Integer getPkidByProNameAndSuperOrg(TbProjectSupervision tbProjectSupervision);
 
+    /**
+     *
+     * @param params
+     * @return
+     */
+    Integer getTotalByJlbdxhAndComId(Map<String, Object> params);
 
 }

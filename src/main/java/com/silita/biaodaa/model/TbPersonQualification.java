@@ -77,4 +77,9 @@ public class TbPersonQualification {
      * 抓取URL
      */
     private String url;
+
+    /**
+     * 1、注册执业信息2、其他资格信息
+     */
+    private Integer type;
 }

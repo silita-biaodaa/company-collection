@@ -81,7 +81,7 @@ public interface ICompanyService {
 
     /**
      * 添加施工人员信息或监理人员信息
-     * 根据人员姓名、证书编号、安全证书编号判断是否添加
+     * 根据证书编号施工项目id、判断是否添加
      * @param tbPersonProject
      */
     void insertPersonProject(TbPersonProject tbPersonProject);
@@ -115,19 +115,20 @@ public interface ICompanyService {
 
     /**
      * 根据人员证书url判断是否已经抓取
-     * 一个公司有多个资质证书、多个证书对应一个公司的人员证书
-     * @param url 人员证书URL
+     * 一个公司有多个资质证书、多个证书对应一个公司的人员证书 所以抓一个公司的一个资质证书就可以了
+     * 人员的证书会发生变化，所以加上公司id防止证书换公司不抓问题
+     * @param params
      * @return true存在
      */
-    boolean checkPersonQualificationExist(String url);
+    boolean checkPersonQualificationExist(Map<String, Object> params);
 
     /**
      * 根据施工项目内部id判断该施工项目是否已抓取
      * 一个施工类企业有多个施工类证书、多个施工类证书对应一个公司的多个施工项目
-     * @param bdxh
+     * @param params
      * @return
      */
-    boolean checkProjectBuildExist(String bdxh);
+    boolean checkProjectBuildExist(Map<String, Object> params);
 
     /**
      * 设计、勘察
@@ -138,10 +139,28 @@ public interface ICompanyService {
 
     /**
      * 监理
-     * @param jlbdxh
+     * @param params
      * @return
      */
-    boolean checkProjectSupervisionExist(String jlbdxh);
+    boolean checkProjectSupervisionExist(Map<String, Object> params);
+
+    /**
+     * 批量插入人员变更
+     * @param tbPersonChanges
+     */
+    void batchInsertPeopleChange(List<TbPersonChange> tbPersonChanges);
+
+    /**
+     * 插入人员变更
+     * @param tbPersonChange
+     */
+    void insertPeopleChange(TbPersonChange tbPersonChange);
+
+    /**
+     * 插入异常信息
+     * @param tbExceptionUrl
+     */
+    void insertException(TbExceptionUrl tbExceptionUrl);
 
 
     //####################以下为拆分资质相关业务########################

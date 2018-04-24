@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
@@ -29,7 +28,7 @@ public class HuNanSupervisorCompanyDetailTask {
     private Random random = new Random();
     String dateRegex = "(\\d{4}-\\d{1,2}-\\d{1,2})";
 
-    private static final int THREAD_NUMBER = 1;
+    private static final int THREAD_NUMBER = 6;
 
     @Autowired
     private ICompanyService companyService;
@@ -39,7 +38,7 @@ public class HuNanSupervisorCompanyDetailTask {
      */
     public void taskSupervisorCompany() {
         int threadCount = THREAD_NUMBER;
-        List<String> urls = new ArrayList<String>(400);
+        List<String> urls = new ArrayList<String>(500);
         urls = companyService.getAllCompanyQualificationUrlByTab("工程监理企业");
         int every = urls.size() % threadCount == 0 ? urls.size() / threadCount : (urls.size() / threadCount) + 1;
         final CountDownLatch latch = new CountDownLatch(threadCount);
@@ -80,7 +79,7 @@ public class HuNanSupervisorCompanyDetailTask {
             try {
                 for (int i = startNum; i < endNum; i++) {
                     String CompanyQualificationUrl = CompanyQualificationUrls.get(i);
-                    companyDetailConn = Jsoup.connect(CompanyQualificationUrl).userAgent("Mozilla").timeout(6000 * 60).ignoreHttpErrors(true);
+                    companyDetailConn = Jsoup.connect(CompanyQualificationUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                     companyDetailDoc = companyDetailConn.get();
                     if (companyDetailConn.response().statusCode() == 200) {
                         cookies = companyDetailConn.response().cookies();
@@ -92,19 +91,18 @@ public class HuNanSupervisorCompanyDetailTask {
                         //更新企业资质证书
                         addCompanyAptitude(CompanyAptitudeTable, corpid, comId);
                         //##########抓取人员start##########
-                        getPepleList(cookies, comId);
+                        getPepleList(cookies, CompanyQualificationUrl, comId);
                         //##########抓取项目start##########
-                        getProjectList(cookies, comId);
+                        getProjectList(cookies, CompanyQualificationUrl, comId);
                     } else {
-                        logger.error("获取企业详情信息失败！" + CompanyQualificationUrl);
+                        TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
+                        tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
+                        tbExceptionUrl.setExceptionMsg("获取企业详情信息失败!");
+                        companyService.insertException(tbExceptionUrl);
                     }
                     //随机暂停几秒
                     Thread.sleep(1000 * (random.nextInt(max) % (max - min + 1)));
                 }
-                //##########拆分资质##############
-//                splitCompanyQualifications();
-                //##########添加企业资质##########
-//                updateCompanyAptitudeRange();
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -140,16 +138,20 @@ public class HuNanSupervisorCompanyDetailTask {
          */
         void addCompanyAptitude(Elements eles, String corpid, Integer companyId) {
             if (eles.size() > 0) {
-                TbCompanyQualification tbCompanyQualification = new TbCompanyQualification();
-                tbCompanyQualification.setQualType(eles.select("tr").get(0).select("td").get(1).text());
-                tbCompanyQualification.setCertNo(eles.select("tr").get(1).select("td").get(1).text());
-                tbCompanyQualification.setCertOrg(eles.select("tr").get(1).select("td").get(3).text());
-                tbCompanyQualification.setCertDate(eles.select("tr").get(3).select("td").get(1).text());
-                tbCompanyQualification.setValidDate(eles.select("tr").get(3).select("td").get(3).text());
-                tbCompanyQualification.setRange(eles.select("tr").get(4).select("td").get(1).text());
-                tbCompanyQualification.setComId(companyId);
-                tbCompanyQualification.setCorpid(corpid);
-                companyService.updateCompanyQualificationUrlByCorpid(tbCompanyQualification);
+                for (int i = 0; i < eles.size(); i++) {
+                    if (eles.select("tr").get(0).select("td").get(1).text().contains("监理")) {
+                        TbCompanyQualification tbCompanyQualification = new TbCompanyQualification();
+                        tbCompanyQualification.setQualType(eles.select("tr").get(0).select("td").get(1).text());
+                        tbCompanyQualification.setCertNo(eles.select("tr").get(1).select("td").get(1).text());
+                        tbCompanyQualification.setCertOrg(eles.select("tr").get(1).select("td").get(3).text());
+                        tbCompanyQualification.setCertDate(eles.select("tr").get(3).select("td").get(1).text());
+                        tbCompanyQualification.setValidDate(eles.select("tr").get(3).select("td").get(3).text());
+                        tbCompanyQualification.setRange(eles.select("tr").get(4).select("td").get(1).text());
+                        tbCompanyQualification.setComId(companyId);
+                        tbCompanyQualification.setCorpid(corpid);
+                        companyService.updateCompanyQualificationUrlByCorpid(tbCompanyQualification);
+                    }
+                }
             } else {
                 System.out.println("该企业资质数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
             }
@@ -163,13 +165,13 @@ public class HuNanSupervisorCompanyDetailTask {
          * @param cookies   cookie
          * @param companyId 公司id
          */
-        void getPepleList(Map<String, String> cookies, Integer companyId) {
+        void getPepleList(Map<String, String> cookies, String CompanyQualificationUrl, Integer companyId) {
             Document peopleListDoc;
             Connection peopleListConn;
             String peopleListUrl = "http://qyryjg.hunanjz.com/public/EnterpriseRegPerson.ashx";
             try {
                 //进入人员证书列表
-                peopleListConn = Jsoup.connect(peopleListUrl).userAgent("Mozilla").timeout(6000 * 60).ignoreHttpErrors(true);
+                peopleListConn = Jsoup.connect(peopleListUrl).userAgent("Mozilla").timeout(120000 * 60).ignoreHttpErrors(true);
                 peopleListConn.cookies(cookies);
                 peopleListDoc = peopleListConn.get();
                 if (peopleListConn.response().statusCode() == 200) {
@@ -177,14 +179,18 @@ public class HuNanSupervisorCompanyDetailTask {
                     if (peopleList.size() > 2) {
                         String validDate;
                         String PersonQualificationUrl;
+                        Map<String, Object> params = null;
                         Document peopleDetailDoc;
                         Connection peopleDetailConn;
                         //遍历人员列表url 进入详情页面
                         for (int i = 2; i < peopleList.size(); i++) {
                             validDate = peopleList.get(i).select("td").last().text();
                             PersonQualificationUrl = peopleList.get(i).select("a").first().absUrl("href");
-                            if(companyService.checkPersonQualificationExist(PersonQualificationUrl)) {
-                                System.out.println("已抓取这个人员的证书" + PersonQualificationUrl);
+                            params = new HashMap<>();
+                            params.put("url", PersonQualificationUrl);
+                            params.put("comId", companyId);
+                            if (companyService.checkPersonQualificationExist(params)) {
+                                System.out.println("已抓取这个公司的这本证书" + PersonQualificationUrl);
                             } else {
                                 peopleDetailConn = Jsoup.connect(PersonQualificationUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                                 peopleDetailDoc = peopleDetailConn.get();
@@ -194,17 +200,25 @@ public class HuNanSupervisorCompanyDetailTask {
                                     Elements peopleInfoTable = peopleDetailDoc.select("#table1");
                                     Elements peopleRegisteredTable = peopleDetailDoc.select("#tablelist").select("#table2").select("#ctl00_ContentPlaceHolder1_td_zzdetail").select("tr");
                                     Elements peopleOtherQualificationsTable = peopleDetailDoc.select("#tablelist").select("#table3").select("#ctl00_ContentPlaceHolder1_td_rylist").select("tr");
+                                    Elements peopleChangeTable = peopleDetailDoc.select("#tablelist").select("#table6").select("#ctl00_ContentPlaceHolder1_jzs2_history").select("tr");
                                     //添加人员基本信息后 返回主键
                                     Integer pkid = addPeopleInfo(peopleInfoTable, companyId);
                                     //注册执业信息
                                     addPeopleRegistered(peopleRegisteredTable, PersonQualificationUrl, companyId, pkid, validDate);
                                     //其他资格信息
-                                    addProjectOtherCert(peopleOtherQualificationsTable, PersonQualificationUrl, companyId, pkid);
+                                    addPeopleOtherCert(peopleOtherQualificationsTable, PersonQualificationUrl, companyId, pkid);
+                                    //人员变更信息
+                                    addPeopleChange(peopleChangeTable, pkid);
                                 } else {
-                                    logger.error("获取人员详情失败" + PersonQualificationUrl);
+                                    TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
+                                    tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
+                                    tbExceptionUrl.setExceptionUrl(PersonQualificationUrl);
+                                    tbExceptionUrl.setExceptionMsg("获取人员详情失败");
+                                    companyService.insertException(tbExceptionUrl);
                                 }
                             }
-                            Thread.sleep(200);
+                            //随机暂停几秒
+                            Thread.sleep(000 * (random.nextInt(max) % (max - min + 1)));
                         }
                     } else {
                         System.out.println("该企业注册人员数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
@@ -259,6 +273,7 @@ public class HuNanSupervisorCompanyDetailTask {
                     tbPersonQualification.setInnerid(PersonQualificationUrl.substring(PersonQualificationUrl.indexOf("=") + 1));
                     tbPersonQualification.setPerId(peopleId);
                     tbPersonQualification.setComId(companyId);
+                    tbPersonQualification.setType(1);
                     companyService.insertPersonQualification(tbPersonQualification);
                 }
             } else {
@@ -275,7 +290,7 @@ public class HuNanSupervisorCompanyDetailTask {
          * @param companyId              公司id
          * @param peopleId               人员id
          */
-        void addProjectOtherCert(Elements eles, String PersonQualificationUrl, Integer companyId, Integer peopleId) {
+        void addPeopleOtherCert(Elements eles, String PersonQualificationUrl, Integer companyId, Integer peopleId) {
             if (eles.size() > 1) {
                 TbPersonQualification tbPersonQualification = null;
                 for (int i = 1; i < eles.size(); i++) {
@@ -296,11 +311,36 @@ public class HuNanSupervisorCompanyDetailTask {
                     tbPersonQualification.setInnerid(PersonQualificationUrl.substring(PersonQualificationUrl.indexOf("=") + 1));
                     tbPersonQualification.setPerId(peopleId);
                     tbPersonQualification.setComId(companyId);
+                    tbPersonQualification.setType(2);
                     companyService.insertPersonQualification(tbPersonQualification);
                 }
             } else {
                 System.out.println("人员其他证书信息为空" + PersonQualificationUrl);
             }
+        }
+    }
+
+    /**
+     * 添加人员变更信息
+     *
+     * @param eles     表单数据
+     * @param peopleId 人员id
+     */
+    void addPeopleChange(Elements eles, Integer peopleId) {
+        List<TbPersonChange> tbPersonChanges;
+        TbPersonChange tbPersonChange;
+        if (eles.size() > 2) {
+            tbPersonChanges = new ArrayList<TbPersonChange>();
+            for (int i = 2; i < eles.size(); i++) {
+                tbPersonChange = new TbPersonChange();
+                tbPersonChange.setComName(eles.get(i).select("td").get(0).text());
+                tbPersonChange.setMajor(eles.get(i).select("td").get(1).text());
+                tbPersonChange.setChangeDate(eles.get(i).select("td").get(2).text());
+                tbPersonChange.setRemark(eles.get(i).select("td").get(3).text());
+                tbPersonChange.setPerId(peopleId);
+                tbPersonChanges.add(tbPersonChange);
+            }
+            companyService.batchInsertPeopleChange(tbPersonChanges);
         }
     }
 
@@ -312,13 +352,13 @@ public class HuNanSupervisorCompanyDetailTask {
      * @param cookies   cookie
      * @param companyId 公司id
      */
-    void getProjectList(Map<String, String> cookies, Integer companyId) {
+    void getProjectList(Map<String, String> cookies, String CompanyQualificationUrl, Integer companyId) {
         Document projectListDoc;
         Connection projectListConn;
         String peopleListUrl = "http://qyryjg.hunanjz.com/public/EnterpriseProject.ashx";
         try {
             //进入公司项目列表
-            projectListConn = Jsoup.connect(peopleListUrl).userAgent("Mozilla").timeout(6000 * 60).ignoreHttpErrors(true);
+            projectListConn = Jsoup.connect(peopleListUrl).userAgent("Mozilla").timeout(120000 * 60).ignoreHttpErrors(true);
             projectListConn.cookies(cookies);
             projectListDoc = projectListConn.get();
             if (projectListConn.response().statusCode() == 200) {
@@ -326,15 +366,19 @@ public class HuNanSupervisorCompanyDetailTask {
                 if (projectList.size() > 1) {
                     String proType;
                     String projectBuildUrl;
+                    Map<String, Object> params;
                     Document projectBuildDetailDoc;
                     Connection projectBuildDetailConn;
                     //遍历公司项目列表url 进入详情页面
                     for (int i = 1; i < projectList.size(); i++) {
                         proType = projectList.get(i).select("td").first().text();
                         projectBuildUrl = projectList.get(i).select("a").first().absUrl("href");
+                        params = new HashMap<>();
                         //监理合同段信息内部id
                         String jlbdxh = projectBuildUrl.substring(projectBuildUrl.indexOf("=") + 1);
-                        if(companyService.checkProjectSupervisionExist(jlbdxh)) {
+                        params.put("jlbdxh", jlbdxh);
+                        params.put("comId", companyId);
+                        if (companyService.checkProjectSupervisionExist(params)) {
                             System.out.println("该证书下的监理项目已存在" + projectBuildUrl);
                         } else {
                             projectBuildDetailConn = Jsoup.connect(projectBuildUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
@@ -347,7 +391,7 @@ public class HuNanSupervisorCompanyDetailTask {
                                     Elements projectBuilderPeopleTable = projectBuildDetailDoc.select("#ctl00_ContentPlaceHolder1_td_rylist").select("table").select("tr");
                                     String projectInfoDetaiUrl = projectBuildDetailTable.select("a").first().absUrl("href");
                                     //添加项目基本信息
-                                    Integer projectId = addProjectInfo(projectInfoDetaiUrl);
+                                    Integer projectId = addProjectInfo(projectInfoDetaiUrl, CompanyQualificationUrl);
                                     //监理合同段信息
                                     int projectSupervisorId = addProjectSupervisor(projectBuildDetailTable, companyId, projectId, jlbdxh, proType);
                                     //添加项目部人员（监理）
@@ -356,10 +400,15 @@ public class HuNanSupervisorCompanyDetailTask {
                                     System.out.println("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
                                 }
                             } else {
-                                logger.error("获取项目详情失败" + projectBuildUrl);
+                                TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
+                                tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
+                                tbExceptionUrl.setExceptionUrl(projectBuildUrl);
+                                tbExceptionUrl.setExceptionMsg("获取项目详情失败");
+                                companyService.insertException(tbExceptionUrl);
                             }
                         }
-                        Thread.sleep(200);
+                        //随机暂停几秒
+                        Thread.sleep(000 * (random.nextInt(max) % (max - min + 1)));
                     }
                 } else {
                     System.out.println("该企业项目数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
@@ -378,12 +427,12 @@ public class HuNanSupervisorCompanyDetailTask {
      *
      * @param projectInfoUrl 项目详情Url
      */
-    Integer addProjectInfo(String projectInfoUrl) {
+    Integer addProjectInfo(String projectInfoUrl, String CompanyQualificationUrl) {
         Document projectInfoDoc;
         Connection projectInfoConn;
         try {
             //进入项目基本信息
-            projectInfoConn = Jsoup.connect(projectInfoUrl).userAgent("Mozilla").timeout(6000 * 60).ignoreHttpErrors(true);
+            projectInfoConn = Jsoup.connect(projectInfoUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
             projectInfoDoc = projectInfoConn.get();
             if (projectInfoConn.response().statusCode() == 200) {
                 Elements projectTable = projectInfoDoc.select("#table1");
@@ -404,7 +453,11 @@ public class HuNanSupervisorCompanyDetailTask {
                 tbProject.setXmid(projectInfoUrl.substring(projectInfoUrl.indexOf("=") + 1));
                 return companyService.insertProjectInfo(tbProject);
             } else {
-                logger.error("获取项目基本信息失败" + projectInfoUrl);
+                TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
+                tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
+                tbExceptionUrl.setExceptionUrl(projectInfoUrl);
+                tbExceptionUrl.setExceptionMsg("获取项目基本信息失败");
+                companyService.insertException(tbExceptionUrl);
                 return -1;
             }
         } catch (Exception e) {

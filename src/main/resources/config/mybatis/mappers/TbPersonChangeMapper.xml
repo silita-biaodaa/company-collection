@@ -1,5 +1,28 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.silita.biaodaa.dao.TbPersonChangeMapper" >
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.silita.biaodaa.dao.TbPersonChangeMapper">
 
+    <insert id="batchInsertPeopleChange" parameterType="com.silita.biaodaa.model.TbPersonChange">
+        INSERT INTO
+        hunanyitihua.tb_person_change(`com_name`, `major`, `change_date`, `remark`, `per_id`,
+        `created`)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.comName}, #{item.major}, #{item.changeDate}, #{item.remark}, #{item.perId},
+            NOW())
+        </foreach>
+    </insert>
+
+    <select id="getTotalByPerIdChangeDate" parameterType="com.silita.biaodaa.model.TbPersonChange" resultType="Integer">
+        SELECT Count(*) FROM hunanyitihua.tb_person_change WHERE per_id = #{perId} AND change_date = #{changeDate}
+    </select>
+
+    <insert id="insertPeopleChange" parameterType="com.silita.biaodaa.model.TbPersonChange">
+        INSERT INTO
+        hunanyitihua.tb_person_change(`com_name`, `major`, `change_date`, `remark`, `per_id`,
+       `created`)
+      VALUES
+         (#{comName}, #{major}, #{changeDate}, #{remark}, #{perId},
+            NOW())
+    </insert>
 </mapper>

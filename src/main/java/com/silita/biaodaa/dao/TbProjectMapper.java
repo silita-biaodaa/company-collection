@@ -15,11 +15,11 @@ public interface TbProjectMapper extends MyMapper<TbProject> {
      * 根据项目编号查询项目个数
      * @return
      */
-    Integer getProjectTotalByProjectNo(String projectNo);
+    Integer getProjectTotalByProjectNoAndXmid(String projectNo);
 
     /**
      * 根据项目编号取得项目主键
      * @return
      */
-    Integer getProIdByProNo(String projectNo);
+    Integer getProIdByProNoAndXmid(String projectNo);
 }
