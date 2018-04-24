@@ -48,4 +48,20 @@
     <select id="listCompanyQualification" parameterType="Map" resultType="com.silita.biaodaa.model.TbCompanyQualification">
         SELECT * FROM hunanyitihua.tb_company_qualification WHERE tab = #{tableName} AND `created` IS NOT NULL LIMIT #{start}, #{pageSize}
     </select>
+
+
+    <select id="getAllCompanyQualificationUrlByTabAndCompanyName" parameterType="Map" resultType="String">
+        SELECT url FROM hunanyitihua.tb_company_qualification WHERE tab = #{tableName} AND com_name = #{comName}
+    </select>
+
+    <select id="getComIdByUrl" parameterType="String" resultType="com.silita.biaodaa.model.TbCompanyQualification">
+        SELECT * FROM hunanyitihua.tb_company_qualification WHERE url = #{url}
+    </select>
+
+    <update id="updateTbCompanyQualificationByUrl" parameterType="com.silita.biaodaa.model.TbCompanyQualification">
+        UPDATE hunanyitihua.tb_company_qualification
+        SET qual_type = #{qualType}, cert_no = #{certNo}, cert_org = #{certOrg}, `range` = #{range}, com_id = #{comId},
+        updated = NOW()
+        WHERE `url` = #{url}
+    </update>
 </mapper>

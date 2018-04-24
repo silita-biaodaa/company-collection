@@ -99,13 +99,12 @@ public class HuNanCompanyQualificationListTask {
                     insertCompanySafetyCert(trs);
                 } else if (tab == 10) {
                     //外省入湘
-//                    insertCompanyInto(trs);
+                    insertCompanyInto(trs);
                 } else {
-//                    insertCompanyQualification(trs, tabs[tab]);
+                    insertCompanyQualification(trs, tabs[tab]);
                 }
                 //随机暂停几秒
-                Thread.sleep(600);
-//                Thread.sleep(1000 * (random.nextInt(max) % (max - min + 1)));
+                Thread.sleep(1000 * (random.nextInt(max) % (max - min + 1)));
             }
         }
     }

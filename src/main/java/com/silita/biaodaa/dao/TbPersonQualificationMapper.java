@@ -29,5 +29,11 @@ public interface TbPersonQualificationMapper extends MyMapper<TbPersonQualificat
      */
     Integer getTolalByPersonQualificationUrlAndComId(Map<String, Object> params);
 
+    /**
+     *
+     * @param comId
+     */
+    void deletePersonQualByComId(Integer comId);
+
 
 }

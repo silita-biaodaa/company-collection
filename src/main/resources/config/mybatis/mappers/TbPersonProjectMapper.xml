@@ -12,7 +12,7 @@
     </insert>
 
     <select id="getPersionProjectTotalByCertNoAndPid" parameterType="com.silita.biaodaa.model.TbPersonProject" resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_person_project WHERE pid = #{pid} AND `cert_no` = #{certNo}
+        SELECT COUNT(*) FROM hunanyitihua.tb_person_project WHERE pid = #{pid} AND `cert_no` = #{certNo} AND `safe_no` = #{safeNo}
     </select>
 
 </mapper>

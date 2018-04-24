@@ -30,4 +30,11 @@ public interface TbCompanyMapper extends MyMapper<TbCompany> {
      * @param tbCompany
      */
     void updateCompanyRangeByComId(TbCompany tbCompany);
+
+    /**
+     *
+     * @param tbCompany
+     */
+    void updateCompany(TbCompany tbCompany);
+
 }

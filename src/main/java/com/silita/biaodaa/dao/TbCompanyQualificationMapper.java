@@ -53,4 +53,24 @@ public interface TbCompanyQualificationMapper extends MyMapper<TbCompanyQualific
      * @return
      */
     List<TbCompanyQualification> listCompanyQualification(Map<String,Object> params);
+
+
+    /**
+     *
+     * @param params
+     * @return
+     */
+    List<String> getAllCompanyQualificationUrlByTabAndCompanyName(Map<String, Object> params);
+
+    /**
+     *
+     * @param url
+     * @return
+     */
+    TbCompanyQualification getComIdByUrl(String url);
+
+    /**
+     *
+     */
+    void updateTbCompanyQualificationByUrl(TbCompanyQualification companyQualification);
 }
