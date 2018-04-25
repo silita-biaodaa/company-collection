@@ -224,7 +224,11 @@ public class HuNanDesignCompanyDetailTask {
                         System.out.println("该企业注册人员数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
                     }
                 } else {
-                    logger.error("获取人员证书列表页失败" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                    TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
+                    tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
+                    tbExceptionUrl.setExceptionUrl(peopleListUrl);
+                    tbExceptionUrl.setExceptionMsg("获取人员证书列表页失败" + cookies.toString());
+                    companyService.insertException(tbExceptionUrl);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -415,7 +419,11 @@ public class HuNanDesignCompanyDetailTask {
                     System.out.println("该企业项目数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
                 }
             } else {
-                logger.error("获取企业项目列表页失败" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
+                tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
+                tbExceptionUrl.setExceptionUrl(peopleListUrl);
+                tbExceptionUrl.setExceptionMsg("获取企业项目列表页失败" + cookies.toString());
+                companyService.insertException(tbExceptionUrl);
             }
         } catch (Exception e) {
             e.printStackTrace();

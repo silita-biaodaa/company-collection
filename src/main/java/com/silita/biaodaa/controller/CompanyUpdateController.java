@@ -22,4 +22,6 @@ public class CompanyUpdateController {
     public void taskCompanyQualificationList(@RequestBody Map<String, Object> params) throws Exception {
         huNanCompanyUpdateTask.taskBuilderCompany(params);
     }
+
+
 }

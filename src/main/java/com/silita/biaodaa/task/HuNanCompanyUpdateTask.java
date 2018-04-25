@@ -26,6 +26,8 @@ public class HuNanCompanyUpdateTask {
 
     @Autowired
     private ICompanyUpdateService companyUpdateService;
+    @Autowired
+    private Project project;
 
 
     /**
@@ -33,12 +35,12 @@ public class HuNanCompanyUpdateTask {
      */
     public void taskBuilderCompany(Map<String, Object> params) {
         int threadCount = THREAD_NUMBER;
-        List<String> urls = new ArrayList<String>(2000);
+        List<String> urls = new ArrayList<String>(200);
         urls = companyUpdateService.getAllCompanyQualificationUrlByTabAndCompanyName(params);
         int every = urls.size() % threadCount == 0 ? urls.size() / threadCount : (urls.size() / threadCount) + 1;
         final CountDownLatch latch = new CountDownLatch(threadCount);
         for (int i = 0; i < threadCount; i++) {
-            new Thread(new HuNanCompanyUpdateRun(i * every, (i + 1) * every, latch, urls)).start();
+            new Thread(new HuNanCompanyUpdateRun(i * every, (i + 1) * every, latch, urls, params)).start();
         }
         try {
             latch.await();
@@ -52,12 +54,14 @@ public class HuNanCompanyUpdateTask {
         private int endNum;
         private CountDownLatch latch;
         private List<String> CompanyQualificationUrls;
+        private Map<String, Object> params;
 
-        public HuNanCompanyUpdateRun(int startNum, int endNum, CountDownLatch latch, List<String> CompanyQualificationUrls) {
+        public HuNanCompanyUpdateRun(int startNum, int endNum, CountDownLatch latch, List<String> CompanyQualificationUrls, Map<String, Object> params) {
             this.startNum = startNum;
             this.endNum = endNum;
             this.latch = latch;
             this.CompanyQualificationUrls = CompanyQualificationUrls;
+            this.params = params;
         }
 
         @Override
@@ -85,6 +89,17 @@ public class HuNanCompanyUpdateTask {
                         updateCompanyAptitude(CompanyAptitudeTable, corpid, comId);
                         //########更新人员及人员证书#######
                         updatePeople(cookies, CompanyQualificationUrl, comId);
+                        //##########更新项目信息##########
+                       /* String tab = (String) params.get("tableName");
+                        if(tab.equals("建筑业企业")) {
+                            project.getBuilderProjectList(cookies, CompanyQualificationUrl, comId);
+                        } else if(tab.equals("工程设计企业")) {
+                            project.getDesignProjectList(cookies, CompanyQualificationUrl, comId);
+                        } else if(tab.equals("工程勘察企业")) {
+                            project.getSurveyProjectList(cookies, CompanyQualificationUrl, comId);
+                        } else if(tab.equals("工程监理企业")) {
+                            project.getSupervisorProjectList(cookies, CompanyQualificationUrl, comId);
+                        }*/
                     } else {
                         TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
                         tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
@@ -98,6 +113,7 @@ public class HuNanCompanyUpdateTask {
                 e.printStackTrace();
             } finally {
             }
+            latch.countDown();
         }
 
         /**

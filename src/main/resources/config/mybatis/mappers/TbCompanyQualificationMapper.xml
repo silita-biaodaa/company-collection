@@ -32,7 +32,8 @@
         ORDER BY created DESC  LIMIT 0,6)
         UNION ALL
         (SELECT url FROM hunanyitihua.tb_company_qualification
-        WHERE tab = #{tableName} AND created IS NULL)
+        WHERE tab = #{tableName} AND created IS NULL
+        ORDER BY CONVERT(com_name USING gbk))
     </select>
 
     <update id="updateCompanyQualificationUrlByCorpid" parameterType="com.silita.biaodaa.model.TbCompanyQualification">
