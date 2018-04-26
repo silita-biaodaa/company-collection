@@ -100,6 +100,7 @@ public class HuNanBuilderCompanyDetailTask {
                         TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
                         tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
                         tbExceptionUrl.setExceptionMsg("获取企业详情信息失败!");
+                        tbExceptionUrl.setTab("建筑业企业");
                         companyService.insertException(tbExceptionUrl);
                     }
                     //随机暂停几秒
@@ -217,6 +218,7 @@ public class HuNanBuilderCompanyDetailTask {
                                     tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
                                     tbExceptionUrl.setExceptionUrl(PersonQualificationUrl);
                                     tbExceptionUrl.setExceptionMsg("获取人员详情失败");
+                                    tbExceptionUrl.setTab("建筑业企业");
                                     companyService.insertException(tbExceptionUrl);
                                 }
                             }
@@ -231,6 +233,7 @@ public class HuNanBuilderCompanyDetailTask {
                     tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
                     tbExceptionUrl.setExceptionUrl(peopleListUrl);
                     tbExceptionUrl.setExceptionMsg("获取人员证书列表页失败" + cookies.toString());
+                    tbExceptionUrl.setTab("建筑业企业");
                     companyService.insertException(tbExceptionUrl);
                 }
             } catch (Exception e) {
@@ -411,6 +414,7 @@ public class HuNanBuilderCompanyDetailTask {
                                 tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
                                 tbExceptionUrl.setExceptionUrl(projectBuildUrl);
                                 tbExceptionUrl.setExceptionMsg("获取项目详情失败");
+                                tbExceptionUrl.setTab("建筑业企业");
                                 companyService.insertException(tbExceptionUrl);
                             }
                         }
@@ -425,6 +429,7 @@ public class HuNanBuilderCompanyDetailTask {
                 tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
                 tbExceptionUrl.setExceptionUrl(peopleListUrl);
                 tbExceptionUrl.setExceptionMsg("获取企业项目列表页失败" + cookies.toString());
+                tbExceptionUrl.setTab("建筑业企业");
                 companyService.insertException(tbExceptionUrl);
             }
         } catch (Exception e) {
@@ -468,6 +473,7 @@ public class HuNanBuilderCompanyDetailTask {
                 tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
                 tbExceptionUrl.setExceptionUrl(projectInfoUrl);
                 tbExceptionUrl.setExceptionMsg("获取项目基本信息失败");
+                tbExceptionUrl.setTab("建筑业企业");
                 companyService.insertException(tbExceptionUrl);
                 return -1;
             }

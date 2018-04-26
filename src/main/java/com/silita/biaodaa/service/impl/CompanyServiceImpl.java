@@ -105,12 +105,12 @@ public class CompanyServiceImpl implements ICompanyService {
 
     @Override
     public int insertProjectInfo(TbProject tbProject) {
-        boolean flag = tbProjectMapper.getProjectTotalByProjectNoAndXmid(tbProject.getProNo()) > 0;
+        boolean flag = tbProjectMapper.getProjectTotalByProjectNoAndXmid(tbProject) > 0;
         if (!flag) {
             tbProjectMapper.insertProjectInfo(tbProject);
             return tbProject.getProId();
         } else {
-            return tbProjectMapper.getProIdByProNoAndXmid(tbProject.getProNo());
+            return tbProjectMapper.getProIdByProNoAndXmid(tbProject);
         }
     }
 

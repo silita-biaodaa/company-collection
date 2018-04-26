@@ -23,8 +23,8 @@ public class TaskUpdateTest {
     @Test
     public void taskhuNanBuilderCompanyUpdate() {
         Map<String, Object> params = new HashMap();
-        params.put("tableName", "建筑业企业");
-        params.put("comName", "湖南耀邦建设有限公司");
+        params.put("tableName", "工程设计企业");
+        params.put("comName", "湖南智谋规划工程设计咨询有限责任公司");
         huNanBuilderCompanyUpdateTask.taskBuilderCompany(params);
     }
 }

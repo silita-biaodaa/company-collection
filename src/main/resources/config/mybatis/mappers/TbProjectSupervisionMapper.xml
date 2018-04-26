@@ -32,7 +32,7 @@
         SELECT pkid FROM hunanyitihua.tb_project_supervision WHERE `pro_name` = #{proName} AND `super_org` = #{superOrg}
     </select>
 
-    <select id="getTotalByJlbdxhAndComId" parameterType="String" resultType="Integer">
+    <select id="getTotalByJlbdxhAndComId" parameterType="Map" resultType="Integer">
         SELECT COUNT(*) FROM hunanyitihua.tb_project_supervision WHERE jlbdxh = #{jlbdxh} AND com_id = #{comId}
     </select>
 

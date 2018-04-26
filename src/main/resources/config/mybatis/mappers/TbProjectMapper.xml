@@ -18,11 +18,11 @@
         #{proUse}, NOW())
     </insert>
 
-    <select id="getProjectTotalByProjectNoAndXmid" parameterType="String" resultType="Integer">
+    <select id="getProjectTotalByProjectNoAndXmid" parameterType="com.silita.biaodaa.model.TbProject" resultType="Integer">
         SELECT COUNT(*) FROM hunanyitihua.tb_project WHERE pro_no = #{proNo} AND xmid = #{xmid}
     </select>
 
-    <select id="getProIdByProNoAndXmid" parameterType="String" resultType="Integer">
+    <select id="getProIdByProNoAndXmid" parameterType="com.silita.biaodaa.model.TbProject" resultType="Integer">
         SELECT pro_id FROM hunanyitihua.tb_project WHERE pro_no = #{proNo} AND xmid = #{xmid}
     </select>
 </mapper>

@@ -38,4 +38,9 @@ public class TbExceptionUrl {
      */
     private String exceptionMsg;
 
+    /**
+     * 网站标签类别
+     */
+    private String tab;
+
 }

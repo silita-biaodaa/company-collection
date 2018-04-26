@@ -28,7 +28,7 @@ public class HuNanDesignCompanyDetailTask {
     private int max = 5;
     private Random random = new Random();
 
-    private static final int THREAD_NUMBER = 4;
+    private static final int THREAD_NUMBER = 1;
 
     @Autowired
     private ICompanyService companyService;
@@ -98,6 +98,7 @@ public class HuNanDesignCompanyDetailTask {
                         TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
                         tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
                         tbExceptionUrl.setExceptionMsg("获取企业详情信息失败!");
+                        tbExceptionUrl.setTab("工程设计企业");
                         companyService.insertException(tbExceptionUrl);
                     }
                     //随机暂停几秒
@@ -214,6 +215,7 @@ public class HuNanDesignCompanyDetailTask {
                                     tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
                                     tbExceptionUrl.setExceptionUrl(PersonQualificationUrl);
                                     tbExceptionUrl.setExceptionMsg("获取人员详情失败");
+                                    tbExceptionUrl.setTab("工程设计企业");
                                     companyService.insertException(tbExceptionUrl);
                                 }
                             }
@@ -228,6 +230,7 @@ public class HuNanDesignCompanyDetailTask {
                     tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
                     tbExceptionUrl.setExceptionUrl(peopleListUrl);
                     tbExceptionUrl.setExceptionMsg("获取人员证书列表页失败" + cookies.toString());
+                    tbExceptionUrl.setTab("工程设计企业");
                     companyService.insertException(tbExceptionUrl);
                 }
             } catch (Exception e) {
@@ -409,6 +412,7 @@ public class HuNanDesignCompanyDetailTask {
                                 tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
                                 tbExceptionUrl.setExceptionUrl(projectBuildUrl);
                                 tbExceptionUrl.setExceptionMsg("获取项目详情失败");
+                                tbExceptionUrl.setTab("工程设计企业");
                                 companyService.insertException(tbExceptionUrl);
                             }
                         }
@@ -423,6 +427,7 @@ public class HuNanDesignCompanyDetailTask {
                 tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
                 tbExceptionUrl.setExceptionUrl(peopleListUrl);
                 tbExceptionUrl.setExceptionMsg("获取企业项目列表页失败" + cookies.toString());
+                tbExceptionUrl.setTab("工程设计企业");
                 companyService.insertException(tbExceptionUrl);
             }
         } catch (Exception e) {
@@ -466,6 +471,7 @@ public class HuNanDesignCompanyDetailTask {
                 tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
                 tbExceptionUrl.setExceptionUrl(projectInfoUrl);
                 tbExceptionUrl.setExceptionMsg("获取项目基本信息失败");
+                tbExceptionUrl.setTab("工程设计企业");
                 companyService.insertException(tbExceptionUrl);
                 return -1;
             }
