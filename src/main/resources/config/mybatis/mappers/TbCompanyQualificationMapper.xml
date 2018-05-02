@@ -65,4 +65,10 @@
         updated = NOW()
         WHERE `url` = #{url}
     </update>
+
+    <select id="listComNameAndTab" resultType="Map">
+        SELECT DISTINCT com_name, tab
+        FROM hunanyitihua.tb_company_qualification
+        WHERE created IS NOT NULL
+    </select>
 </mapper>

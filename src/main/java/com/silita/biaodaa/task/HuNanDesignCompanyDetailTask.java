@@ -28,7 +28,7 @@ public class HuNanDesignCompanyDetailTask {
     private int max = 5;
     private Random random = new Random();
 
-    private static final int THREAD_NUMBER = 1;
+    private static final int THREAD_NUMBER = 6;
 
     @Autowired
     private ICompanyService companyService;

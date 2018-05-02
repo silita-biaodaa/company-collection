@@ -500,7 +500,7 @@ public class HuNanSurveyCompanyDetailTask {
         tbProjectDesign.setCheckFinishDate(eles.select("#ctl00_ContentPlaceHolder1_lbl_scrq").text());
         tbProjectDesign.setCheckPerson(eles.select("#ctl00_ContentPlaceHolder1_lbl_scryxm").text());
         tbProjectDesign.setType("explore");
-        tbProjectDesign.setType(proType);
+        tbProjectDesign.setProType(proType);
         tbProjectDesign.setSgtxh(sgtxh);
         tbProjectDesign.setComId(companyId);
         tbProjectDesign.setProId(projectId);

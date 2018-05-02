@@ -73,4 +73,10 @@ public interface TbCompanyQualificationMapper extends MyMapper<TbCompanyQualific
      *
      */
     void updateTbCompanyQualificationByUrl(TbCompanyQualification companyQualification);
+
+    /**
+     *
+     * @return
+     */
+    List<Map<String, Object>> listComNameAndTab();
 }

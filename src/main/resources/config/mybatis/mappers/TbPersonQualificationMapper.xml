@@ -15,7 +15,7 @@
 
     <select id="getTotalByCertNoAndComId" parameterType="com.silita.biaodaa.model.TbPersonQualification"
             resultType="Integer">
-      SELECT COUNT(*) FROM hunanyitihua.tb_person_qualification WHERE cert_no = #{certNo} AND com_id = #{comId}
+      SELECT COUNT(*) FROM hunanyitihua.tb_person_qualification WHERE com_id = #{comId} AND cert_no = #{certNo} AND per_id = #{perId}
     </select>
 
     <select id="getTolalByPersonQualificationUrlAndComId" parameterType="Map" resultType="Integer">

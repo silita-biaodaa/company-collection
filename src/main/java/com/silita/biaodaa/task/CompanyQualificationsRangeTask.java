@@ -30,7 +30,7 @@ public class CompanyQualificationsRangeTask {
     public void splitCompanyQualifications() {
         int page = 0;
         int batchCount = 1000;
-        Integer count = companyRangeService.getCompanyQualificationTotalByTabName("工程勘察企业");
+        Integer count = companyRangeService.getCompanyQualificationTotalByTabName("工程监理企业");
         if (count % batchCount == 0) {
             page = count / batchCount;
         } else {
@@ -41,7 +41,7 @@ public class CompanyQualificationsRangeTask {
         //分页 一次1000
         for (int pageNum = 0; pageNum < page; pageNum++) {
             params = new HashMap<>();
-            params.put("tableName", "工程勘察企业");
+            params.put("tableName", "工程监理企业");
             params.put("start", batchCount * pageNum);
             params.put("pageSize", 1000);
             companyQualificationList = companyRangeService.getCompanyQualifications(params);

@@ -92,4 +92,9 @@ public class CompanyUpdateServiceImpl implements ICompanyUpdateService {
         }
     }
 
+    @Override
+    public List<Map<String, Object>> listComNameAndTab() {
+        return tbCompanyQualificationMapper.listComNameAndTab();
+    }
+
 }

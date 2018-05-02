@@ -20,14 +20,13 @@ public class HuNanCompanyUpdateTask {
     private int min = 1;
     private int max = 5;
     private Random random = new Random();
-    String dateRegex = "(\\d{4}-\\d{1,2}-\\d{1,2})";
 
     private static final int THREAD_NUMBER = 1;
 
     @Autowired
     private ICompanyUpdateService companyUpdateService;
     @Autowired
-    private Project project;
+    private ProjectDataUpdate projectDataUpdate;
 
 
     /**
@@ -35,7 +34,7 @@ public class HuNanCompanyUpdateTask {
      */
     public void taskBuilderCompany(Map<String, Object> params) {
         int threadCount = THREAD_NUMBER;
-        List<String> urls = new ArrayList<String>(200);
+        List<String> urls = new ArrayList<String>(2000);
         urls = companyUpdateService.getAllCompanyQualificationUrlByTabAndCompanyName(params);
         int every = urls.size() % threadCount == 0 ? urls.size() / threadCount : (urls.size() / threadCount) + 1;
         final CountDownLatch latch = new CountDownLatch(threadCount);
@@ -90,15 +89,15 @@ public class HuNanCompanyUpdateTask {
                         //########更新人员及人员证书#######
                         updatePeople(cookies, CompanyQualificationUrl, comId);
                         //##########更新项目信息##########
-                       /* String tab = (String) params.get("tableName");
+                        /* String tab = (String) params.get("tableName");
                         if(tab.equals("建筑业企业")) {
-                            project.getBuilderProjectList(cookies, CompanyQualificationUrl, comId);
+                            projectDataUpdate.getBuilderProjectList(cookies, CompanyQualificationUrl, comId);
                         } else if(tab.equals("工程设计企业")) {
-                            project.getDesignProjectList(cookies, CompanyQualificationUrl, comId);
+                            projectDataUpdate.getDesignProjectList(cookies, CompanyQualificationUrl, comId);
                         } else if(tab.equals("工程勘察企业")) {
-                            project.getSurveyProjectList(cookies, CompanyQualificationUrl, comId);
+                            projectDataUpdate.getSurveyProjectList(cookies, CompanyQualificationUrl, comId);
                         } else if(tab.equals("工程监理企业")) {
-                            project.getSupervisorProjectList(cookies, CompanyQualificationUrl, comId);
+                            projectDataUpdate.getSupervisorProjectList(cookies, CompanyQualificationUrl, comId);
                         }*/
                     } else {
                         TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();

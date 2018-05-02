@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  * Created by 91567 on 2018/4/24.
  */
 @Component
-public class Project {
+public class ProjectDataUpdate {
 
     private int min = 1;
     private int max = 5;
@@ -541,7 +541,7 @@ public class Project {
         tbProjectDesign.setCheckFinishDate(eles.select("#ctl00_ContentPlaceHolder1_lbl_scrq").text());
         tbProjectDesign.setCheckPerson(eles.select("#ctl00_ContentPlaceHolder1_lbl_scryxm").text());
         tbProjectDesign.setType("explore");
-        tbProjectDesign.setType(proType);
+        tbProjectDesign.setProType(proType);
         tbProjectDesign.setSgtxh(sgtxh);
         tbProjectDesign.setComId(companyId);
         tbProjectDesign.setProId(projectId);

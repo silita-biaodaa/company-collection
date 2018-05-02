@@ -73,4 +73,10 @@ public interface ICompanyUpdateService {
      * @param tbPersonChange
      */
     void insertPeopleChange(TbPersonChange tbPersonChange);
+
+    /**
+     *
+     * @return
+     */
+    List<Map<String, Object>> listComNameAndTab();
 }
