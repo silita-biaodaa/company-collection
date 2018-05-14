@@ -82,4 +82,9 @@ public class TbPersonQualification {
      * 1、注册执业信息2、其他资格信息
      */
     private Integer type;
+
+    /**
+     * 有余字段人员姓名用于业务查询
+     */
+    private String perName;
 }

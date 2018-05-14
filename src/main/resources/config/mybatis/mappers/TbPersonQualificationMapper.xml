@@ -6,11 +6,11 @@
         INSERT INTO
         hunanyitihua.tb_person_qualification(`com_name`, `category`, `cert_no`, `seal_no`, `major`,
         `cert_date`, `valid_date`, `url`, `innerid`, `per_id`,
-        `type`, `com_id`, `created`)
+        `type`, `com_id`, `created`, `per_name`)
         VALUES
         (#{comName}, #{category}, #{certNo}, #{sealNo}, #{major},
         #{certDate}, #{validDate}, #{url}, #{innerid}, #{perId},
-        #{type}, #{comId}, NOW())
+        #{type}, #{comId}, NOW(), #{perName})
     </insert>
 
     <select id="getTotalByCertNoAndComId" parameterType="com.silita.biaodaa.model.TbPersonQualification"

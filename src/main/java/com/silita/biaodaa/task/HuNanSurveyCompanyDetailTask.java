@@ -122,7 +122,7 @@ public class HuNanSurveyCompanyDetailTask {
             company.setComName(eles.select("#ctl00_ContentPlaceHolder1_lbl_qymc").text());
             company.setOrgCode(eles.select("#ctl00_ContentPlaceHolder1_lbl_jgdm").text());
             company.setBusinessNum(eles.select("#ctl00_ContentPlaceHolder1_lbl_yyzz").text());
-            company.setRegisAddress(eles.select("#ctl00_ContentPlaceHolder1_lbl_sz").text());
+            company.setRegisAddress("湖南省" + eles.select("#ctl00_ContentPlaceHolder1_lbl_sz").text());
             company.setComAddress(eles.select("#ctl00_ContentPlaceHolder1_lbl_dwdz").text());
             company.setLegalPerson(eles.select("#ctl00_ContentPlaceHolder1_lbl_fddbr").text());
             company.setEconomicType(eles.select("#ctl00_ContentPlaceHolder1_lbl_jjlx").text());
@@ -204,10 +204,12 @@ public class HuNanSurveyCompanyDetailTask {
                                     Elements peopleChangeTable = peopleDetailDoc.select("#tablelist").select("#table6").select("#ctl00_ContentPlaceHolder1_jzs2_history").select("tr");
                                     //添加人员基本信息后 返回主键
                                     Integer pkid = addPeopleInfo(peopleInfoTable, companyId);
+                                    //有余字段（人员姓名）存入人员资质表用于业务查询
+                                    String PersionName = peopleInfoTable.select("#ctl00_ContentPlaceHolder1_lbl_xm").text();
                                     //注册执业信息
-                                    addPeopleRegistered(peopleRegisteredTable, PersonQualificationUrl, companyId, pkid, validDate);
+                                    addPeopleRegistered(peopleRegisteredTable, PersonQualificationUrl, companyId, pkid, validDate, PersionName);
                                     //其他资格信息
-                                    addPeopleOtherCert(peopleOtherQualificationsTable, PersonQualificationUrl, companyId, pkid);
+                                    addPeopleOtherCert(peopleOtherQualificationsTable, PersonQualificationUrl, companyId, pkid, PersionName);
                                     //人员变更信息
                                     addPeopleChange(peopleChangeTable, pkid);
                                 } else {
@@ -265,7 +267,7 @@ public class HuNanSurveyCompanyDetailTask {
          * @param companyId              公司id
          * @param peopleId               人员id
          */
-        void addPeopleRegistered(Elements eles, String PersonQualificationUrl, Integer companyId, Integer peopleId, String validDate) {
+        void addPeopleRegistered(Elements eles, String PersonQualificationUrl, Integer companyId, Integer peopleId, String validDate, String persionName) {
             TbPersonQualification tbPersonQualification = null;
             if (eles.size() > 1) {
                 for (int i = 1; i < eles.size(); i++) {
@@ -281,6 +283,7 @@ public class HuNanSurveyCompanyDetailTask {
                     tbPersonQualification.setPerId(peopleId);
                     tbPersonQualification.setComId(companyId);
                     tbPersonQualification.setType(1);
+                    tbPersonQualification.setPerName(persionName);
                     companyService.insertPersonQualification(tbPersonQualification);
                 }
             } else {
@@ -297,7 +300,7 @@ public class HuNanSurveyCompanyDetailTask {
          * @param companyId              公司id
          * @param peopleId               人员id
          */
-        void addPeopleOtherCert(Elements eles, String PersonQualificationUrl, Integer companyId, Integer peopleId) {
+        void addPeopleOtherCert(Elements eles, String PersonQualificationUrl, Integer companyId, Integer peopleId, String persionName) {
             if (eles.size() > 1) {
                 TbPersonQualification tbPersonQualification = null;
                 for (int i = 1; i < eles.size(); i++) {
@@ -319,6 +322,7 @@ public class HuNanSurveyCompanyDetailTask {
                     tbPersonQualification.setPerId(peopleId);
                     tbPersonQualification.setComId(companyId);
                     tbPersonQualification.setType(2);
+                    tbPersonQualification.setPerName(persionName);
                     companyService.insertPersonQualification(tbPersonQualification);
                 }
             } else {
