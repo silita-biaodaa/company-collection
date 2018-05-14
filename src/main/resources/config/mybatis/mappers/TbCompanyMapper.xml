@@ -16,12 +16,12 @@
 
     <select id="getCompanyTotalForOrgCodeAndBusinessNum" parameterType="com.silita.biaodaa.model.TbCompany"
             resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_company WHERE business_num = #{businessNum}
+        SELECT COUNT(*) FROM hunanyitihua.tb_company WHERE business_num = #{businessNum} OR com_name = #{comName}
     </select>
 
     <select id="getCompanyIdByOrgCodeAndBusinessNum" parameterType="com.silita.biaodaa.model.TbCompany"
             resultType="Integer">
-        SELECT com_id FROM hunanyitihua.tb_company WHERE business_num = #{businessNum}
+        SELECT com_id FROM hunanyitihua.tb_company WHERE business_num = #{businessNum} OR com_name = #{comName}
     </select>
 
     <update id="updateCompanyRangeByComId" parameterType="com.silita.biaodaa.model.TbCompany">

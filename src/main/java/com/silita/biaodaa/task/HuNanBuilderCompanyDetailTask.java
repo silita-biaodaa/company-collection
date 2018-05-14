@@ -538,7 +538,7 @@ public class HuNanBuilderCompanyDetailTask {
                 if (StringUtils.isNotNull(eles.get(i).text())) {
                     tbPersonProject = new TbPersonProject();
                     tbPersonProject.setName(eles.get(i).select("td").get(0).text());
-                    tbPersonProject.setCategory(eles.get(i).select("td").get(1).text());
+                    tbPersonProject.setRole(eles.get(i).select("td").get(1).text());
                     tbPersonProject.setCertNo(eles.get(i).select("td").get(2).text());
                     tbPersonProject.setSafeNo(eles.get(i).select("td").get(3).text());
                     tbPersonProject.setStatus(eles.get(i).select("td").get(4).text());

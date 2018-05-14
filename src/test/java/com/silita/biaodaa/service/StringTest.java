@@ -28,5 +28,10 @@ public class StringTest {
 
         String test = "8100.000万元人民币";
         System.out.println(CNNumberFormat.ChnStringToNumber(test.replace("人民币", "").replace("元", "")));
+
+        String[] qual = "建筑装修装饰工程专业承包一级|古建筑工程专业承包二级".split("\\|");
+        for (int i = 0; i < qual.length; i++) {
+            System.out.println(qual[i]);
+        }
     }
 }

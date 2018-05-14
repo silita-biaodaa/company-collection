@@ -25,4 +25,9 @@ public interface TbCompanyAptitudeMapper extends MyMapper<TbCompanyAptitude> {
      * @return
      */
     List<TbCompanyAptitude> listCompanyAptitude(Map<String,Object> params);
+
+    /**
+     *
+     */
+    void deleteCompanyAptitude();
 }

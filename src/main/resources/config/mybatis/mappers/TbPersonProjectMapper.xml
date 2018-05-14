@@ -4,11 +4,13 @@
 
     <insert id="insertPersionProject" parameterType="com.silita.biaodaa.model.TbPersonProject">
        INSERT INTO
-       hunanyitihua.tb_person_project(`innerid`, `pid`, `name`, `category`, `cert_no`,
-      `safe_no`, `status`, `type`, `created`)
+       hunanyitihua.tb_person_project(`innerid`, `pid`, `com_name`, `name`, `category`,
+       `cert_no`, `safe_no`, `status`, `type`, `role`,
+       `created`)
        VALUES
-        (#{innerid}, #{pid}, #{name}, #{category}, #{certNo},
-        #{safeNo}, #{status}, #{type}, NOW())
+        (#{innerid}, #{pid}, #{comName}, #{name}, #{category},
+        #{certNo}, #{safeNo}, #{status}, #{type}, #{role},
+        NOW())
     </insert>
 
     <select id="getPersionProjectTotalByCertNoAndPid" parameterType="com.silita.biaodaa.model.TbPersonProject" resultType="Integer">

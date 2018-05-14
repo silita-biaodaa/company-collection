@@ -79,4 +79,22 @@ public interface TbCompanyQualificationMapper extends MyMapper<TbCompanyQualific
      * @return
      */
     List<Map<String, Object>> listComNameAndTab();
+
+
+
+    //##################################################北京
+
+    /**
+     *
+     * @param
+     * @return
+     */
+    Integer getBeiJinCompanyQualificationTotalByTabName();
+
+    /**
+     * 按批次取得企业资质证书
+     * @param params
+     * @return
+     */
+    List<TbCompanyQualification> listBeiJinCompanyQualification(Map<String,Object> params);
 }

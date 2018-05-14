@@ -22,4 +22,8 @@
         GROUP BY com_id
         LIMIT #{start}, #{pageSize}
     </select>
+
+    <delete id="deleteCompanyAptitude">
+        DELETE FROM hunanyitihua.tb_company_aptitude WHERE pkid > 0
+    </delete>
 </mapper>

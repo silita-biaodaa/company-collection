@@ -24,6 +24,11 @@ public class TbPersonProject {
     private Integer pid;
 
     /**
+     * 企业名称
+     */
+    private String comName;
+
+    /**
      * 姓名
      */
     private String name;
@@ -49,9 +54,14 @@ public class TbPersonProject {
     private String status;
 
     /**
-     * 监理OR施工类型；监理：supervision；施工：build
+     * 监理OR施工类型；监理：supervision；施工：build；勘察：design
      */
     private String type;
+
+    /**
+     * 人员在项目中担任的角色，项目经理/项目总监/总监理工程师
+     */
+    private String role;
 
     /**
      * 创建时间

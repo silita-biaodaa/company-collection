@@ -82,5 +82,15 @@ public class TaskTest {
         companyQualificationsRangeTask.updateCompanyAptitudeRange();
     }
 
+    /**
+     * 北京资质拆分测试
+     * @throws Exception
+     */
+    @Test
+    public void BeijinCompanyQualificationsRangeTask() throws Exception {
+//        companyQualificationsRangeTask.splitBeijinCompanyQualifications();
+        companyQualificationsRangeTask.updateBeijinCompanyAptitudeRange();
+    }
+
 
 }

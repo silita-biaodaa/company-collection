@@ -30,6 +30,11 @@ public class CompanyRangeServiceImpl implements ICompanyRangeService {
 
 
     @Override
+    public void deleteCompanyAptitude() {
+        tbCompanyAptitudeMapper.deleteCompanyAptitude();
+    }
+
+    @Override
     public int getCompanyQualificationTotalByTabName(String tableName) {
         return tbCompanyQualificationMapper.getCompanyQualificationTotalByTabName(tableName);
     }
@@ -69,5 +74,17 @@ public class CompanyRangeServiceImpl implements ICompanyRangeService {
     @Override
     public void updateCompanyRangeByComId(TbCompany tbCompany) {
         tbCompanyMapper.updateCompanyRangeByComId(tbCompany);
+    }
+
+    //##############################################北京
+
+    @Override
+    public int getBeiJinCompanyQualificationTotalByTabName() {
+        return tbCompanyQualificationMapper.getBeiJinCompanyQualificationTotalByTabName();
+    }
+
+    @Override
+    public List<TbCompanyQualification> getBeiJinCompanyQualifications(Map<String, Object> params) {
+        return tbCompanyQualificationMapper.listBeiJinCompanyQualification(params);
     }
 }

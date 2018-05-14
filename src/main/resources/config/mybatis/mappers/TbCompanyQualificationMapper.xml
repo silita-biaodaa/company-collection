@@ -71,4 +71,12 @@
         FROM hunanyitihua.tb_company_qualification
         WHERE created IS NOT NULL
     </select>
+
+    <select id="getBeiJinCompanyQualificationTotalByTabName" resultType="Integer">
+          SELECT COUNT(*) FROM hunanyitihua.tb_company_qualification WHERE bak_id IS NOT NULL
+    </select>
+
+    <select id="listBeiJinCompanyQualification" parameterType="Map" resultType="com.silita.biaodaa.model.TbCompanyQualification">
+        SELECT * FROM hunanyitihua.tb_company_qualification WHERE bak_id IS NOT NULL LIMIT #{start}, #{pageSize}
+    </select>
 </mapper>

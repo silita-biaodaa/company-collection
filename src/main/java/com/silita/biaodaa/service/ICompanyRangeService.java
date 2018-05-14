@@ -14,6 +14,11 @@ import java.util.Map;
 public interface ICompanyRangeService {
 
     /**
+     * 删除拆分后的资质
+     */
+    void deleteCompanyAptitude();
+
+    /**
      *
      * @param tableName
      * @return
@@ -68,6 +73,24 @@ public interface ICompanyRangeService {
      * @param tbCompany
      */
     void updateCompanyRangeByComId(TbCompany tbCompany);
+
+
+
+    //#####################################北京
+
+    /**
+     *
+     * @return
+     */
+    int getBeiJinCompanyQualificationTotalByTabName();
+
+    /**
+     *
+     * @param params
+     * @return
+     */
+    List<TbCompanyQualification> getBeiJinCompanyQualifications(Map<String, Object> params);
+
 
 
 }
