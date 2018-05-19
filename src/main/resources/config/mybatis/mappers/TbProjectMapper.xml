@@ -7,7 +7,7 @@
             SELECT LAST_INSERT_ID() AS proId
         </selectKey>
         INSERT INTO
-        hunanyitihua.tb_project(`xmid`, `pro_name`, `pro_no`, `pro_org`, `pro_where`,
+        mishu.tb_project(`xmid`, `pro_name`, `pro_no`, `pro_org`, `pro_where`,
         `pro_address`, `invest_amount`, `approval_num`, `pro_type`, `build_type`,
         `pro_scope`, `land_licence`, `plan_licence`, `money_source`, `pro_level`,
         `pro_use`, `created`)
@@ -19,10 +19,10 @@
     </insert>
 
     <select id="getProjectTotalByProjectNoAndXmid" parameterType="com.silita.biaodaa.model.TbProject" resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_project WHERE pro_no = #{proNo} AND xmid = #{xmid}
+        SELECT COUNT(*) FROM mishu.tb_project WHERE pro_no = #{proNo} AND xmid = #{xmid}
     </select>
 
     <select id="getProIdByProNoAndXmid" parameterType="com.silita.biaodaa.model.TbProject" resultType="Integer">
-        SELECT pro_id FROM hunanyitihua.tb_project WHERE pro_no = #{proNo} AND xmid = #{xmid}
+        SELECT pro_id FROM mishu.tb_project WHERE pro_no = #{proNo} AND xmid = #{xmid}
     </select>
 </mapper>

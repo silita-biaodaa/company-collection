@@ -39,6 +39,11 @@ public class TbPersonChange {
     private Integer perId;
 
     /**
+     * 人员唯一标准
+     */
+    private String flag;
+
+    /**
      * 创建时间
      */
     private Date created;

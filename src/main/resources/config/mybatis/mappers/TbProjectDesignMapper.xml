@@ -7,7 +7,7 @@
             SELECT LAST_INSERT_ID() AS pkid
         </selectKey>
         INSERT INTO
-        hunanyitihua.tb_project_design(`sgtxh`, `pro_id`, `pro_name`, `pro_type`, `pro_scope`,
+        mishu.tb_project_design(`sgtxh`, `pro_id`, `pro_name`, `pro_type`, `pro_scope`,
         `com_id`, `explore_org`, `design_org`, `check_org`, `check_no`,
         `check_finish_date`, `check_person`, `type`, `created`)
         VALUES
@@ -17,23 +17,23 @@
     </insert>
 
     <select id="getTotalBySgtxhAndComIdCheckNo" parameterType="com.silita.biaodaa.model.TbProjectDesign" resultType="Integer">
-      SELECT COUNT(*) FROM hunanyitihua.tb_project_design WHERE sgtxh = #{sgtxh} AND com_id = #{comId} AND check_no = #{checkNo}
+      SELECT COUNT(*) FROM mishu.tb_project_design WHERE sgtxh = #{sgtxh} AND com_id = #{comId} AND check_no = #{checkNo}
     </select>
 
     <select id="getPkidBySgtxhAndComIdCheckNo" parameterType="com.silita.biaodaa.model.TbProjectDesign" resultType="Integer">
-        SELECT pkid FROM hunanyitihua.tb_project_design WHERE sgtxh = #{sgtxh} AND com_id = #{comId} AND check_no = #{checkNo}
+        SELECT pkid FROM mishu.tb_project_design WHERE sgtxh = #{sgtxh} AND com_id = #{comId} AND check_no = #{checkNo}
     </select>
 
     <select id="getProjectDesignTotalByCheckNoAndExploreOrg" parameterType="com.silita.biaodaa.model.TbProjectDesign" resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_project_design WHERE check_no = #{checkNo} AND explore_org = #{exploreOrg}
+        SELECT COUNT(*) FROM mishu.tb_project_design WHERE check_no = #{checkNo} AND explore_org = #{exploreOrg}
     </select>
 
     <select id="getPkidByCheckNoAndExploreOrg" parameterType="com.silita.biaodaa.model.TbProjectDesign" resultType="Integer">
-        SELECT pkid FROM hunanyitihua.tb_project_design WHERE check_no = #{checkNo} AND explore_org = #{exploreOrg}
+        SELECT pkid FROM mishu.tb_project_design WHERE check_no = #{checkNo} AND explore_org = #{exploreOrg}
     </select>
 
     <select id="getTotalBySgtxhAndProTypeAndComId" parameterType="Map" resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_project_design WHERE sgtxh = #{sgtxh} AND com_id = #{comId} AND `pro_type` = #{proType}
+        SELECT COUNT(*) FROM mishu.tb_project_design WHERE sgtxh = #{sgtxh} AND com_id = #{comId} AND `pro_type` = #{proType}
     </select>
 
 </mapper>

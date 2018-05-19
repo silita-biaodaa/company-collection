@@ -4,29 +4,29 @@
 
     <insert id="insertPersonQualification" parameterType="com.silita.biaodaa.model.TbPersonQualification">
         INSERT INTO
-        hunanyitihua.tb_person_qualification(`com_name`, `category`, `cert_no`, `seal_no`, `major`,
+        mishu.tb_person_qualification(`com_name`, `category`, `cert_no`, `seal_no`, `major`,
         `cert_date`, `valid_date`, `url`, `innerid`, `per_id`,
-        `type`, `com_id`, `created`, `per_name`)
+        `type`, `com_id`, `created`, `name`)
         VALUES
         (#{comName}, #{category}, #{certNo}, #{sealNo}, #{major},
         #{certDate}, #{validDate}, #{url}, #{innerid}, #{perId},
-        #{type}, #{comId}, NOW(), #{perName})
+        #{type}, #{comId}, NOW(), #{name})
     </insert>
 
-    <select id="getTotalByCertNoAndComId" parameterType="com.silita.biaodaa.model.TbPersonQualification"
+    <select id="getTotalByCertNoAndComIdAndCategory" parameterType="com.silita.biaodaa.model.TbPersonQualification"
             resultType="Integer">
-      SELECT COUNT(*) FROM hunanyitihua.tb_person_qualification WHERE com_id = #{comId} AND cert_no = #{certNo} AND per_id = #{perId}
+      SELECT COUNT(*) FROM mishu.tb_person_qualification WHERE com_id = #{comId} AND cert_no = #{certNo} AND category = #{category}
     </select>
 
-    <select id="getTolalByPersonQualificationUrlAndComId" parameterType="Map" resultType="Integer">
-      SELECT COUNT(*) FROM hunanyitihua.tb_person_qualification WHERE com_id = #{comId} AND url = #{url}
+    <select id="getTotalByCertNoAndComIdAndCategoryAndMajor" parameterType="com.silita.biaodaa.model.TbPersonQualification" resultType="Integer">
+      SELECT COUNT(*) FROM mishu.tb_person_qualification WHERE com_id = #{comId} AND cert_no = #{certNo} AND category = #{category} AND major = #{major}
     </select>
 
     <delete id="deletePersonQualByComId" parameterType="Integer">
         DELETE q
-        FROM hunanyitihua.tb_company c
-        LEFT JOIN hunanyitihua.tb_person_qualification q ON c.com_id = q.com_id
-        LEFT JOIN hunanyitihua.tb_person p ON q.per_id = p.pkid
+        FROM mishu.tb_company c
+        LEFT JOIN mishu.tb_person_qualification q ON c.com_id = q.com_id
+        LEFT JOIN mishu.tb_person p ON q.per_id = p.pkid
         WHERE c.com_id = #{comId};
     </delete>
 </mapper>

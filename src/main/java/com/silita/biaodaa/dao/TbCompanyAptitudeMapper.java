@@ -27,7 +27,20 @@ public interface TbCompanyAptitudeMapper extends MyMapper<TbCompanyAptitude> {
     List<TbCompanyAptitude> listCompanyAptitude(Map<String,Object> params);
 
     /**
-     *
+     *删除全部拆分后的资质证书
      */
     void deleteCompanyAptitude();
+
+    /**
+     * 根据企业id获取拆分后的资质证书
+     * @param companyId
+     * @return
+     */
+    List<TbCompanyAptitude> listCompanyAptitudeByComPanyId(Integer companyId);
+
+    /**
+     * 根据企业id删除拆分后的资质证书
+     * @param companyId
+     */
+    void deleteCompanyAptitudeByCompanyId(Integer companyId);
 }

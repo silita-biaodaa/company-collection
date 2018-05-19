@@ -49,7 +49,7 @@ public interface ICompanyService {
 
     /**
      * 添加人员基本信息
-     * 根据人员名字、身份证、性别判断是否添加
+     * 根据人员名字、身份证6位、性别判断是否添加
      *
      * @param tbPerson
      * @return
@@ -58,14 +58,14 @@ public interface ICompanyService {
 
     /**
      * 添加人员执业证书信息
-     * 根据证件号码判断是否需要抓取
+     * 根据证书编号、注册类别、公司id判断证书是否抓取
      *
      * @param tbPersonQualification
      */
     void insertPersonQualification(TbPersonQualification tbPersonQualification);
 
     /**
-     * 根据项目编号判断是否添加项目基本信息
+     * 根据项目编号、内部id判断是否添加项目基本信息
      *
      * @param tbProject
      */
@@ -116,15 +116,15 @@ public interface ICompanyService {
     /**
      * 根据人员证书url判断是否已经抓取
      * 一个公司有多个资质证书、多个证书对应一个公司的人员证书 所以抓一个公司的一个资质证书就可以了
-     * 人员的证书会发生变化，所以加上公司id防止证书换公司不抓问题
-     * @param params
+     * 人员的证书会变换公司，所以加上公司id防止证书换公司漏抓问题
+     * @param tbPersonQualification
      * @return true存在
      */
-    boolean checkPersonQualificationExist(Map<String, Object> params);
+    boolean checkPersonQualificationIsExist(TbPersonQualification tbPersonQualification);
 
     /**
      * 根据施工项目内部id判断该施工项目是否已抓取
-     * 一个施工类企业有多个施工类证书、多个施工类证书对应一个公司的多个施工项目
+     * 一个施工类企业有多个施工类资质证书、多个施工类资质证书对应一个公司的施工项目
      * @param params
      * @return
      */
@@ -145,13 +145,14 @@ public interface ICompanyService {
     boolean checkProjectSupervisionExist(Map<String, Object> params);
 
     /**
-     * 批量插入人员变更
+     * 批量插入人员变更信息
      * @param tbPersonChanges
      */
     void batchInsertPeopleChange(List<TbPersonChange> tbPersonChanges);
 
     /**
-     * 插入人员变更
+     * 插入人员变更信息
+     * 根据人员id变更时间判断是否抓取
      * @param tbPersonChange
      */
     void insertPeopleChange(TbPersonChange tbPersonChange);

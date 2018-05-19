@@ -3,8 +3,6 @@ package com.silita.biaodaa.dao;
 import com.silita.biaodaa.model.TbPersonQualification;
 import com.silita.biaodaa.utils.MyMapper;
 
-import java.util.Map;
-
 public interface TbPersonQualificationMapper extends MyMapper<TbPersonQualification> {
 
     /**
@@ -14,23 +12,21 @@ public interface TbPersonQualificationMapper extends MyMapper<TbPersonQualificat
     void insertPersonQualification(TbPersonQualification tbPersonQualification);
 
     /**
-     * 根据人员证书编号人员主键名称编号判断是否还要抓取
+     * 根据证书编号、注册类别、公司id判断证书是否存在
      * @param tbPersonQualification
      * @return
      */
-    Integer getTotalByCertNoAndComId(TbPersonQualification tbPersonQualification);
+    Integer getTotalByCertNoAndComIdAndCategory(TbPersonQualification tbPersonQualification);
 
     /**
-     * 根据人员证书url判断是否已经抓取
-     * 一个公司有多个资质证书、多个证书对应一个公司的人员证书 所以抓一个公司的一个资质证书就可以了
-     * 人员的证书会发生变化，所以加上公司id防止证书换公司不抓问题
-     * @param params
+     * 根据证书编号、注册类别、公司id、专业判断证书是否存在
+     * @param tbPersonQualification
      * @return
      */
-    Integer getTolalByPersonQualificationUrlAndComId(Map<String, Object> params);
+    Integer getTotalByCertNoAndComIdAndCategoryAndMajor(TbPersonQualification tbPersonQualification);
 
     /**
-     *
+     * 根据公司id删除人员证书
      * @param comId
      */
     void deletePersonQualByComId(Integer comId);

@@ -4,7 +4,7 @@
 
     <insert id="insertPersionDesign" parameterType="com.silita.biaodaa.model.TbPersonDesign">
         INSERT INTO
-        hunanyitihua.tb_person_design(`innerid`, `pid`, `name`, `category`, `com_name`,
+        mishu.tb_person_design(`innerid`, `pid`, `name`, `category`, `com_name`,
         `role`, `created`)
         VALUES
         (#{innerid}, #{pid}, #{name}, #{category}, #{comName},
@@ -12,6 +12,6 @@
     </insert>
 
     <select id="getTotalByNameAndCategoryAndPid" parameterType="com.silita.biaodaa.model.TbPersonDesign" resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_person_design WHERE pid = #{pid} AND `name` = #{name} AND `category` = #{category}
+        SELECT COUNT(*) FROM mishu.tb_person_design WHERE pid = #{pid} AND `name` = #{name} AND `category` = #{category}
     </select>
 </mapper>

@@ -8,6 +8,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -69,6 +70,7 @@ public class HuNanCompanyUpdateTask {
             Connection companyDetailConn;
             //企业cookie，抓取人员、项目需要企业cookie
             Map<String, String> cookies;
+            Integer comId = null;
             try {
                 for (int i = startNum; i < endNum; i++) {
                     String CompanyQualificationUrl = CompanyQualificationUrls.get(i);
@@ -81,13 +83,16 @@ public class HuNanCompanyUpdateTask {
                         Elements CompanyAptitudeTable = companyDetailDoc.select("#tablelist").select("#table2").select("#ctl00_ContentPlaceHolder1_td_zzdetail").select("table");
 
                         TbCompanyQualification tbCompanyQualification = companyUpdateService.getComIdByUrl(CompanyQualificationUrl);
-                        Integer comId = tbCompanyQualification.getComId();
+                        comId = tbCompanyQualification.getComId();
                         //#########更新企业基本信息########
                         updateCompanyInfo(companyInfoTable, comId);
                         //########更新企业资质证书#########
                         updateCompanyAptitude(CompanyAptitudeTable, corpid, comId);
                         //########更新人员及人员证书#######
-                        updatePeople(cookies, CompanyQualificationUrl, comId);
+                        if ((endNum > 1 && i == 0) || (endNum == 1)) {
+                            //多本证书更新一次人员证书就行了
+                            updatePeople(cookies, CompanyQualificationUrl, comId);
+                        }
                         //##########更新项目信息##########
                         /* String tab = (String) params.get("tableName");
                         if(tab.equals("建筑业企业")) {
@@ -108,6 +113,9 @@ public class HuNanCompanyUpdateTask {
                     //随机暂停几秒
                     Thread.sleep(1000 * (random.nextInt(max) % (max - min + 1)));
                 }
+                //##########拆分&&更新企业资质##########
+                splitCompanyQualifications(comId);
+                updateCompanyAptitudeRange(comId);
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -173,7 +181,7 @@ public class HuNanCompanyUpdateTask {
          */
         void updatePeople(Map<String, String> cookies, String CompanyQualificationUrl, Integer companyId) {
             //删除该公司下的人员资质证书
-            companyUpdateService.deletePersonQualByComId(companyId);
+            companyUpdateService.deletePersonHunanByCompanyId(companyId);
             Document peopleListDoc;
             Connection peopleListConn;
             String peopleListUrl = "http://qyryjg.hunanjz.com/public/EnterpriseRegPerson.ashx";
@@ -185,37 +193,49 @@ public class HuNanCompanyUpdateTask {
                 if (peopleListConn.response().statusCode() == 200) {
                     Elements peopleList = peopleListDoc.select("table").select("tr");
                     if (peopleList.size() > 2) {
-                        String validDate;
                         String PersonQualificationUrl;
-                        Map<String, Object> params = null;
+                        TbPersonHunan tbPersonHunan;
                         Document peopleDetailDoc;
                         Connection peopleDetailConn;
                         //遍历人员列表url 进入详情页面
                         for (int i = 2; i < peopleList.size(); i++) {
-                            validDate = peopleList.get(i).select("td").last().text();
                             PersonQualificationUrl = peopleList.get(i).select("a").first().absUrl("href");
-                            params = new HashMap<>();
-                            params.put("url", PersonQualificationUrl);
-                            params.put("comId", companyId);
-                            if (companyUpdateService.checkPersonQualificationExist(params)) {
+                            //列表获取一部分证书信息
+                            tbPersonHunan = new TbPersonHunan();
+                            tbPersonHunan.setUrl(PersonQualificationUrl);
+                            tbPersonHunan.setName(peopleList.get(i).select("td").get(1).text());
+                            tbPersonHunan.setIdCard(peopleList.get(i).select("td").get(2).text());
+                            tbPersonHunan.setCategory(peopleList.get(i).select("td").get(3).text());
+                            tbPersonHunan.setCertNo(peopleList.get(i).select("td").get(4).text().trim());
+                            if (!StringUtils.isEmpty(peopleList.get(i).select("td").get(5).text().replaceAll("[^0-9]", ""))) {
+                                tbPersonHunan.setSealNo(peopleList.get(i).select("td").get(5).text());
+                            } else {
+                                tbPersonHunan.setMajor(peopleList.get(i).select("td").get(5).text());
+                            }
+                            tbPersonHunan.setCertDate(peopleList.get(i).select("td").get(6).text());
+                            tbPersonHunan.setValidDate(peopleList.get(i).select("td").last().text());
+                            tbPersonHunan.setType(1);
+                            tbPersonHunan.setInnerid(PersonQualificationUrl.substring(PersonQualificationUrl.indexOf("=") + 1));
+                            tbPersonHunan.setComId(companyId);
+                            //已存在url,证书编号，公司id(人员证书可能挂靠其他公司)跳过此证书
+                            if (companyUpdateService.checkPersonHunanIsExist(tbPersonHunan)) {
                                 System.out.println("已抓取这个公司的这本证书" + PersonQualificationUrl);
                             } else {
                                 peopleDetailConn = Jsoup.connect(PersonQualificationUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                                 peopleDetailDoc = peopleDetailConn.get();
                                 if (peopleDetailConn.response().statusCode() == 200) {
-                                    System.out.println(PersonQualificationUrl);
                                     Elements peopleInfoTable = peopleDetailDoc.select("#table1");
                                     Elements peopleRegisteredTable = peopleDetailDoc.select("#tablelist").select("#table2").select("#ctl00_ContentPlaceHolder1_td_zzdetail").select("tr");
+                                    Elements CertDetail = peopleDetailDoc.select("table").select(".tab_main").select("tr");
                                     Elements peopleOtherQualificationsTable = peopleDetailDoc.select("#tablelist").select("#table3").select("#ctl00_ContentPlaceHolder1_td_rylist").select("tr");
                                     Elements peopleChangeTable = peopleDetailDoc.select("#tablelist").select("#table6").select("#ctl00_ContentPlaceHolder1_jzs2_history").select("tr");
-                                    //添加人员基本信息后 返回主键
-                                    Integer pkid = addPeopleInfo(peopleInfoTable, companyId);
-                                    //注册执业信息
-                                    addPeopleRegistered(peopleRegisteredTable, PersonQualificationUrl, companyId, pkid, validDate);
-                                    //其他资格信息
-                                    addPeopleOtherCert(peopleOtherQualificationsTable, PersonQualificationUrl, companyId, pkid);
-                                    //人员变更信息
-                                    addPeopleChange(peopleChangeTable, pkid);
+                                    String sex = peopleInfoTable.select("#ctl00_ContentPlaceHolder1_lbl_xb").text();
+                                    //#######添加人员执业资质########
+                                    String flag = addPeopleMainCert(peopleRegisteredTable, tbPersonHunan, CertDetail, sex);
+                                    //#######添加人员其他资质########
+                                    addPeopleOtherCert(peopleOtherQualificationsTable, PersonQualificationUrl, companyId, flag);
+                                    //#######添加人员变更信息########
+                                    addPeopleChange(peopleChangeTable, flag);
                                 } else {
                                     TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
                                     tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
@@ -239,110 +259,231 @@ public class HuNanCompanyUpdateTask {
             }
         }
 
+
         /**
-         * 人员基本信息
+         * 添加人员注册执业信息
          *
-         * @param eles 表单数据
+         * @param peopleRegisteredTable 人员注册执业信息表格
+         * @param temp                  证书临时对象
+         * @param certDetail            隐藏的表单
+         * @param sex                   人员性别
+         * @return 姓名_性别_身份证
          */
-        Integer addPeopleInfo(Elements eles, Integer companyId) {
-            TbPerson tbPerson = new TbPerson();
-            tbPerson.setName(eles.select("#ctl00_ContentPlaceHolder1_lbl_xm").text());
-            tbPerson.setNation(eles.select("#ctl00_ContentPlaceHolder1_lbl_mc").text());
-            tbPerson.setSex(eles.select("#ctl00_ContentPlaceHolder1_lbl_xb").text());
-            tbPerson.setIdCard(eles.select("#ctl00_ContentPlaceHolder1_lbl_sfzh").text());
-            tbPerson.setEducation(eles.select("#ctl00_ContentPlaceHolder1_lbl_xl").text());
-            tbPerson.setDegree(eles.select("#ctl00_ContentPlaceHolder1_lbl_xw").text());
-            tbPerson.setCompanyId(companyId);
-            return companyUpdateService.insertPersionInfo(tbPerson);
+        String addPeopleMainCert(Elements peopleRegisteredTable, TbPersonHunan temp, Elements certDetail, String sex) {
+            TbPersonHunan tbPersionHunan = temp;
+            if (peopleRegisteredTable.size() > 1) {
+                String certNo;
+                for (int i = 1; i < peopleRegisteredTable.size(); i++) {
+                    certNo = peopleRegisteredTable.get(i).select("td").get(2).text().trim();
+                    if (certNo.equals(tbPersionHunan.getCertNo())) {
+                        tbPersionHunan.setComName(peopleRegisteredTable.get(i).select("td").get(1).text());
+                        //注册专业为空,取详情列表补齐
+                        if (StringUtils.isEmpty(temp.getMajor())) {
+                            temp.setMajor(peopleRegisteredTable.get(i).select("td").get(3).text());
+                            break;
+                        }
+                    }
+
+                }
+            }
+            String flag = tbPersionHunan.getName() + "_" + sex + "_" + tbPersionHunan.getIdCard();
+            tbPersionHunan.setSex(sex);
+            tbPersionHunan.setFlag(flag);
+            //执业印章号为空，取模态窗口数据补齐，同时更新专业
+            if (StringUtils.isEmpty(tbPersionHunan.getSealNo())) {
+                tbPersionHunan.setSealNo(certDetail.select("tr").get(2).select("#ctl00_ContentPlaceHolder1_d_zcbh").text());
+                String major = certDetail.select("tr").get(3).select("#ctl00_ContentPlaceHolder1_d_zy").text();
+                //包含多个证书如：（建筑,2015-01-19,2018-01-18.机电,2016-8-17,2019-8-16.市政,2017-7-11,2020-7-10）
+                if (major.contains(".")) {
+                    String[] majors = major.split("\\.");
+                    for (int i = 0; i < majors.length; i++) {
+                        majors[i].replaceAll("，", ",");
+                        if (majors[i].contains(",")) {
+                            String[] tempArr = majors[i].split(",");
+                            tbPersionHunan.setMajor(tempArr[0]);
+                            tbPersionHunan.setCertDate(tempArr[1]);
+                            tbPersionHunan.setValidDate(tempArr[2]);
+                        }
+                        companyUpdateService.insertPersonHunan(tbPersionHunan);
+                    }
+                } else {
+                    companyUpdateService.insertPersonHunan(tbPersionHunan);
+                }
+            } else {
+                companyUpdateService.insertPersonHunan(tbPersionHunan);
+            }
+            return flag;
         }
 
         /**
-         * 人员执业信息
-         * 根据证书编号公司名称判断是否更新
+         * 添加其他资格信息
          *
-         * @param eles                   表单数据
-         * @param PersonQualificationUrl 人员证书url
-         * @param companyId              公司id
-         * @param peopleId               人员id
+         * @param peopleOtherQualificationsTable 其他资格信息表格
+         * @param url                            人员url
+         * @param companyId                      公司id
+         * @param flag                           人员唯一标识（ 姓名_性别_身份证）
          */
-        void addPeopleRegistered(Elements eles, String PersonQualificationUrl, Integer companyId, Integer peopleId, String validDate) {
-            TbPersonQualification tbPersonQualification = null;
-            if (eles.size() > 1) {
-                for (int i = 1; i < eles.size(); i++) {
-                    tbPersonQualification = new TbPersonQualification();
-                    tbPersonQualification.setCategory(eles.get(i).select("td").get(0).text());
-                    tbPersonQualification.setComName(eles.get(i).select("td").get(1).text());
-                    tbPersonQualification.setCertNo(eles.get(i).select("td").get(2).text());
-                    tbPersonQualification.setMajor(eles.get(i).select("td").get(3).text());
-                    tbPersonQualification.setCertDate(eles.get(i).select("td").get(4).text());
-                    tbPersonQualification.setValidDate(validDate);
-                    tbPersonQualification.setUrl(PersonQualificationUrl);
-                    tbPersonQualification.setInnerid(PersonQualificationUrl.substring(PersonQualificationUrl.indexOf("=") + 1));
-                    tbPersonQualification.setPerId(peopleId);
-                    tbPersonQualification.setComId(companyId);
-                    tbPersonQualification.setType(1);
-                    companyUpdateService.insertPersonQualification(tbPersonQualification);
+        void addPeopleOtherCert(Elements peopleOtherQualificationsTable, String url, Integer companyId, String flag) {
+            if (peopleOtherQualificationsTable.size() > 1) {
+                TbPersonHunan tbPersionHunan;
+                for (int i = 1; i < peopleOtherQualificationsTable.size(); i++) {
+                    tbPersionHunan = new TbPersonHunan();
+                    tbPersionHunan.setCategory(peopleOtherQualificationsTable.get(i).select("td").get(0).text());
+                    tbPersionHunan.setComName(peopleOtherQualificationsTable.get(i).select("td").get(1).text());
+                    tbPersionHunan.setCertNo(peopleOtherQualificationsTable.get(i).select("td").get(2).text());
+                    tbPersionHunan.setMajor(peopleOtherQualificationsTable.get(i).select("td").get(3).text());
+                    String dateStr = peopleOtherQualificationsTable.get(i).select("td").get(4).text();
+                    if (dateStr.contains("有效期")) {
+                        tbPersionHunan.setCertDate(dateStr.substring(0, dateStr.indexOf("有效期") - 1));
+                        tbPersionHunan.setValidDate(dateStr.substring(dateStr.indexOf("有效期") + 4, dateStr.length() - 1));
+                    } else {
+                        tbPersionHunan.setCertDate(dateStr);
+                    }
+                    tbPersionHunan.setName(flag.split("_")[0]);
+                    tbPersionHunan.setSex(flag.split("_")[1]);
+                    tbPersionHunan.setIdCard(flag.split("_")[2]);
+                    tbPersionHunan.setUrl(url);
+                    tbPersionHunan.setInnerid(url.substring(url.indexOf("=") + 1));
+                    tbPersionHunan.setComId(companyId);
+                    tbPersionHunan.setType(2);
+                    tbPersionHunan.setFlag(flag);
+                    companyUpdateService.insertPersonHunan(tbPersionHunan);
                 }
             } else {
-                System.out.println("人员执业信息为空" + PersonQualificationUrl);
+                System.out.println("人员其他证书信息为空" + url);
             }
         }
 
         /**
-         * 人员其他证书信息（如安全证书）
-         * 注意证书有效期字符串处理(2013-6-28(有效期：2019-6-28))
+         * 添加人员变更信息
          *
-         * @param eles                   表单数据
-         * @param PersonQualificationUrl 人员证书url
-         * @param companyId              公司id
-         * @param peopleId               人员id
+         * @param peopleChangeTable 人员历史变更情况表格
+         * @param flag              人员唯一标识（ 姓名_性别_身份证）
          */
-        void addPeopleOtherCert(Elements eles, String PersonQualificationUrl, Integer companyId, Integer peopleId) {
-            if (eles.size() > 1) {
-                TbPersonQualification tbPersonQualification = null;
-                for (int i = 1; i < eles.size(); i++) {
-                    tbPersonQualification = new TbPersonQualification();
-                    tbPersonQualification.setCategory(eles.get(i).select("td").get(0).text());
-                    tbPersonQualification.setComName(eles.get(i).select("td").get(1).text());
-                    tbPersonQualification.setCertNo(eles.get(i).select("td").get(2).text());
-                    tbPersonQualification.setMajor(eles.get(i).select("td").get(3).text());
-                    String dateStr = eles.get(i).select("td").get(4).text();
-                    if (dateStr.contains("有效期")) {
-                        tbPersonQualification.setCertDate(dateStr.substring(0, dateStr.indexOf("有效期") - 1));
-                        tbPersonQualification.setValidDate(dateStr.substring(dateStr.indexOf("有效期") + 4, dateStr.length() - 1));
-                    } else {
-                        tbPersonQualification.setCertDate(dateStr);
-                    }
-                    tbPersonQualification.setUrl(PersonQualificationUrl);
-                    tbPersonQualification.setInnerid(PersonQualificationUrl.substring(PersonQualificationUrl.indexOf("=") + 1));
-                    tbPersonQualification.setPerId(peopleId);
-                    tbPersonQualification.setComId(companyId);
-                    tbPersonQualification.setType(2);
-                    companyUpdateService.insertPersonQualification(tbPersonQualification);
+        void addPeopleChange(Elements peopleChangeTable, String flag) {
+            TbPersonChange tbPersonChange;
+            if (peopleChangeTable.size() > 2) {
+                for (int i = 2; i < peopleChangeTable.size(); i++) {
+                    tbPersonChange = new TbPersonChange();
+                    tbPersonChange.setComName(peopleChangeTable.get(i).select("td").get(0).text());
+                    tbPersonChange.setMajor(peopleChangeTable.get(i).select("td").get(1).text());
+                    tbPersonChange.setChangeDate(peopleChangeTable.get(i).select("td").get(2).text());
+                    tbPersonChange.setRemark(peopleChangeTable.get(i).select("td").get(3).text());
+                    tbPersonChange.setFlag(flag);
+                    companyUpdateService.insertPeopleChange(tbPersonChange);
                 }
-            } else {
-                System.out.println("人员其他证书信息为空" + PersonQualificationUrl);
             }
         }
     }
 
     /**
-     * 添加人员变更信息
+     * 根据企业id拆分企业资格证书资质
      *
-     * @param eles     表单数据
-     * @param peopleId 人员id
+     * @param companyId 企业id
      */
-    void addPeopleChange(Elements eles, Integer peopleId) {
-        TbPersonChange tbPersonChange;
-        if (eles.size() > 2) {
-            for (int i = 2; i < eles.size(); i++) {
-                tbPersonChange = new TbPersonChange();
-                tbPersonChange.setComName(eles.get(i).select("td").get(0).text());
-                tbPersonChange.setMajor(eles.get(i).select("td").get(1).text());
-                tbPersonChange.setChangeDate(eles.get(i).select("td").get(2).text());
-                tbPersonChange.setRemark(eles.get(i).select("td").get(3).text());
-                tbPersonChange.setPerId(peopleId);
-                companyUpdateService.insertPeopleChange(tbPersonChange);
+    void splitCompanyQualifications(Integer companyId) {
+        //拆之前删除以前资质
+        companyUpdateService.deleteCcompanyAptitudeByComId(companyId);
+
+        List<TbCompanyQualification> companyQualificationList = companyUpdateService.getCompanyQualificationByComId(companyId);
+        //遍历证书
+        for (int i = 0; i < companyQualificationList.size(); i++) {
+            int qualId = companyQualificationList.get(i).getPkid();
+            String qualRange = companyQualificationList.get(i).getRange();
+            int comId = companyQualificationList.get(i).getComId();
+            //有资质
+            if (com.silita.biaodaa.utils.StringUtils.isNotNull(qualRange)) {
+                AllZh allZh;
+                TbCompanyAptitude companyAptitude;
+                List<TbCompanyAptitude> companyQualifications = new ArrayList<>();
+                if (qualRange.contains("；")) {
+                    //拆分资质
+                    String[] qual = qualRange.split("；");
+                    for (int j = 0; j < qual.length; j++) {
+                        allZh = companyUpdateService.getAllZhByName(qual[j]);
+                        if (allZh != null) {
+                            companyAptitude = new TbCompanyAptitude();
+                            companyAptitude.setQualId(qualId);
+                            companyAptitude.setComId(comId);
+                            companyAptitude.setAptitudeName(companyUpdateService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                            companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
+                            companyAptitude.setMainuuid(allZh.getMainuuid());
+                            companyAptitude.setType(allZh.getType());
+                            companyQualifications.add(companyAptitude);
+                        }
+                    }
+                } else if (qualRange.contains(";")) {
+                    //拆分资质
+                    String[] qual = qualRange.split(";");
+                    for (int j = 0; j < qual.length; j++) {
+                        allZh = companyUpdateService.getAllZhByName(qual[j]);
+                        if (allZh != null) {
+                            companyAptitude = new TbCompanyAptitude();
+                            companyAptitude.setQualId(qualId);
+                            companyAptitude.setComId(comId);
+                            companyAptitude.setAptitudeName(companyUpdateService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                            companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
+                            companyAptitude.setMainuuid(allZh.getMainuuid());
+                            companyAptitude.setType(allZh.getType());
+                            companyQualifications.add(companyAptitude);
+                        }
+                    }
+                } else {
+                    allZh = companyUpdateService.getAllZhByName(qualRange);
+                    if (allZh != null) {
+                        companyAptitude = new TbCompanyAptitude();
+                        companyAptitude.setQualId(qualId);
+                        companyAptitude.setComId(comId);
+                        companyAptitude.setAptitudeName(companyUpdateService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                        companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
+                        companyAptitude.setMainuuid(allZh.getMainuuid());
+                        companyAptitude.setType(allZh.getType());
+                        companyQualifications.add(companyAptitude);
+                    }
+                }
+                if (companyQualifications != null && companyQualifications.size() > 0) {
+                    companyUpdateService.batchInsertCompanyAptitude(companyQualifications);
+                }
+            }
+        }
+    }
+
+    /**
+     * 更新合并后的资质到企业表
+     *
+     * @param companyId
+     */
+    void updateCompanyAptitudeRange(Integer companyId) {
+        List<TbCompanyAptitude> tbCompanyAptitudes = companyUpdateService.listCompanyAptitude(companyId);
+        TbCompany tbCompany;
+        TbCompanyAptitude tbCompanyAptitude;
+        int comId;
+        String allType;
+        String allAptitudeUuid;
+        StringBuilder sb;
+        //遍历
+        for (int i = 0; i < tbCompanyAptitudes.size(); i++) {
+            tbCompanyAptitude = tbCompanyAptitudes.get(i);
+            comId = tbCompanyAptitude.getComId();
+            allType = tbCompanyAptitude.getType();
+            allAptitudeUuid = tbCompanyAptitude.getAptitudeUuid();
+            if (com.silita.biaodaa.utils.StringUtils.isNotNull(allType) && com.silita.biaodaa.utils.StringUtils.isNotNull(allAptitudeUuid)) {
+                sb = new StringBuilder();
+                String[] typeArr = allType.split(",");
+                String[] aptitudeUuidArr = allAptitudeUuid.split(",");
+                if (typeArr.length > 0 && aptitudeUuidArr.length > 0 && typeArr.length == aptitudeUuidArr.length) {
+                    for (int j = 0; j < typeArr.length; j++) {
+                        if (j == typeArr.length - 1) {
+                            sb.append(typeArr[j]).append("/").append(aptitudeUuidArr[j]);
+                        } else {
+                            sb.append(typeArr[j]).append("/").append(aptitudeUuidArr[j]).append(",");
+                        }
+                    }
+                }
+                tbCompany = new TbCompany();
+                tbCompany.setComId(comId);
+                tbCompany.setRange(sb.toString());
+                companyUpdateService.updateCompanyRangeByComId(tbCompany);
             }
         }
     }

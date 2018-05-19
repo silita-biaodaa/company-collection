@@ -3,7 +3,7 @@
 <mapper namespace="com.silita.biaodaa.dao.TbCompanyAptitudeMapper">
     <insert id="batchInsertCompanyAptitude" parameterType="com.silita.biaodaa.model.TbCompanyAptitude">
         INSERT INTO
-        hunanyitihua.tb_company_aptitude(`qual_id`, `com_id`, `aptitude_name`, `aptitude_uuid`, `mainUuid`,
+        mishu.tb_company_aptitude(`qual_id`, `com_id`, `aptitude_name`, `aptitude_uuid`, `mainUuid`,
         `type`, `created`)
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
@@ -13,17 +13,26 @@
     </insert>
 
     <select id="getCompanyAptitudeTotal" parameterType="String" resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_company_aptitude
+        SELECT COUNT(*) FROM mishu.tb_company_aptitude
     </select>
 
     <select id="listCompanyAptitude" parameterType="Map" resultType="com.silita.biaodaa.model.TbCompanyAptitude">
         SELECT com_id AS `com_id`, group_concat(`type`) AS `type`, group_concat(`aptitude_uuid`) AS `aptitude_uuid`
-        FROM hunanyitihua.tb_company_aptitude
+        FROM mishu.tb_company_aptitude
         GROUP BY com_id
         LIMIT #{start}, #{pageSize}
     </select>
 
     <delete id="deleteCompanyAptitude">
-        DELETE FROM hunanyitihua.tb_company_aptitude WHERE pkid > 0
+        DELETE FROM mishu.tb_company_aptitude WHERE pkid > 0
+    </delete>
+
+    <select id="listCompanyAptitudeByComPanyId" parameterType="Integer" resultType="com.silita.biaodaa.model.TbCompanyAptitude">
+        SELECT com_id AS `com_id`, group_concat(`type`) AS `type`, group_concat(`aptitude_uuid`) AS `aptitude_uuid`
+        FROM mishu.tb_company_aptitude WHERE com_id = #{companyId}
+    </select>
+
+    <delete id="deleteCompanyAptitudeByCompanyId" parameterType="Integer">
+        DELETE FROM mishu.tb_company_aptitude WHERE com_id = #{companyId}
     </delete>
 </mapper>

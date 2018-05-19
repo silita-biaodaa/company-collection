@@ -4,7 +4,7 @@
 
     <insert id="batchInsertPeopleChange" parameterType="com.silita.biaodaa.model.TbPersonChange">
         INSERT INTO
-        hunanyitihua.tb_person_change(`com_name`, `major`, `change_date`, `remark`, `per_id`,
+        mishu.tb_person_change(`com_name`, `major`, `change_date`, `remark`, `per_id`,
         `created`)
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
@@ -14,15 +14,17 @@
     </insert>
 
     <select id="getTotalByPerIdChangeDate" parameterType="com.silita.biaodaa.model.TbPersonChange" resultType="Integer">
-        SELECT Count(*) FROM hunanyitihua.tb_person_change WHERE per_id = #{perId} AND change_date = #{changeDate}
+        SELECT Count(*) FROM mishu.tb_person_change WHERE flag = #{flag} AND change_date = #{changeDate}
     </select>
 
     <insert id="insertPeopleChange" parameterType="com.silita.biaodaa.model.TbPersonChange">
         INSERT INTO
-        hunanyitihua.tb_person_change(`com_name`, `major`, `change_date`, `remark`, `per_id`,
-       `created`)
-      VALUES
-         (#{comName}, #{major}, #{changeDate}, #{remark}, #{perId},
-            NOW())
+        mishu.tb_person_change(
+        `com_name`, `major`, `change_date`, `remark`, `per_id`,
+        `flag`, `created`)
+        VALUES
+         (
+         #{comName}, #{major}, #{changeDate}, #{remark}, #{perId},
+         #{flag}, NOW())
     </insert>
 </mapper>

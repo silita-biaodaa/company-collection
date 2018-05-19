@@ -4,7 +4,7 @@
 
     <insert id="batchInsertSafetyCertificate" parameterType="com.silita.biaodaa.model.TbSafetyCertificate">
         INSERT INTO
-        hunanyitihua.tb_safety_certificate(`com_name`, `cert_no`, `cert_date`, `valid_date`, `created`)
+        mishu.tb_safety_certificate(`com_name`, `cert_no`, `cert_date`, `valid_date`, `created`)
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
             (#{item.comName}, #{item.certNo}, #{item.certDate}, #{item.validDate}, NOW())
@@ -13,23 +13,23 @@
 
     <insert id="insertSafetyCertificate" parameterType="com.silita.biaodaa.model.TbSafetyCertificate">
         INSERT INTO
-        hunanyitihua.tb_safety_certificate(`com_name`, `cert_no`, `cert_date`, `valid_date`, `created`)
+        mishu.tb_safety_certificate(`com_name`, `cert_no`, `cert_date`, `valid_date`, `created`)
         VALUES
         (#{comName}, #{certNo}, #{certDate}, #{validDate}, NOW())
     </insert>
 
     <select id="getTotalByCertNoAndCompanyName" parameterType="com.silita.biaodaa.model.TbSafetyCertificate" resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_safety_certificate WHERE cert_no = #{certNo} AND com_name = #{comName}
+        SELECT COUNT(*) FROM mishu.tb_safety_certificate WHERE cert_no = #{certNo} AND com_name = #{comName}
     </select>
 
     <update id="updateSafetyCertificate" parameterType="com.silita.biaodaa.model.TbSafetyCertificate">
-        UPDATE hunanyitihua.tb_safety_certificate
+        UPDATE mishu.tb_safety_certificate
         SET `cert_date` = #{certDate}, `valid_date` = #{validDate}
         WHERE `cert_no` = #{certNo} AND `com_name` = #{comName}
     </update>
 
     <select id="getSafetyCertificateByCertNoAndCompanyName" parameterType="com.silita.biaodaa.model.TbSafetyCertificate" resultType="com.silita.biaodaa.model.TbSafetyCertificate">
-       SELECT * FROM hunanyitihua.tb_safety_certificate WHERE cert_no = #{certNo} AND com_name = #{comName}
+       SELECT * FROM mishu.tb_safety_certificate WHERE cert_no = #{certNo} AND com_name = #{comName}
     </select>
 
 </mapper>

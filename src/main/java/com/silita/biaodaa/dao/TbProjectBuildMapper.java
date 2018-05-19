@@ -40,7 +40,7 @@ public interface TbProjectBuildMapper extends MyMapper<TbProjectBuild> {
     Integer getPkidByBdxh(String bdxh);
 
     /**
-     *
+     * 根据项目内部id和公司id判断是否抓取
      * @return
      */
     Integer getTotalByBdxhAndComId(Map<String, Object> params);

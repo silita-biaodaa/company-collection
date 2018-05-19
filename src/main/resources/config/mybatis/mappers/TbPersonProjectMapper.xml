@@ -4,7 +4,7 @@
 
     <insert id="insertPersionProject" parameterType="com.silita.biaodaa.model.TbPersonProject">
        INSERT INTO
-       hunanyitihua.tb_person_project(`innerid`, `pid`, `com_name`, `name`, `category`,
+       mishu.tb_person_project(`innerid`, `pid`, `com_name`, `name`, `category`,
        `cert_no`, `safe_no`, `status`, `type`, `role`,
        `created`)
        VALUES
@@ -14,7 +14,7 @@
     </insert>
 
     <select id="getPersionProjectTotalByCertNoAndPid" parameterType="com.silita.biaodaa.model.TbPersonProject" resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_person_project WHERE pid = #{pid} AND `cert_no` = #{certNo} AND `safe_no` = #{safeNo}
+        SELECT COUNT(*) FROM mishu.tb_person_project WHERE pid = #{pid} AND `cert_no` = #{certNo} AND `safe_no` = #{safeNo}
     </select>
 
 </mapper>

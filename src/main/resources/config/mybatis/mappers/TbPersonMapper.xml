@@ -7,7 +7,7 @@
             SELECT LAST_INSERT_ID() AS pkid
         </selectKey>
         INSERT INTO
-        hunanyitihua.tb_person(`name`, `nation`, `sex`, `id_card`, `education`,
+        mishu.tb_person(`name`, `nation`, `sex`, `id_card`, `education`,
         `degree`, `created`)
         VALUES
         (#{name}, #{nation}, #{sex}, #{idCard}, #{education},
@@ -17,14 +17,12 @@
     <select id="getPersonTotalByNameAndIDAndSex" parameterType="com.silita.biaodaa.model.TbPerson" resultType="Integer">
       SELECT COUNT(*)
       FROM tb_person p
-      LEFT JOIN tb_person_qualification q ON p.pkid = q.per_id
-      WHERE q.`com_id` = #{companyId} AND p.`name` = #{name} AND p.`sex` = #{sex} AND p.`id_card` = #{idCard}
+      WHERE `name` = #{name} AND `sex` = #{sex} AND `id_card` = #{idCard}
     </select>
 
     <select id="getPersonIdByNameAndIDAndSex" parameterType="com.silita.biaodaa.model.TbPerson" resultType="Integer">
       SELECT DISTINCT p.pkid
-      FROM tb_person p
-      LEFT JOIN tb_person_qualification q ON p.pkid = q.per_id
-      WHERE q.`com_id` = #{companyId} AND p.`name` = #{name} AND p.`sex` = #{sex} AND p.`id_card` = #{idCard}
+      FROM tb_person
+      WHERE `name` = #{name} AND `sex` = #{sex} AND `id_card` = #{idCard}
     </select>
 </mapper>

@@ -7,11 +7,26 @@ import java.util.Date;
 
 @Getter
 @Setter
-public class TbPersonQualification {
+public class TbPersonHunan {
     /**
      * 人员资质主键
      */
     private Integer pkid;
+
+    /**
+     * 人员名称（用于业务查询）
+     */
+    private String name;
+
+    /**
+     * 性别
+     */
+    private String sex;
+
+    /**
+     * 身份证号码
+     */
+    private String idCard;
 
     /**
      * 网站内部ID
@@ -49,11 +64,6 @@ public class TbPersonQualification {
     private String validDate;
 
     /**
-     * 人员ID
-     */
-    private Integer perId;
-
-    /**
      * 企业ID
      */
     private Integer comId;
@@ -62,6 +72,11 @@ public class TbPersonQualification {
      * 单位名称
      */
     private String comName;
+
+    /**
+     * 1、注册执业信息2、其他资格信息
+     */
+    private Integer type;
 
     /**
      * 创建时间
@@ -73,18 +88,16 @@ public class TbPersonQualification {
      */
     private Date updated;
 
+    private Integer px;
+
     /**
      * 抓取URL
      */
     private String url;
 
     /**
-     * 1、注册执业信息2、其他资格信息
+     *
      */
-    private Integer type;
+    private String flag;
 
-    /**
-     * 有余字段人员姓名用于业务查询
-     */
-    private String name;
 }

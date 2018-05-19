@@ -66,19 +66,19 @@ public class CompanyServiceImpl implements ICompanyService {
 
     @Override
     public void updateCompanyQualificationUrlByCorpid(TbCompanyQualification companyQualification) {
-        tbCompanyQualificationMapper.updateCompanyQualificationUrlByCorpid(companyQualification);
+        tbCompanyQualificationMapper.updateCompanyQualificationUrlByCorpidAndCertId(companyQualification);
     }
 
     @Override
     public int insertCompanyInfo(TbCompany tbCompany) {
-        boolean flag = tbCompanyMapper.getCompanyTotalForOrgCodeAndBusinessNum(tbCompany) > 0;
+        boolean flag = tbCompanyMapper.getCompanyTotalByOrgCodeOrCompanyName(tbCompany) > 0;
         if (!flag) {
             //不存在新增、并返回新增的 comId
             tbCompanyMapper.insertCompany(tbCompany);
             return tbCompany.getComId();
         } else {
             //存在返回查询到的 comId
-            return tbCompanyMapper.getCompanyIdByOrgCodeAndBusinessNum(tbCompany);
+            return tbCompanyMapper.getCompanyIdByOrgCodeOrCompanyName(tbCompany);
         }
     }
 
@@ -97,7 +97,7 @@ public class CompanyServiceImpl implements ICompanyService {
 
     @Override
     public void insertPersonQualification(TbPersonQualification tbPersonQualification) {
-        boolean flag = tbPersonQualificationMapper.getTotalByCertNoAndComId(tbPersonQualification) > 0;
+        boolean flag = tbPersonQualificationMapper.getTotalByCertNoAndComIdAndCategory(tbPersonQualification) > 0;
         if (!flag) {
             tbPersonQualificationMapper.insertPersonQualification(tbPersonQualification);
         }
@@ -173,10 +173,12 @@ public class CompanyServiceImpl implements ICompanyService {
         }
     }
 
-    public boolean checkPersonQualificationExist(Map<String, Object> params) {
-        return tbPersonQualificationMapper.getTolalByPersonQualificationUrlAndComId(params) > 0;
+    @Override
+    public boolean checkPersonQualificationIsExist(TbPersonQualification tbPersonQualification) {
+        return tbPersonQualificationMapper.getTotalByCertNoAndComIdAndCategory(tbPersonQualification) > 0;
     }
 
+    @Override
     public boolean checkProjectBuildExist(Map<String, Object> params) {
         return tbProjectBuildMapper.getTotalByBdxhAndComId(params) > 0;
     }

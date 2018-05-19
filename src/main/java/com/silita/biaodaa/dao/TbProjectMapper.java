@@ -12,13 +12,13 @@ public interface TbProjectMapper extends MyMapper<TbProject> {
     void insertProjectInfo(TbProject tbProject);
 
     /**
-     * 根据项目编号查询项目个数
+     * 根据项目编号和内部id查询项目个数
      * @return
      */
     Integer getProjectTotalByProjectNoAndXmid(TbProject tbProject);
 
     /**
-     * 根据项目编号取得项目主键
+     * 根据项目编号和内部id取得项目主键
      * @return
      */
     Integer getProIdByProNoAndXmid(TbProject tbProject);

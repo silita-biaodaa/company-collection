@@ -203,7 +203,7 @@ public class ProjectDataUpdate {
                 if (StringUtils.isNotNull(eles.get(i).text())) {
                     tbPersonProject = new TbPersonProject();
                     tbPersonProject.setName(eles.get(i).select("td").get(0).text());
-                    tbPersonProject.setCategory(eles.get(i).select("td").get(1).text());
+                    tbPersonProject.setRole(eles.get(i).select("td").get(1).text());
                     tbPersonProject.setCertNo(eles.get(i).select("td").get(2).text());
                     tbPersonProject.setSafeNo(eles.get(i).select("td").get(3).text());
                     tbPersonProject.setStatus(eles.get(i).select("td").get(4).text());
@@ -379,18 +379,19 @@ public class ProjectDataUpdate {
      */
     void addDesignPeople(Elements eles, Integer projectDesignId, String projectDesignUrl) {
         if (eles.size() > 2) {
-            TbPersonDesign tbProjectDesign;
+            TbPersonProject tbPersonProject;
             for (int i = 2; i < eles.size() - 1; i++) {
                 if (StringUtils.isNotNull(eles.get(i).text())) {
-                    tbProjectDesign = new TbPersonDesign();
-                    tbProjectDesign.setName(eles.get(i).select("td").get(0).text());
-                    tbProjectDesign.setCategory(eles.get(i).select("td").get(1).text());
-                    tbProjectDesign.setComName(eles.get(i).select("td").get(2).text());
-                    tbProjectDesign.setRole(eles.get(i).select("td").get(3).text());
-                    String peopleDetailId = eles.get(i).select("td").get(0).select("a").attr("href");
-                    tbProjectDesign.setInnerid(peopleDetailId.substring(peopleDetailId.indexOf("=") + 1));
-                    tbProjectDesign.setPid(projectDesignId);
-                    companyService.insertPersonDesign(tbProjectDesign);
+                    tbPersonProject = new TbPersonProject();
+                    tbPersonProject.setName(eles.get(i).select("td").get(0).text());
+                    tbPersonProject.setCategory(eles.get(i).select("td").get(1).text());
+                    tbPersonProject.setComName(eles.get(i).select("td").get(2).text());
+                    tbPersonProject.setRole(eles.get(i).select("td").get(3).text());
+                    tbPersonProject.setType("design");
+                    String peopleDetailUrl = eles.get(i).select("td").get(0).select("a").attr("href");
+                    tbPersonProject.setInnerid(peopleDetailUrl.substring(peopleDetailUrl.indexOf("=") + 1));
+                    tbPersonProject.setPid(projectDesignId);
+                    companyService.insertPersonProject(tbPersonProject);
                 }
             }
         } else {
@@ -557,18 +558,19 @@ public class ProjectDataUpdate {
      */
     void addSurveyPeople(Elements eles, Integer projectSurveyId, String projectDesignUrl) {
         if (eles.size() > 2) {
-            TbPersonDesign tbProjectDesign;
+            TbPersonProject tbPersonProject;
             for (int i = 2; i < eles.size() - 1; i++) {
                 if (StringUtils.isNotNull(eles.get(i).text())) {
-                    tbProjectDesign = new TbPersonDesign();
-                    tbProjectDesign.setName(eles.get(i).select("td").get(0).text());
-                    tbProjectDesign.setCategory(eles.get(i).select("td").get(1).text());
-                    tbProjectDesign.setComName(eles.get(i).select("td").get(2).text());
-                    tbProjectDesign.setRole(eles.get(i).select("td").get(3).text());
-                    String peopleDetailId = eles.get(i).select("td").get(0).select("a").attr("href");
-                    tbProjectDesign.setInnerid(peopleDetailId.substring(peopleDetailId.indexOf("=") + 1));
-                    tbProjectDesign.setPid(projectSurveyId);
-                    companyService.insertPersonDesign(tbProjectDesign);
+                    tbPersonProject = new TbPersonProject();
+                    tbPersonProject.setName(eles.get(i).select("td").get(0).text());
+                    tbPersonProject.setCategory(eles.get(i).select("td").get(1).text());
+                    tbPersonProject.setComName(eles.get(i).select("td").get(2).text());
+                    tbPersonProject.setRole(eles.get(i).select("td").get(3).text());
+                    tbPersonProject.setType("design");
+                    String peopleDetailUrl = eles.get(i).select("td").get(0).select("a").attr("href");
+                    tbPersonProject.setInnerid(peopleDetailUrl.substring(peopleDetailUrl.indexOf("=") + 1));
+                    tbPersonProject.setPid(projectSurveyId);
+                    companyService.insertPersonProject(tbPersonProject);
                 }
             }
         } else {
@@ -743,7 +745,7 @@ public class ProjectDataUpdate {
                 if (StringUtils.isNotNull(eles.get(i).text())) {
                     tbPersonProject = new TbPersonProject();
                     tbPersonProject.setName(eles.get(i).select("td").get(0).text());
-                    tbPersonProject.setCategory(eles.get(i).select("td").get(1).text());
+                    tbPersonProject.setRole(eles.get(i).select("td").get(1).text());
                     tbPersonProject.setCertNo(eles.get(i).select("td").get(2).text());
                     tbPersonProject.setSafeNo(eles.get(i).select("td").get(3).text());
                     tbPersonProject.setStatus(eles.get(i).select("td").get(4).text());

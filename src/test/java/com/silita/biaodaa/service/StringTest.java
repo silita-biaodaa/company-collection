@@ -33,5 +33,10 @@ public class StringTest {
         for (int i = 0; i < qual.length; i++) {
             System.out.println(qual[i]);
         }
+
+        System.out.println("湘143171771655".replaceAll("[^0-9]","") + "$$$$$$$");
+        System.out.println("建筑".replaceAll("[^0-9]","") + "$$$$$$$");
+
+        System.out.println("430421*7777".substring(0,6));
     }
 }

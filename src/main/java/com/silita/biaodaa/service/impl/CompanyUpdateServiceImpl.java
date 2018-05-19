@@ -27,6 +27,15 @@ public class CompanyUpdateServiceImpl implements ICompanyUpdateService {
     @Autowired
     private TbPersonChangeMapper tbPersonChangeMapper;
 
+    @Autowired
+    private AllZhMapper allZhMapper;
+    @Autowired
+    private AptitudeDictionaryMapper aptitudeDictionaryMapper;
+    @Autowired
+    private TbCompanyAptitudeMapper tbCompanyAptitudeMapper;
+    @Autowired
+    private TbPersonHunanMapper tbPersonHunanMapper;
+
 
     @Override
     public List<String> getAllCompanyQualificationUrlByTabAndCompanyName(Map<String, Object> params) {
@@ -54,8 +63,8 @@ public class CompanyUpdateServiceImpl implements ICompanyUpdateService {
     }
 
     @Override
-    public boolean checkPersonQualificationExist(Map<String, Object> params) {
-        return tbPersonQualificationMapper.getTolalByPersonQualificationUrlAndComId(params) > 0;
+    public boolean checkPersonQualificationIsExist(TbPersonQualification tbPersonQualification) {
+        return tbPersonQualificationMapper.getTotalByCertNoAndComIdAndCategory(tbPersonQualification) > 0;
     }
 
 
@@ -78,7 +87,7 @@ public class CompanyUpdateServiceImpl implements ICompanyUpdateService {
 
     @Override
     public void insertPersonQualification(TbPersonQualification tbPersonQualification) {
-        boolean flag = tbPersonQualificationMapper.getTotalByCertNoAndComId(tbPersonQualification) > 0;
+        boolean flag = tbPersonQualificationMapper.getTotalByCertNoAndComIdAndCategoryAndMajor(tbPersonQualification) > 0;
         if (!flag) {
             tbPersonQualificationMapper.insertPersonQualification(tbPersonQualification);
         }
@@ -94,7 +103,63 @@ public class CompanyUpdateServiceImpl implements ICompanyUpdateService {
 
     @Override
     public List<Map<String, Object>> listComNameAndTab() {
-        return tbCompanyQualificationMapper.listComNameAndTab();
+        return tbCompanyQualificationMapper.listCompanyNameAndTab();
+    }
+
+
+    //##############################################
+
+    @Override
+    public void deleteCcompanyAptitudeByComId(Integer companyId) {
+        tbCompanyAptitudeMapper.deleteCompanyAptitudeByCompanyId(companyId);
+    }
+
+    @Override
+    public List<TbCompanyQualification> getCompanyQualificationByComId(Integer companyId) {
+        return tbCompanyQualificationMapper.getCompanyQualificationByComId(companyId);
+    }
+
+    @Override
+    public AllZh getAllZhByName(String name) {
+        return allZhMapper.getAllZhByName(name);
+    }
+
+    @Override
+    public String getMajorNameBymajorUuid(String majorUuid) {
+        return aptitudeDictionaryMapper.getMajorNameBymajorUuid(majorUuid);
+    }
+
+    @Override
+    public void batchInsertCompanyAptitude(List<TbCompanyAptitude> tbCompanyAptitudes) {
+        tbCompanyAptitudeMapper.batchInsertCompanyAptitude(tbCompanyAptitudes);
+    }
+
+    @Override
+    public List<TbCompanyAptitude> listCompanyAptitude(Integer companyId) {
+        return tbCompanyAptitudeMapper.listCompanyAptitudeByComPanyId(companyId);
+    }
+
+    @Override
+    public void updateCompanyRangeByComId(TbCompany tbCompany) {
+        tbCompanyMapper.updateCompanyRangeByComId(tbCompany);
+    }
+
+    @Override
+    public boolean checkPersonHunanIsExist(TbPersonHunan tbPersonHunan) {
+        return tbPersonHunanMapper.getTotalByComIdAndCertNoAndCategory(tbPersonHunan) > 0;
+    }
+
+    @Override
+    public void insertPersonHunan(TbPersonHunan tbPersonHunan) {
+        boolean flag = tbPersonHunanMapper.getTotalByComIdAndCertNoAndCategoryAndMajor(tbPersonHunan) > 0;
+        if(!flag) {
+            tbPersonHunanMapper.insertPersonHunan(tbPersonHunan);
+        }
+    }
+
+    @Override
+    public void deletePersonHunanByCompanyId(Integer companyId) {
+        tbPersonHunanMapper.deletePersonHunanByCompanyId(companyId);
     }
 
 }

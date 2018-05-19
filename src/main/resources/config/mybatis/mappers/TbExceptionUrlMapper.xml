@@ -3,7 +3,7 @@
 <mapper namespace="com.silita.biaodaa.dao.TbExceptionUrlMapper">
     <insert id="insertExceptionUrl" parameterType="com.silita.biaodaa.model.TbExceptionUrl">
       INSERT INTO
-        hunanyitihua.tb_exception_url(`com_qua_url`, `exception_url`, `exception_msg`, `created`)
+        mishu.tb_exception_url(`com_qua_url`, `exception_url`, `exception_msg`, `created`)
         VALUES
         (#{comQuaUrl}, #{exceptionUrl}, #{exceptionMsg}, NOW())
     </insert>

@@ -175,7 +175,7 @@ public class CompanyQualificationsRangeTask {
      */
     public void splitBeijinCompanyQualifications() {
         int page = 0;
-        int batchCount = 1000;
+        int batchCount = 5000;
         Integer count = companyRangeService.getBeiJinCompanyQualificationTotalByTabName();
         if (count % batchCount == 0) {
             page = count / batchCount;
@@ -188,23 +188,37 @@ public class CompanyQualificationsRangeTask {
         for (int pageNum = 0; pageNum < page; pageNum++) {
             params = new HashMap<>();
             params.put("start", batchCount * pageNum);
-            params.put("pageSize", 1000);
+            params.put("pageSize", 5000);
             companyQualificationList = companyRangeService.getBeiJinCompanyQualifications(params);
             //遍历证书
             for (int i = 0; i < companyQualificationList.size(); i++) {
                 int qualId = companyQualificationList.get(i).getPkid();
                 String qualRange = companyQualificationList.get(i).getRange();
-                int comId = companyQualificationList.get(i).getComId();
-                //有资质
-                if (StringUtils.isNotNull(qualRange)) {
-                    AllZh allZh;
-                    TbCompanyAptitude companyAptitude;
-                    List<TbCompanyAptitude> companyQualifications = new ArrayList<>();
-                    if (qualRange.contains("|")) {
-                        //拆分资质
-                        String[] qual = qualRange.split("\\|");
-                        for (int j = 0; j < qual.length; j++) {
-                            allZh = companyRangeService.getAllZhByName(qual[j]);
+                if(companyQualificationList.get(i).getComId() != null) {
+                    int comId = companyQualificationList.get(i).getComId();
+                    //有资质
+                    if (StringUtils.isNotNull(qualRange)) {
+                        AllZh allZh;
+                        TbCompanyAptitude companyAptitude;
+                        List<TbCompanyAptitude> companyQualifications = new ArrayList<>();
+                        if (qualRange.contains("|")) {
+                            //拆分资质
+                            String[] qual = qualRange.split("\\|");
+                            for (int j = 0; j < qual.length; j++) {
+                                allZh = companyRangeService.getAllZhByName(qual[j]);
+                                if (allZh != null) {
+                                    companyAptitude = new TbCompanyAptitude();
+                                    companyAptitude.setQualId(qualId);
+                                    companyAptitude.setComId(comId);
+                                    companyAptitude.setAptitudeName(companyRangeService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                                    companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
+                                    companyAptitude.setMainuuid(allZh.getMainuuid());
+                                    companyAptitude.setType(allZh.getType());
+                                    companyQualifications.add(companyAptitude);
+                                }
+                            }
+                        } else {
+                            allZh = companyRangeService.getAllZhByName(qualRange);
                             if (allZh != null) {
                                 companyAptitude = new TbCompanyAptitude();
                                 companyAptitude.setQualId(qualId);
@@ -216,21 +230,9 @@ public class CompanyQualificationsRangeTask {
                                 companyQualifications.add(companyAptitude);
                             }
                         }
-                    } else {
-                        allZh = companyRangeService.getAllZhByName(qualRange);
-                        if (allZh != null) {
-                            companyAptitude = new TbCompanyAptitude();
-                            companyAptitude.setQualId(qualId);
-                            companyAptitude.setComId(comId);
-                            companyAptitude.setAptitudeName(companyRangeService.getMajorNameBymajorUuid(allZh.getMainuuid()));
-                            companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
-                            companyAptitude.setMainuuid(allZh.getMainuuid());
-                            companyAptitude.setType(allZh.getType());
-                            companyQualifications.add(companyAptitude);
+                        if (companyQualifications != null && companyQualifications.size() > 0) {
+                            companyRangeService.batchInsertCompanyAptitude(companyQualifications);
                         }
-                    }
-                    if (companyQualifications != null && companyQualifications.size() > 0) {
-                        companyRangeService.batchInsertCompanyAptitude(companyQualifications);
                     }
                 }
             }
@@ -245,7 +247,7 @@ public class CompanyQualificationsRangeTask {
      */
     public void updateBeijinCompanyAptitudeRange() {
         int page = 0;
-        int batchCount = 1000;
+        int batchCount = 5000;
         Integer count = companyRangeService.getCompanyAptitudeTotal();
         if (count % batchCount == 0) {
             page = count / batchCount;
@@ -258,7 +260,7 @@ public class CompanyQualificationsRangeTask {
         for (int pageNum = 0; pageNum < page; pageNum++) {
             params = new HashMap<>();
             params.put("start", batchCount * pageNum);
-            params.put("pageSize", 1000);
+            params.put("pageSize", 5000);
             tbCompanyAptitudes = companyRangeService.listCompanyAptitude(params);
             TbCompany tbCompany;
             TbCompanyAptitude tbCompanyAptitude;
@@ -293,7 +295,7 @@ public class CompanyQualificationsRangeTask {
             }
         }
         //删除拆分后的公司资质
-        companyRangeService.deleteCompanyAptitude();
+//        companyRangeService.deleteCompanyAptitude();
     }
 
 

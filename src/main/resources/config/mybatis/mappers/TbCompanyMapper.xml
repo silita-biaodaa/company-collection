@@ -7,31 +7,31 @@
             SELECT LAST_INSERT_ID() AS comId
         </selectKey>
         INSERT INTO
-        hunanyitihua.tb_company(`com_name`, `org_code`, `business_num`, `regis_address`, `com_address`,
+        mishu.tb_company(`com_name`, `org_code`, `business_num`, `regis_address`, `com_address`,
         `legal_person`, `economic_type`, `regis_capital`, `skill_leader`, `created`)
         VALUES
         (#{comName}, #{orgCode}, #{businessNum}, #{regisAddress}, #{comAddress},
         #{legalPerson}, #{economicType}, #{regisCapital}, #{skillLeader}, now())
     </insert>
 
-    <select id="getCompanyTotalForOrgCodeAndBusinessNum" parameterType="com.silita.biaodaa.model.TbCompany"
+    <select id="getCompanyTotalByOrgCodeOrCompanyName" parameterType="com.silita.biaodaa.model.TbCompany"
             resultType="Integer">
-        SELECT COUNT(*) FROM hunanyitihua.tb_company WHERE business_num = #{businessNum} OR com_name = #{comName}
+        SELECT COUNT(*) FROM mishu.tb_company WHERE business_num = #{businessNum} OR com_name = #{comName}
     </select>
 
-    <select id="getCompanyIdByOrgCodeAndBusinessNum" parameterType="com.silita.biaodaa.model.TbCompany"
+    <select id="getCompanyIdByOrgCodeOrCompanyName" parameterType="com.silita.biaodaa.model.TbCompany"
             resultType="Integer">
-        SELECT com_id FROM hunanyitihua.tb_company WHERE business_num = #{businessNum} OR com_name = #{comName}
+        SELECT com_id FROM mishu.tb_company WHERE business_num = #{businessNum} OR com_name = #{comName}
     </select>
 
     <update id="updateCompanyRangeByComId" parameterType="com.silita.biaodaa.model.TbCompany">
-        UPDATE hunanyitihua.tb_company
+        UPDATE mishu.tb_company
         SET `range` = #{range}
         WHERE `com_id` = #{comId}
     </update>
 
     <update id="updateCompany" parameterType="com.silita.biaodaa.model.TbCompany">
-        UPDATE hunanyitihua.tb_company
+        UPDATE mishu.tb_company
         SET `com_name` = #{comName}, `org_code` = #{orgCode}, `business_num` = #{businessNum}, `regis_address` = #{regisAddress}, `com_address` = #{comAddress},
         `legal_person` = #{legalPerson}, `economic_type` = #{economicType}, `regis_capital` = #{regisCapital}, `skill_leader` = #{skillLeader}, `updated` = NOW()
         WHERE `com_id` = #{comId}

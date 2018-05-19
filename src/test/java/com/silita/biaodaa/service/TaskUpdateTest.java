@@ -30,8 +30,8 @@ public class TaskUpdateTest {
     @Test
     public void taskHuNanBuilderCompanyUpdate() {
         Map<String, Object> params = new HashMap();
-        params.put("tableName", "工程设计企业");
-        params.put("comName", "湖南智谋规划工程设计咨询有限责任公司");
+        params.put("tableName", "建筑业企业");
+        params.put("comName", "中国建筑第五工程局有限公司");
         huNanBuilderCompanyUpdateTask.taskBuilderCompany(params);
     }
 
@@ -40,7 +40,7 @@ public class TaskUpdateTest {
      */
     @Test
     public void taskHuNanCompanyUpdate() {
-        long startTime = System.currentTimeMillis();   //获取开始时间
+        long startTime = System.currentTimeMillis();
         List<Map<String, Object>> maps = companyUpdateService.listComNameAndTab();
         Map<String, Object> params;
         for (Map<String, Object> map : maps) {
@@ -49,8 +49,8 @@ public class TaskUpdateTest {
             params.put("comName", map.get("com_name"));
             huNanBuilderCompanyUpdateTask.taskBuilderCompany(params);
         }
-        long endTime = System.currentTimeMillis();   //获取开始时间
-        System.out.println("程序运行时间： " + (endTime - startTime) * 60 * 60 + "小时！");
+        long endTime = System.currentTimeMillis();
+        System.out.println("更新持续时间： " + (endTime - startTime) * 60 * 60 + "小时！");
     }
 
 }
