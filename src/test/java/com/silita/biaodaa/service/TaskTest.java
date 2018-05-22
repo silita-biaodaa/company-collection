@@ -25,7 +25,7 @@ public class TaskTest {
     @Autowired
     private HuNanSupervisorCompanyDetailTask huNanSupervisorCompanyDetailTask;
     @Autowired
-    private CompanyQualificationsRangeTask companyQualificationsRangeTask;
+    private SplitCertTask splitCertTask;
 
     /**
      * 列表（包含列表、外省入湘、企业安许）
@@ -77,9 +77,9 @@ public class TaskTest {
      * @throws Exception
      */
     @Test
-    public void CompanyQualificationsRangeTask() throws Exception {
-//        companyQualificationsRangeTask.splitCompanyQualifications();
-//        companyQualificationsRangeTask.updateCompanyAptitudeRange();
+    public void splitCertTask() throws Exception {
+//        splitCertTask.splitCompanyQualifications();
+//        splitCertTask.updateCompanyAptitudeRange();
     }
 
     /**
@@ -87,9 +87,9 @@ public class TaskTest {
      * @throws Exception
      */
     @Test
-    public void BeijinCompanyQualificationsRangeTask() throws Exception {
-//        companyQualificationsRangeTask.splitBeijinCompanyQualifications();
-        companyQualificationsRangeTask.updateBeijinCompanyAptitudeRange();
+    public void BeijinsplitCertTask() throws Exception {
+//        splitCertTask.splitBeijinCompanyQualifications();
+        splitCertTask.updateBeijinCompanyAptitudeRange();
     }
 
 

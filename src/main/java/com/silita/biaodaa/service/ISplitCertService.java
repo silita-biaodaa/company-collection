@@ -11,26 +11,38 @@ import java.util.Map;
 /**
  * Created by 91567 on 2018/4/11.
  */
-public interface ICompanyRangeService {
+public interface ISplitCertService {
 
     /**
-     * 删除拆分后的资质
-     */
-    void deleteCompanyAptitude();
-
-    /**
-     *
+     * 根据类型获取该类型证书总数
      * @param tableName
      * @return
      */
     int getCompanyQualificationTotalByTabName(String tableName);
 
     /**
-     *
+     * 分页获取某种证书
      * @param params
      * @return
      */
-    List<TbCompanyQualification> getCompanyQualifications(Map<String, Object> params);
+    List<TbCompanyQualification> listCompanyQualification(Map<String, Object> params);
+
+
+    /**
+     * 根据类型获取该类型证书总数（北京）
+     * @return
+     */
+    int getBeiJinCompanyQualificationTotalByTabName();
+
+    /**
+     * 分页获取某种证书（北京）
+     * @param params
+     * @return
+     */
+    List<TbCompanyQualification> listBeiJinCompanyQualification(Map<String, Object> params);
+
+
+    //###################################
 
     /**
      * 根据资质别名取得资质
@@ -46,6 +58,7 @@ public interface ICompanyRangeService {
      */
     String getMajorNameBymajorUuid(String majorUuid);
 
+
     /**
      * 批量插入拆分后的企业证书资质
      * @param tbCompanyAptitudes
@@ -53,9 +66,7 @@ public interface ICompanyRangeService {
     void batchInsertCompanyAptitude(List<TbCompanyAptitude> tbCompanyAptitudes);
 
 
-
-    //#########################################
-
+    //###################################
 
     /**
      * 取得拆分后的企业证书资质
@@ -74,23 +85,31 @@ public interface ICompanyRangeService {
      */
     void updateCompanyRangeByComId(TbCompany tbCompany);
 
+    /**
+     * 删除拆分后的资质
+     */
+    void deleteCompanyAptitude();
 
 
-    //#####################################北京
+    //###################################################
 
     /**
-     *
-     * @return
+     * 根据公司id删除该公司已拆分的资质
+     * @param companyId
      */
-    int getBeiJinCompanyQualificationTotalByTabName();
+    void deleteCcompanyAptitudeByComId(Integer companyId);
 
     /**
-     *
-     * @param params
+     * 根据企业id获取企业资质证书
+     * @param companyId
      * @return
      */
-    List<TbCompanyQualification> getBeiJinCompanyQualifications(Map<String, Object> params);
+    List<TbCompanyQualification> getCompanyQualificationByComId(Integer companyId);
 
+    /**
+     * 按公司取拆分后的企业证书资质
+     */
+    List<TbCompanyAptitude> listCompanyAptitudeByCompanyId(Integer companyId);
 
 
 }

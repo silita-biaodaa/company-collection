@@ -5,7 +5,7 @@ import com.silita.biaodaa.model.AllZh;
 import com.silita.biaodaa.model.TbCompany;
 import com.silita.biaodaa.model.TbCompanyAptitude;
 import com.silita.biaodaa.model.TbCompanyQualification;
-import com.silita.biaodaa.service.ICompanyRangeService;
+import com.silita.biaodaa.service.ISplitCertService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,8 +15,8 @@ import java.util.Map;
 /**
  * Created by 91567 on 2018/4/11.
  */
-@Service("companyRangeService")
-public class CompanyRangeServiceImpl implements ICompanyRangeService {
+@Service("splitCertService")
+public class SplitCertServiceImpl implements ISplitCertService {
     @Autowired
     private TbCompanyQualificationMapper tbCompanyQualificationMapper;
     @Autowired
@@ -30,19 +30,27 @@ public class CompanyRangeServiceImpl implements ICompanyRangeService {
 
 
     @Override
-    public void deleteCompanyAptitude() {
-        tbCompanyAptitudeMapper.deleteCompanyAptitude();
-    }
-
-    @Override
     public int getCompanyQualificationTotalByTabName(String tableName) {
         return tbCompanyQualificationMapper.getCompanyQualificationTotalByTabName(tableName);
     }
 
     @Override
-    public List<TbCompanyQualification> getCompanyQualifications(Map<String, Object> params) {
+    public List<TbCompanyQualification> listCompanyQualification(Map<String, Object> params) {
         return tbCompanyQualificationMapper.listCompanyQualification(params);
     }
+
+    @Override
+    public int getBeiJinCompanyQualificationTotalByTabName() {
+        return tbCompanyQualificationMapper.getBeiJinCompanyQualificationTotalByTabName();
+    }
+
+    @Override
+    public List<TbCompanyQualification> listBeiJinCompanyQualification(Map<String, Object> params) {
+        return tbCompanyQualificationMapper.listBeiJinCompanyQualification(params);
+    }
+
+
+    //#####################################################
 
     @Override
     public AllZh getAllZhByName(String name) {
@@ -58,6 +66,7 @@ public class CompanyRangeServiceImpl implements ICompanyRangeService {
     public void batchInsertCompanyAptitude(List<TbCompanyAptitude> tbCompanyAptitudes) {
         tbCompanyAptitudeMapper.batchInsertCompanyAptitude(tbCompanyAptitudes);
     }
+
 
     //#####################################################
 
@@ -76,15 +85,27 @@ public class CompanyRangeServiceImpl implements ICompanyRangeService {
         tbCompanyMapper.updateCompanyRangeByComId(tbCompany);
     }
 
-    //##############################################北京
+    @Override
+    public void deleteCompanyAptitude() {
+        tbCompanyAptitudeMapper.deleteCompanyAptitude();
+    }
+
+
+    //###################################################
 
     @Override
-    public int getBeiJinCompanyQualificationTotalByTabName() {
-        return tbCompanyQualificationMapper.getBeiJinCompanyQualificationTotalByTabName();
+    public void deleteCcompanyAptitudeByComId(Integer companyId) {
+        tbCompanyAptitudeMapper.deleteCompanyAptitudeByCompanyId(companyId);
     }
 
     @Override
-    public List<TbCompanyQualification> getBeiJinCompanyQualifications(Map<String, Object> params) {
-        return tbCompanyQualificationMapper.listBeiJinCompanyQualification(params);
+    public List<TbCompanyQualification> getCompanyQualificationByComId(Integer companyId) {
+        return tbCompanyQualificationMapper.getCompanyQualificationByComId(companyId);
     }
+
+    @Override
+    public List<TbCompanyAptitude> listCompanyAptitudeByCompanyId(Integer companyId) {
+        return tbCompanyAptitudeMapper.listCompanyAptitudeByComPanyId(companyId);
+    }
+
 }

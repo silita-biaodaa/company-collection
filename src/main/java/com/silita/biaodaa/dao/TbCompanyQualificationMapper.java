@@ -22,10 +22,10 @@ public interface TbCompanyQualificationMapper extends MyMapper<TbCompanyQualific
 
     /**
      * 根据资质证书号获取资质证书数量
-     * @param certNo
+     * @param companyQualification
      * @return
      */
-    Integer getTotalByCertNo(String certNo);
+    Integer getTotalByCertNoAndTab(TbCompanyQualification companyQualification);
 
     /**
      * 根据tabname取得全部资质证书详情页面url
@@ -78,8 +78,14 @@ public interface TbCompanyQualificationMapper extends MyMapper<TbCompanyQualific
      * 查询全部企业资质证书名称、和类别
      * @return
      */
-    List<Map<String, Object>> listCompanyNameAndTab();
+    List<Map<String, Object>> listComNameAndTab();
 
+    /**
+     * 根据tab名称查询全部企业资质证书名称、和类别
+     * @param tab
+     * @return
+     */
+    List<Map<String, Object>> listComNameAndTabByTab(String tab);
 
 
     //##################################################北京

@@ -4,7 +4,7 @@ import com.silita.biaodaa.model.AllZh;
 import com.silita.biaodaa.model.TbCompany;
 import com.silita.biaodaa.model.TbCompanyAptitude;
 import com.silita.biaodaa.model.TbCompanyQualification;
-import com.silita.biaodaa.service.ICompanyRangeService;
+import com.silita.biaodaa.service.ISplitCertService;
 import com.silita.biaodaa.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,10 +18,10 @@ import java.util.Map;
  * Created by 91567 on 2018/4/11.
  */
 @Component
-public class CompanyQualificationsRangeTask {
+public class SplitCertTask {
 
     @Autowired
-    ICompanyRangeService companyRangeService;
+    ISplitCertService splitCertService;
 
 
     /**
@@ -31,7 +31,7 @@ public class CompanyQualificationsRangeTask {
     public void splitCompanyQualifications() {
         int page = 0;
         int batchCount = 1000;
-        Integer count = companyRangeService.getCompanyQualificationTotalByTabName("工程监理企业");
+        Integer count = splitCertService.getCompanyQualificationTotalByTabName("工程监理企业");
         if (count % batchCount == 0) {
             page = count / batchCount;
         } else {
@@ -45,7 +45,7 @@ public class CompanyQualificationsRangeTask {
             params.put("tableName", "工程监理企业");
             params.put("start", batchCount * pageNum);
             params.put("pageSize", 1000);
-            companyQualificationList = companyRangeService.getCompanyQualifications(params);
+            companyQualificationList = splitCertService.listCompanyQualification(params);
             //遍历证书
             for (int i = 0; i < companyQualificationList.size(); i++) {
                 int qualId = companyQualificationList.get(i).getPkid();
@@ -60,12 +60,12 @@ public class CompanyQualificationsRangeTask {
                         //拆分资质
                         String[] qual = qualRange.split("；");
                         for (int j = 0; j < qual.length; j++) {
-                            allZh = companyRangeService.getAllZhByName(qual[j]);
+                            allZh = splitCertService.getAllZhByName(qual[j]);
                             if (allZh != null) {
                                 companyAptitude = new TbCompanyAptitude();
                                 companyAptitude.setQualId(qualId);
                                 companyAptitude.setComId(comId);
-                                companyAptitude.setAptitudeName(companyRangeService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                                companyAptitude.setAptitudeName(splitCertService.getMajorNameBymajorUuid(allZh.getMainuuid()));
                                 companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
                                 companyAptitude.setMainuuid(allZh.getMainuuid());
                                 companyAptitude.setType(allZh.getType());
@@ -76,12 +76,12 @@ public class CompanyQualificationsRangeTask {
                         //拆分资质
                         String[] qual = qualRange.split(";");
                         for (int j = 0; j < qual.length; j++) {
-                            allZh = companyRangeService.getAllZhByName(qual[j]);
+                            allZh = splitCertService.getAllZhByName(qual[j]);
                             if (allZh != null) {
                                 companyAptitude = new TbCompanyAptitude();
                                 companyAptitude.setQualId(qualId);
                                 companyAptitude.setComId(comId);
-                                companyAptitude.setAptitudeName(companyRangeService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                                companyAptitude.setAptitudeName(splitCertService.getMajorNameBymajorUuid(allZh.getMainuuid()));
                                 companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
                                 companyAptitude.setMainuuid(allZh.getMainuuid());
                                 companyAptitude.setType(allZh.getType());
@@ -89,12 +89,12 @@ public class CompanyQualificationsRangeTask {
                             }
                         }
                     } else {
-                        allZh = companyRangeService.getAllZhByName(qualRange);
+                        allZh = splitCertService.getAllZhByName(qualRange);
                         if (allZh != null) {
                             companyAptitude = new TbCompanyAptitude();
                             companyAptitude.setQualId(qualId);
                             companyAptitude.setComId(comId);
-                            companyAptitude.setAptitudeName(companyRangeService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                            companyAptitude.setAptitudeName(splitCertService.getMajorNameBymajorUuid(allZh.getMainuuid()));
                             companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
                             companyAptitude.setMainuuid(allZh.getMainuuid());
                             companyAptitude.setType(allZh.getType());
@@ -102,7 +102,7 @@ public class CompanyQualificationsRangeTask {
                         }
                     }
                     if (companyQualifications != null && companyQualifications.size() > 0) {
-                        companyRangeService.batchInsertCompanyAptitude(companyQualifications);
+                        splitCertService.batchInsertCompanyAptitude(companyQualifications);
                     }
                 }
             }
@@ -119,7 +119,7 @@ public class CompanyQualificationsRangeTask {
     public void updateCompanyAptitudeRange() {
         int page = 0;
         int batchCount = 1000;
-        Integer count = companyRangeService.getCompanyAptitudeTotal();
+        Integer count = splitCertService.getCompanyAptitudeTotal();
         if (count % batchCount == 0) {
             page = count / batchCount;
         } else {
@@ -132,7 +132,7 @@ public class CompanyQualificationsRangeTask {
             params = new HashMap<>();
             params.put("start", batchCount * pageNum);
             params.put("pageSize", 1000);
-            tbCompanyAptitudes = companyRangeService.listCompanyAptitude(params);
+            tbCompanyAptitudes = splitCertService.listCompanyAptitude(params);
             TbCompany tbCompany;
             TbCompanyAptitude tbCompanyAptitude;
             int comId;
@@ -161,12 +161,12 @@ public class CompanyQualificationsRangeTask {
                     tbCompany = new TbCompany();
                     tbCompany.setComId(comId);
                     tbCompany.setRange(sb.toString());
-                    companyRangeService.updateCompanyRangeByComId(tbCompany);
+                    splitCertService.updateCompanyRangeByComId(tbCompany);
                 }
             }
         }
         //删除拆分后的公司资质
-//        companyRangeService.deleteCompanyAptitude();
+//        splitCertService.deleteCompanyAptitude();
     }
 
     /**
@@ -176,7 +176,7 @@ public class CompanyQualificationsRangeTask {
     public void splitBeijinCompanyQualifications() {
         int page = 0;
         int batchCount = 5000;
-        Integer count = companyRangeService.getBeiJinCompanyQualificationTotalByTabName();
+        Integer count = splitCertService.getBeiJinCompanyQualificationTotalByTabName();
         if (count % batchCount == 0) {
             page = count / batchCount;
         } else {
@@ -189,7 +189,7 @@ public class CompanyQualificationsRangeTask {
             params = new HashMap<>();
             params.put("start", batchCount * pageNum);
             params.put("pageSize", 5000);
-            companyQualificationList = companyRangeService.getBeiJinCompanyQualifications(params);
+            companyQualificationList = splitCertService.listBeiJinCompanyQualification(params);
             //遍历证书
             for (int i = 0; i < companyQualificationList.size(); i++) {
                 int qualId = companyQualificationList.get(i).getPkid();
@@ -205,12 +205,12 @@ public class CompanyQualificationsRangeTask {
                             //拆分资质
                             String[] qual = qualRange.split("\\|");
                             for (int j = 0; j < qual.length; j++) {
-                                allZh = companyRangeService.getAllZhByName(qual[j]);
+                                allZh = splitCertService.getAllZhByName(qual[j]);
                                 if (allZh != null) {
                                     companyAptitude = new TbCompanyAptitude();
                                     companyAptitude.setQualId(qualId);
                                     companyAptitude.setComId(comId);
-                                    companyAptitude.setAptitudeName(companyRangeService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                                    companyAptitude.setAptitudeName(splitCertService.getMajorNameBymajorUuid(allZh.getMainuuid()));
                                     companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
                                     companyAptitude.setMainuuid(allZh.getMainuuid());
                                     companyAptitude.setType(allZh.getType());
@@ -218,12 +218,12 @@ public class CompanyQualificationsRangeTask {
                                 }
                             }
                         } else {
-                            allZh = companyRangeService.getAllZhByName(qualRange);
+                            allZh = splitCertService.getAllZhByName(qualRange);
                             if (allZh != null) {
                                 companyAptitude = new TbCompanyAptitude();
                                 companyAptitude.setQualId(qualId);
                                 companyAptitude.setComId(comId);
-                                companyAptitude.setAptitudeName(companyRangeService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                                companyAptitude.setAptitudeName(splitCertService.getMajorNameBymajorUuid(allZh.getMainuuid()));
                                 companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
                                 companyAptitude.setMainuuid(allZh.getMainuuid());
                                 companyAptitude.setType(allZh.getType());
@@ -231,7 +231,7 @@ public class CompanyQualificationsRangeTask {
                             }
                         }
                         if (companyQualifications != null && companyQualifications.size() > 0) {
-                            companyRangeService.batchInsertCompanyAptitude(companyQualifications);
+                            splitCertService.batchInsertCompanyAptitude(companyQualifications);
                         }
                     }
                 }
@@ -248,7 +248,7 @@ public class CompanyQualificationsRangeTask {
     public void updateBeijinCompanyAptitudeRange() {
         int page = 0;
         int batchCount = 5000;
-        Integer count = companyRangeService.getCompanyAptitudeTotal();
+        Integer count = splitCertService.getCompanyAptitudeTotal();
         if (count % batchCount == 0) {
             page = count / batchCount;
         } else {
@@ -261,7 +261,7 @@ public class CompanyQualificationsRangeTask {
             params = new HashMap<>();
             params.put("start", batchCount * pageNum);
             params.put("pageSize", 5000);
-            tbCompanyAptitudes = companyRangeService.listCompanyAptitude(params);
+            tbCompanyAptitudes = splitCertService.listCompanyAptitude(params);
             TbCompany tbCompany;
             TbCompanyAptitude tbCompanyAptitude;
             int comId;
@@ -290,12 +290,12 @@ public class CompanyQualificationsRangeTask {
                     tbCompany = new TbCompany();
                     tbCompany.setComId(comId);
                     tbCompany.setRange(sb.toString());
-                    companyRangeService.updateCompanyRangeByComId(tbCompany);
+                    splitCertService.updateCompanyRangeByComId(tbCompany);
                 }
             }
         }
         //删除拆分后的公司资质
-//        companyRangeService.deleteCompanyAptitude();
+//        splitCertService.deleteCompanyAptitude();
     }
 
 

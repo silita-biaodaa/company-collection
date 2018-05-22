@@ -22,8 +22,8 @@
         #{url}, #{corpid})
     </insert>
 
-    <select id="getTotalByCertNo" parameterType="String" resultType="Integer">
-        SELECT COUNT(*) FROM mishu.tb_company_qualification WHERE cert_no = #{certNo}
+    <select id="getTotalByCertNoAndTab" parameterType="String" resultType="Integer">
+        SELECT COUNT(*) FROM mishu.tb_company_qualification WHERE cert_no = #{certNo} AND tab = #{tab}
     </select>
 
     <select id="getAllCompanyQualificationUrlByTabName" parameterType="String" resultType="String">
@@ -66,10 +66,17 @@
         WHERE `url` = #{url}
     </update>
 
-    <select id="listCompanyNameAndTab" resultType="Map">
+    <select id="listComNameAndTab" resultType="Map">
         SELECT DISTINCT com_name, tab
         FROM mishu.tb_company_qualification
-        WHERE created IS NOT NULL
+        WHERE created IS NOT NULL AND updated IS NULL
+        AND (tab = '建筑业企业' OR tab = '工程设计企业' OR tab = '工程勘察企业' OR tab = '工程监理企业')
+    </select>
+
+    <select id="listComNameAndTabByTab" parameterType="String" resultType="Map">
+        SELECT DISTINCT com_name, tab
+        FROM mishu.tb_company_qualification
+        WHERE created IS NOT NULL AND tab = #{tab}
     </select>
 
     <select id="getBeiJinCompanyQualificationTotalByTabName" resultType="Integer">

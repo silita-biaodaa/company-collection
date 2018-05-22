@@ -1,7 +1,7 @@
 package com.silita.biaodaa.task;
 
 import com.silita.biaodaa.model.*;
-import com.silita.biaodaa.service.ICompanyUpdateService;
+import com.silita.biaodaa.service.*;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -25,7 +25,11 @@ public class HuNanCompanyUpdateTask {
     private static final int THREAD_NUMBER = 1;
 
     @Autowired
-    private ICompanyUpdateService companyUpdateService;
+    private ICompanyService companyService;
+    @Autowired
+    private IPeopleCertService peopleCertService;
+    @Autowired
+    private ISplitCertService splitCertService;
     @Autowired
     private ProjectDataUpdate projectDataUpdate;
 
@@ -36,7 +40,7 @@ public class HuNanCompanyUpdateTask {
     public void taskBuilderCompany(Map<String, Object> params) {
         int threadCount = THREAD_NUMBER;
         List<String> urls = new ArrayList<String>(2000);
-        urls = companyUpdateService.getAllCompanyQualificationUrlByTabAndCompanyName(params);
+        urls = companyService.getAllCompanyQualificationUrlByTabAndCompanyName(params);
         int every = urls.size() % threadCount == 0 ? urls.size() / threadCount : (urls.size() / threadCount) + 1;
         final CountDownLatch latch = new CountDownLatch(threadCount);
         for (int i = 0; i < threadCount; i++) {
@@ -78,16 +82,15 @@ public class HuNanCompanyUpdateTask {
                     companyDetailDoc = companyDetailConn.get();
                     if (companyDetailConn.response().statusCode() == 200) {
                         cookies = companyDetailConn.response().cookies();
-                        String corpid = CompanyQualificationUrl.substring(CompanyQualificationUrl.indexOf("=") + 1);
                         Elements companyInfoTable = companyDetailDoc.select("#table1");
                         Elements CompanyAptitudeTable = companyDetailDoc.select("#tablelist").select("#table2").select("#ctl00_ContentPlaceHolder1_td_zzdetail").select("table");
 
-                        TbCompanyQualification tbCompanyQualification = companyUpdateService.getComIdByUrl(CompanyQualificationUrl);
+                        TbCompanyQualification tbCompanyQualification = companyService.getComIdByUrl(CompanyQualificationUrl);
                         comId = tbCompanyQualification.getComId();
                         //#########更新企业基本信息########
                         updateCompanyInfo(companyInfoTable, comId);
                         //########更新企业资质证书#########
-                        updateCompanyAptitude(CompanyAptitudeTable, corpid, comId);
+                        updateCompanyAptitude(CompanyAptitudeTable, CompanyQualificationUrl, comId, String.valueOf(params.get("tableName")).substring(0,2));
                         //########更新人员及人员证书#######
                         if ((endNum > 1 && i == 0) || (endNum == 1)) {
                             //多本证书更新一次人员证书就行了
@@ -108,7 +111,7 @@ public class HuNanCompanyUpdateTask {
                         TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
                         tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
                         tbExceptionUrl.setExceptionMsg("获取企业详情信息失败!");
-                        companyUpdateService.insertException(tbExceptionUrl);
+                        companyService.insertException(tbExceptionUrl);
                     }
                     //随机暂停几秒
                     Thread.sleep(1000 * (random.nextInt(max) % (max - min + 1)));
@@ -140,21 +143,22 @@ public class HuNanCompanyUpdateTask {
             company.setEconomicType(eles.select("#ctl00_ContentPlaceHolder1_lbl_jjlx").text());
             company.setRegisCapital(eles.select("#ctl00_ContentPlaceHolder1_lbl_zczb").text());
             company.setComId(companyId);
-            companyUpdateService.updateCompany(company);
+            companyService.updateCompany(company);
         }
 
         /**
          * 更新企业资质证书
-         *
-         * @param eles
-         * @param corpid
+         *  @param eles
+         * @param CompanyQualificationUrl
          * @param companyId
+         * @param tableName
          */
-        void updateCompanyAptitude(Elements eles, String corpid, Integer companyId) {
+        void updateCompanyAptitude(Elements eles, String CompanyQualificationUrl, Integer companyId, String tableName) {
             if (eles.size() > 0) {
                 //有的下面有多个资质
                 for (int i = 0; i < eles.size(); i++) {
-                    if (eles.get(i).select("tr").get(0).select("td").get(1).text().contains("建筑")) {
+                    String type = eles.get(i).select("tr").get(0).select("td").get(1).text();
+                    if (type.equals("建筑业") || type.equals("工程设计") || type.equals("工程勘察") || type.equals("工程监理企业")) {
                         TbCompanyQualification tbCompanyQualification = new TbCompanyQualification();
                         tbCompanyQualification.setQualType(eles.get(i).select("tr").get(0).select("td").get(1).text());
                         tbCompanyQualification.setCertNo(eles.get(i).select("tr").get(1).select("td").get(1).text());
@@ -162,9 +166,10 @@ public class HuNanCompanyUpdateTask {
                         tbCompanyQualification.setCertDate(eles.get(i).select("tr").get(3).select("td").get(1).text());
                         tbCompanyQualification.setValidDate(eles.get(i).select("tr").get(3).select("td").get(3).text());
                         tbCompanyQualification.setRange(eles.get(i).select("tr").get(4).select("td").get(1).text());
+                        tbCompanyQualification.setUrl(CompanyQualificationUrl);
                         tbCompanyQualification.setComId(companyId);
-                        tbCompanyQualification.setCorpid(corpid);
-                        companyUpdateService.updateCompanyQualificationByUrl(tbCompanyQualification);
+                        tbCompanyQualification.setCorpid(CompanyQualificationUrl.substring(CompanyQualificationUrl.indexOf("=") + 1));
+                        companyService.updateCompanyQualificationByUrl(tbCompanyQualification);
                     }
                 }
             } else {
@@ -181,7 +186,7 @@ public class HuNanCompanyUpdateTask {
          */
         void updatePeople(Map<String, String> cookies, String CompanyQualificationUrl, Integer companyId) {
             //删除该公司下的人员资质证书
-            companyUpdateService.deletePersonHunanByCompanyId(companyId);
+            peopleCertService.deletePersonHunanByCompanyId(companyId);
             Document peopleListDoc;
             Connection peopleListConn;
             String peopleListUrl = "http://qyryjg.hunanjz.com/public/EnterpriseRegPerson.ashx";
@@ -218,7 +223,7 @@ public class HuNanCompanyUpdateTask {
                             tbPersonHunan.setInnerid(PersonQualificationUrl.substring(PersonQualificationUrl.indexOf("=") + 1));
                             tbPersonHunan.setComId(companyId);
                             //已存在url,证书编号，公司id(人员证书可能挂靠其他公司)跳过此证书
-                            if (companyUpdateService.checkPersonHunanIsExist(tbPersonHunan)) {
+                            if (peopleCertService.checkPersonHunanIsExist(tbPersonHunan)) {
                                 System.out.println("已抓取这个公司的这本证书" + PersonQualificationUrl);
                             } else {
                                 peopleDetailConn = Jsoup.connect(PersonQualificationUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
@@ -241,7 +246,7 @@ public class HuNanCompanyUpdateTask {
                                     tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
                                     tbExceptionUrl.setExceptionUrl(PersonQualificationUrl);
                                     tbExceptionUrl.setExceptionMsg("获取人员详情失败");
-                                    companyUpdateService.insertException(tbExceptionUrl);
+                                    companyService.insertException(tbExceptionUrl);
                                 }
                             }
                             //随机暂停几秒
@@ -304,13 +309,13 @@ public class HuNanCompanyUpdateTask {
                             tbPersionHunan.setCertDate(tempArr[1]);
                             tbPersionHunan.setValidDate(tempArr[2]);
                         }
-                        companyUpdateService.insertPersonHunan(tbPersionHunan);
+                        peopleCertService.insertPersonHunan(tbPersionHunan);
                     }
                 } else {
-                    companyUpdateService.insertPersonHunan(tbPersionHunan);
+                    peopleCertService.insertPersonHunan(tbPersionHunan);
                 }
             } else {
-                companyUpdateService.insertPersonHunan(tbPersionHunan);
+                peopleCertService.insertPersonHunan(tbPersionHunan);
             }
             return flag;
         }
@@ -347,7 +352,7 @@ public class HuNanCompanyUpdateTask {
                     tbPersionHunan.setComId(companyId);
                     tbPersionHunan.setType(2);
                     tbPersionHunan.setFlag(flag);
-                    companyUpdateService.insertPersonHunan(tbPersionHunan);
+                    peopleCertService.insertPersonHunan(tbPersionHunan);
                 }
             } else {
                 System.out.println("人员其他证书信息为空" + url);
@@ -370,7 +375,7 @@ public class HuNanCompanyUpdateTask {
                     tbPersonChange.setChangeDate(peopleChangeTable.get(i).select("td").get(2).text());
                     tbPersonChange.setRemark(peopleChangeTable.get(i).select("td").get(3).text());
                     tbPersonChange.setFlag(flag);
-                    companyUpdateService.insertPeopleChange(tbPersonChange);
+                    peopleCertService.insertPeopleChange(tbPersonChange);
                 }
             }
         }
@@ -383,9 +388,9 @@ public class HuNanCompanyUpdateTask {
      */
     void splitCompanyQualifications(Integer companyId) {
         //拆之前删除以前资质
-        companyUpdateService.deleteCcompanyAptitudeByComId(companyId);
+        splitCertService.deleteCcompanyAptitudeByComId(companyId);
 
-        List<TbCompanyQualification> companyQualificationList = companyUpdateService.getCompanyQualificationByComId(companyId);
+        List<TbCompanyQualification> companyQualificationList = splitCertService.getCompanyQualificationByComId(companyId);
         //遍历证书
         for (int i = 0; i < companyQualificationList.size(); i++) {
             int qualId = companyQualificationList.get(i).getPkid();
@@ -400,12 +405,12 @@ public class HuNanCompanyUpdateTask {
                     //拆分资质
                     String[] qual = qualRange.split("；");
                     for (int j = 0; j < qual.length; j++) {
-                        allZh = companyUpdateService.getAllZhByName(qual[j]);
+                        allZh = splitCertService.getAllZhByName(qual[j]);
                         if (allZh != null) {
                             companyAptitude = new TbCompanyAptitude();
                             companyAptitude.setQualId(qualId);
                             companyAptitude.setComId(comId);
-                            companyAptitude.setAptitudeName(companyUpdateService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                            companyAptitude.setAptitudeName(splitCertService.getMajorNameBymajorUuid(allZh.getMainuuid()));
                             companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
                             companyAptitude.setMainuuid(allZh.getMainuuid());
                             companyAptitude.setType(allZh.getType());
@@ -416,12 +421,12 @@ public class HuNanCompanyUpdateTask {
                     //拆分资质
                     String[] qual = qualRange.split(";");
                     for (int j = 0; j < qual.length; j++) {
-                        allZh = companyUpdateService.getAllZhByName(qual[j]);
+                        allZh = splitCertService.getAllZhByName(qual[j]);
                         if (allZh != null) {
                             companyAptitude = new TbCompanyAptitude();
                             companyAptitude.setQualId(qualId);
                             companyAptitude.setComId(comId);
-                            companyAptitude.setAptitudeName(companyUpdateService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                            companyAptitude.setAptitudeName(splitCertService.getMajorNameBymajorUuid(allZh.getMainuuid()));
                             companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
                             companyAptitude.setMainuuid(allZh.getMainuuid());
                             companyAptitude.setType(allZh.getType());
@@ -429,12 +434,12 @@ public class HuNanCompanyUpdateTask {
                         }
                     }
                 } else {
-                    allZh = companyUpdateService.getAllZhByName(qualRange);
+                    allZh = splitCertService.getAllZhByName(qualRange);
                     if (allZh != null) {
                         companyAptitude = new TbCompanyAptitude();
                         companyAptitude.setQualId(qualId);
                         companyAptitude.setComId(comId);
-                        companyAptitude.setAptitudeName(companyUpdateService.getMajorNameBymajorUuid(allZh.getMainuuid()));
+                        companyAptitude.setAptitudeName(splitCertService.getMajorNameBymajorUuid(allZh.getMainuuid()));
                         companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
                         companyAptitude.setMainuuid(allZh.getMainuuid());
                         companyAptitude.setType(allZh.getType());
@@ -442,7 +447,7 @@ public class HuNanCompanyUpdateTask {
                     }
                 }
                 if (companyQualifications != null && companyQualifications.size() > 0) {
-                    companyUpdateService.batchInsertCompanyAptitude(companyQualifications);
+                    splitCertService.batchInsertCompanyAptitude(companyQualifications);
                 }
             }
         }
@@ -454,7 +459,7 @@ public class HuNanCompanyUpdateTask {
      * @param companyId
      */
     void updateCompanyAptitudeRange(Integer companyId) {
-        List<TbCompanyAptitude> tbCompanyAptitudes = companyUpdateService.listCompanyAptitude(companyId);
+        List<TbCompanyAptitude> tbCompanyAptitudes = splitCertService.listCompanyAptitudeByCompanyId(companyId);
         TbCompany tbCompany;
         TbCompanyAptitude tbCompanyAptitude;
         int comId;
@@ -483,7 +488,7 @@ public class HuNanCompanyUpdateTask {
                 tbCompany = new TbCompany();
                 tbCompany.setComId(comId);
                 tbCompany.setRange(sb.toString());
-                companyUpdateService.updateCompanyRangeByComId(tbCompany);
+                splitCertService.updateCompanyRangeByComId(tbCompany);
             }
         }
     }

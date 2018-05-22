@@ -2,6 +2,7 @@ package com.silita.biaodaa.task;
 
 import com.silita.biaodaa.model.*;
 import com.silita.biaodaa.service.ICompanyService;
+import com.silita.biaodaa.service.IProjectService;
 import com.silita.biaodaa.utils.StringUtils;
 import org.apache.commons.collections.map.HashedMap;
 import org.jsoup.Connection;
@@ -28,6 +29,8 @@ public class ProjectDataUpdate {
     private Random random = new Random();
     String dateRegex = "(\\d{4}-\\d{1,2}-\\d{1,2})";
 
+    @Autowired
+    private IProjectService projectService;
     @Autowired
     private ICompanyService companyService;
 
@@ -64,7 +67,7 @@ public class ProjectDataUpdate {
                         String bdxh = projectBuildUrl.substring(projectBuildUrl.indexOf("=") + 1);
                         params.put("bdxh", bdxh);
                         params.put("comId", companyId);
-                        if (companyService.checkProjectBuildExist(params)) {
+                        if (projectService.checkProjectBuildExist(params)) {
                             System.out.println("已抓取这个施工项目" + projectBuildUrl);
                         } else {
                             projectBuildDetailConn = Jsoup.connect(projectBuildUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
@@ -135,7 +138,7 @@ public class ProjectDataUpdate {
                 tbProject.setPlanLicence(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_gcghxkz").text());
                 tbProject.setMoneySource(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_zjsm").text());
                 tbProject.setXmid(projectInfoUrl.substring(projectInfoUrl.indexOf("=") + 1));
-                return companyService.insertProjectInfo(tbProject);
+                return projectService.insertProjectInfo(tbProject);
             } else {
                 TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
                 tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
@@ -187,7 +190,7 @@ public class ProjectDataUpdate {
         tbProjectBuild.setBdxh(bdxh);
         tbProjectBuild.setComId(companyId);
         tbProjectBuild.setProId(projectId);
-        return companyService.insertProjectBuild(tbProjectBuild);
+        return projectService.insertProjectBuild(tbProjectBuild);
     }
     /**
      * 添加项目部人员
@@ -211,7 +214,7 @@ public class ProjectDataUpdate {
                     String peopleDetailUrl = eles.get(i).select("td").get(0).select("a").attr("href");
                     tbPersonProject.setInnerid(peopleDetailUrl.substring(peopleDetailUrl.indexOf("=") + 1));
                     tbPersonProject.setPid(projectBuilderId);
-                    companyService.insertPersonProject(tbPersonProject);
+                    projectService.insertPersonProject(tbPersonProject);
                 }
             }
         } else {
@@ -255,7 +258,7 @@ public class ProjectDataUpdate {
                         param.put("sgtxh", sgtxh);
                         param.put("comId", companyId);
                         param.put("proType", proType);
-                        if (companyService.checkProjectDesignExist(param)) {
+                        if (projectService.checkProjectDesignExist(param)) {
                             System.out.println("该证书下的设计项目已存在" + projectBuildUrl);
                         } else {
                             projectBuildDetailConn = Jsoup.connect(projectBuildUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
@@ -328,7 +331,7 @@ public class ProjectDataUpdate {
                 tbProject.setPlanLicence(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_gcghxkz").text());
                 tbProject.setMoneySource(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_zjsm").text());
                 tbProject.setXmid(projectInfoUrl.substring(projectInfoUrl.indexOf("=") + 1));
-                return companyService.insertProjectInfo(tbProject);
+                return projectService.insertProjectInfo(tbProject);
             } else {
                 TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
                 tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
@@ -367,7 +370,7 @@ public class ProjectDataUpdate {
         tbProjectDesign.setSgtxh(sgtxh);
         tbProjectDesign.setComId(companyId);
         tbProjectDesign.setProId(projectId);
-        return companyService.insertProjectDesign(tbProjectDesign);
+        return projectService.insertProjectDesign(tbProjectDesign);
     }
 
     /**
@@ -391,7 +394,7 @@ public class ProjectDataUpdate {
                     String peopleDetailUrl = eles.get(i).select("td").get(0).select("a").attr("href");
                     tbPersonProject.setInnerid(peopleDetailUrl.substring(peopleDetailUrl.indexOf("=") + 1));
                     tbPersonProject.setPid(projectDesignId);
-                    companyService.insertPersonProject(tbPersonProject);
+                    projectService.insertPersonProject(tbPersonProject);
                 }
             }
         } else {
@@ -434,7 +437,7 @@ public class ProjectDataUpdate {
                         param.put("sgtxh", sgtxh);
                         param.put("comId", companyId);
                         param.put("proType", proType);
-                        if (companyService.checkProjectDesignExist(param)) {
+                        if (projectService.checkProjectDesignExist(param)) {
                             System.out.println("该证书下的勘察项目已存在" + projectBuildUrl);
                         } else {
                             projectBuildDetailConn = Jsoup.connect(projectBuildUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
@@ -507,7 +510,7 @@ public class ProjectDataUpdate {
                 tbProject.setPlanLicence(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_gcghxkz").text());
                 tbProject.setMoneySource(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_zjsm").text());
                 tbProject.setXmid(projectInfoUrl.substring(projectInfoUrl.indexOf("=") + 1));
-                return companyService.insertProjectInfo(tbProject);
+                return projectService.insertProjectInfo(tbProject);
             } else {
                 TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
                 tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
@@ -546,7 +549,7 @@ public class ProjectDataUpdate {
         tbProjectDesign.setSgtxh(sgtxh);
         tbProjectDesign.setComId(companyId);
         tbProjectDesign.setProId(projectId);
-        return companyService.insertProjectDesignTwo(tbProjectDesign);
+        return projectService.insertProjectDesign(tbProjectDesign);
     }
 
     /**
@@ -570,7 +573,7 @@ public class ProjectDataUpdate {
                     String peopleDetailUrl = eles.get(i).select("td").get(0).select("a").attr("href");
                     tbPersonProject.setInnerid(peopleDetailUrl.substring(peopleDetailUrl.indexOf("=") + 1));
                     tbPersonProject.setPid(projectSurveyId);
-                    companyService.insertPersonProject(tbPersonProject);
+                    projectService.insertPersonProject(tbPersonProject);
                 }
             }
         } else {
@@ -613,7 +616,7 @@ public class ProjectDataUpdate {
                         String jlbdxh = projectBuildUrl.substring(projectBuildUrl.indexOf("=") + 1);
                         params.put("jlbdxh", jlbdxh);
                         params.put("comId", companyId);
-                        if (companyService.checkProjectSupervisionExist(params)) {
+                        if (projectService.checkProjectSupervisionExist(params)) {
                             System.out.println("该证书下的监理项目已存在" + projectBuildUrl);
                         } else {
                             projectBuildDetailConn = Jsoup.connect(projectBuildUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
@@ -686,7 +689,7 @@ public class ProjectDataUpdate {
                 tbProject.setPlanLicence(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_gcghxkz").text());
                 tbProject.setMoneySource(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_zjsm").text());
                 tbProject.setXmid(projectInfoUrl.substring(projectInfoUrl.indexOf("=") + 1));
-                return companyService.insertProjectInfo(tbProject);
+                return projectService.insertProjectInfo(tbProject);
             } else {
                 TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
                 tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);
@@ -728,7 +731,7 @@ public class ProjectDataUpdate {
         tbProjectSupervision.setJlbdxh(jlbdxh);
         tbProjectSupervision.setComId(companyId);
         tbProjectSupervision.setProId(projectId);
-        return companyService.insertProjectSupervisor(tbProjectSupervision);
+        return projectService.insertProjectSupervisor(tbProjectSupervision);
     }
 
     /**
@@ -753,7 +756,7 @@ public class ProjectDataUpdate {
                     String peopleDetailId = eles.get(i).select("td").get(0).select("a").attr("href");
                     tbPersonProject.setInnerid(peopleDetailId.substring(peopleDetailId.indexOf("=") + 1));
                     tbPersonProject.setPid(projectBuilderId);
-                    companyService.insertPersonProject(tbPersonProject);
+                    projectService.insertPersonProject(tbPersonProject);
                 }
             }
         } else {

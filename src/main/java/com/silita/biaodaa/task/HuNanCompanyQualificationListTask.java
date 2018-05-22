@@ -3,9 +3,7 @@ package com.silita.biaodaa.task;
 import com.silita.biaodaa.model.TbCompanyInto;
 import com.silita.biaodaa.model.TbCompanyQualification;
 import com.silita.biaodaa.model.TbSafetyCertificate;
-import com.silita.biaodaa.service.ICompanyIntoService;
 import com.silita.biaodaa.service.ICompanyService;
-import com.silita.biaodaa.service.ISafetyCertificateService;
 import com.silita.biaodaa.utils.StringUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -32,10 +30,6 @@ public class HuNanCompanyQualificationListTask {
 
     @Autowired
     ICompanyService companyService;
-    @Autowired
-    ISafetyCertificateService safetyCertificateService;
-    @Autowired
-    ICompanyIntoService companyIntoService;
 
     public void getCompanyList() throws Exception {
         Document doc;
@@ -129,6 +123,7 @@ public class HuNanCompanyQualificationListTask {
             String companyQualificationUrl = trs.get(row).select("td").get(0).select("a").first().absUrl("href");
             companyQualification.setUrl(companyQualificationUrl);
             companyQualification.setCorpid(companyQualificationUrl.substring(companyQualificationUrl.indexOf("=") + 1));
+            companyService.insertCompanyQualification(companyQualification);
             companyQualifications.add(companyQualification);
         }
         companyService.batchInsertCompanyQualification(companyQualifications);
@@ -150,7 +145,7 @@ public class HuNanCompanyQualificationListTask {
             safetyCertificate.setCertNo(trs.get(row).select("td").get(1).text());
             safetyCertificate.setCertDate(trs.get(row).select("td").get(2).text());
             safetyCertificate.setValidDate(trs.get(row).select("td").get(3).text());
-            safetyCertificateService.insertSafetyCertificate(safetyCertificate);
+            companyService.insertSafetyCertificate(safetyCertificate);
 //            safetyCertificates.add(safetyCertificate);
         }
 //        safetyCertificateService.batchInsertSafetyCertificate(safetyCertificates);
@@ -196,7 +191,7 @@ public class HuNanCompanyQualificationListTask {
                     }
                     companyInto.setRang(companyIntoDoc.select("#table2").select("#ctl00_ContentPlaceHolder1_rxbazz").text());
                     companyInto.setQybm(companyIntoUrl.substring(companyIntoUrl.indexOf("=") + 1));
-                    companyIntoService.insertCompanyInto(companyInto);
+                    companyService.insertCompanyInto(companyInto);
                 } else {
                     System.out.println("获取外省入湘企详情数据失败！" + companyIntoUrl);
                 }

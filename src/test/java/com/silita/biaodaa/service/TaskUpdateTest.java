@@ -21,14 +21,14 @@ public class TaskUpdateTest {
     @Autowired
     private HuNanCompanyUpdateTask huNanBuilderCompanyUpdateTask;
     @Autowired
-    private ICompanyUpdateService companyUpdateService;
+    private ICompanyService companyService;
 
 
     /**
      * 按企业名称单个更新
      */
     @Test
-    public void taskHuNanBuilderCompanyUpdate() {
+    public void taskHuNanCompanyUpdate() {
         Map<String, Object> params = new HashMap();
         params.put("tableName", "建筑业企业");
         params.put("comName", "中国建筑第五工程局有限公司");
@@ -36,12 +36,84 @@ public class TaskUpdateTest {
     }
 
     /**
-     * 逐个更新企业
+     * 更新全部
      */
     @Test
-    public void taskHuNanCompanyUpdate() {
+    public void taskHuNanAllCompanyUpdate() {
         long startTime = System.currentTimeMillis();
-        List<Map<String, Object>> maps = companyUpdateService.listComNameAndTab();
+        List<Map<String, Object>> maps = companyService.listComNameAndTab();
+        Map<String, Object> params;
+        for (Map<String, Object> map : maps) {
+            params = new HashMap<>();
+            params.put("tableName", map.get("tab"));
+            params.put("comName", map.get("com_name"));
+            huNanBuilderCompanyUpdateTask.taskBuilderCompany(params);
+        }
+        long endTime = System.currentTimeMillis();
+        System.out.println("更新持续时间： " + (endTime - startTime) * 60 * 60 + "小时！");
+    }
+
+    /**
+     * 建筑业企业
+     */
+    @Test
+    public void taskHuNanBuilderCompanyUpdate() {
+        long startTime = System.currentTimeMillis();
+        List<Map<String, Object>> maps = companyService.listComNameAndTabByTab("建筑业企业");
+        Map<String, Object> params;
+        for (Map<String, Object> map : maps) {
+            params = new HashMap<>();
+            params.put("tableName", map.get("tab"));
+            params.put("comName", map.get("com_name"));
+            huNanBuilderCompanyUpdateTask.taskBuilderCompany(params);
+        }
+        long endTime = System.currentTimeMillis();
+        System.out.println("更新持续时间： " + (endTime - startTime) * 60 * 60 + "小时！");
+    }
+
+    /**
+     * 工程设计企业
+     */
+    @Test
+    public void taskHuNanDesignCompanyUpdate() {
+        long startTime = System.currentTimeMillis();
+        List<Map<String, Object>> maps = companyService.listComNameAndTabByTab("工程设计企业");
+        Map<String, Object> params;
+        for (Map<String, Object> map : maps) {
+            params = new HashMap<>();
+            params.put("tableName", map.get("tab"));
+            params.put("comName", map.get("com_name"));
+            huNanBuilderCompanyUpdateTask.taskBuilderCompany(params);
+        }
+        long endTime = System.currentTimeMillis();
+        System.out.println("更新持续时间： " + (endTime - startTime) * 60 * 60 + "小时！");
+    }
+
+    /**
+     * 工程勘察企业
+     */
+    @Test
+    public void taskHuNanSurveyCompanyUpdate() {
+        long startTime = System.currentTimeMillis();
+        List<Map<String, Object>> maps = companyService.listComNameAndTabByTab("工程勘察企业");
+        Map<String, Object> params;
+        for (Map<String, Object> map : maps) {
+            params = new HashMap<>();
+            params.put("tableName", map.get("tab"));
+            params.put("comName", map.get("com_name"));
+            huNanBuilderCompanyUpdateTask.taskBuilderCompany(params);
+        }
+        long endTime = System.currentTimeMillis();
+        System.out.println("更新持续时间： " + (endTime - startTime) * 60 * 60 + "小时！");
+    }
+
+    /**
+     * 工程监理企业
+     */
+    @Test
+    public void taskHuNanSupervisionCompanyUpdate() {
+        long startTime = System.currentTimeMillis();
+        List<Map<String, Object>> maps = companyService.listComNameAndTabByTab("工程监理企业");
         Map<String, Object> params;
         for (Map<String, Object> map : maps) {
             params = new HashMap<>();

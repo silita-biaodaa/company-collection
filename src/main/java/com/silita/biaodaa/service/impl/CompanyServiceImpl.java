@@ -5,46 +5,68 @@ import com.silita.biaodaa.model.*;
 import com.silita.biaodaa.service.ICompanyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * Created by 91567 on 2018/4/2.
+ * Created by Administrator on 2018/5/19.
  */
 @Service("companyService")
 public class CompanyServiceImpl implements ICompanyService {
 
     @Autowired
-    private TbCompanyQualificationMapper tbCompanyQualificationMapper;
-    @Autowired
     private TbCompanyMapper tbCompanyMapper;
     @Autowired
-    private TbPersonMapper tbPersonMapper;
+    private TbCompanyQualificationMapper tbCompanyQualificationMapper;
     @Autowired
-    private TbPersonQualificationMapper tbPersonQualificationMapper;
+    private TbCompanyIntoMapper tbCompanyIntoMapper;
     @Autowired
-    private TbProjectMapper tbProjectMapper;
-    @Autowired
-    private TbProjectBuildMapper tbProjectBuildMapper;
-    @Autowired
-    private TbPersonProjectMapper tbPersonProjectMapper;
-    @Autowired
-    private TbProjectDesignMapper tbProjectDesignMapper;
-    @Autowired
-    private TbPersonDesignMapper tbPersonDesignMapper;
-    @Autowired
-    private TbProjectSupervisionMapper tbProjectSupervisionMapper;
-    @Autowired
-    private AllZhMapper allZhMapper;
-    @Autowired
-    private AptitudeDictionaryMapper aptitudeDictionaryMapper;
-    @Autowired
-    private TbCompanyAptitudeMapper tbCompanyAptitudeMapper;
-    @Autowired
-    private TbPersonChangeMapper tbPersonChangeMapper;
+    private TbSafetyCertificateMapper tbSafetyCertificateMapper;
     @Autowired
     private TbExceptionUrlMapper tbExceptionUrlMapper;
+
+
+
+    @Override
+    public void insertCompanyInto(TbCompanyInto tbCompanyInto) {
+        boolean falg = tbCompanyIntoMapper.getTotalByOrgCodeAndBusinessNum(tbCompanyInto) > 0;
+        if(!falg) {
+            tbCompanyIntoMapper.insertCompanyInto(tbCompanyInto);
+        }
+    }
+
+    @Override
+    public void batchInsertSafetyCertificate(List<TbSafetyCertificate> safetyCertificates) {
+        tbSafetyCertificateMapper.batchInsertSafetyCertificate(safetyCertificates);
+    }
+
+    @Override
+    public void insertSafetyCertificate(TbSafetyCertificate safetyCertificates) {
+        boolean flag = tbSafetyCertificateMapper.getTotalByCertNoAndCompanyName(safetyCertificates) > 0;
+        if(!flag) {
+            tbSafetyCertificateMapper.insertSafetyCertificate(safetyCertificates);
+        } else {
+            TbSafetyCertificate old = tbSafetyCertificateMapper.getSafetyCertificateByCertNoAndCompanyName(safetyCertificates);
+            if(!StringUtils.isEmpty(old.getValidDate()) && !StringUtils.isEmpty(safetyCertificates.getValidDate())) {
+                Integer oldDate = Integer.parseInt(old.getValidDate().replaceAll("-", ""));
+                Integer newDate = Integer.parseInt(safetyCertificates.getValidDate().replaceAll("-", ""));
+                //替换有效期小的
+                if(newDate > oldDate) {
+                    tbSafetyCertificateMapper.updateSafetyCertificate(safetyCertificates);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void insertCompanyQualification(TbCompanyQualification companyQualification) {
+        boolean flag = tbCompanyQualificationMapper.getTotalByCertNoAndTab(companyQualification) > 0;
+        if (!flag) {
+            tbCompanyQualificationMapper.InsertCompanyQualification(companyQualification);
+        }
+    }
 
     @Override
     public void batchInsertCompanyQualification(List<TbCompanyQualification> companyQualifications) {
@@ -52,21 +74,8 @@ public class CompanyServiceImpl implements ICompanyService {
     }
 
     @Override
-    public void InsertCompanyQualification(TbCompanyQualification companyQualification) {
-        boolean flag = tbCompanyQualificationMapper.getTotalByCertNo(companyQualification.getCertNo()) > 0;
-        if (!flag) {
-            tbCompanyQualificationMapper.InsertCompanyQualification(companyQualification);
-        }
-    }
-
-    @Override
-    public List<String> getAllCompanyQualificationUrlByTab(String tableName) {
+    public List<String> listCompanyQualificationUrlByTab(String tableName) {
         return tbCompanyQualificationMapper.getAllCompanyQualificationUrlByTabName(tableName);
-    }
-
-    @Override
-    public void updateCompanyQualificationUrlByCorpid(TbCompanyQualification companyQualification) {
-        tbCompanyQualificationMapper.updateCompanyQualificationUrlByCorpidAndCertId(companyQualification);
     }
 
     @Override
@@ -83,127 +92,42 @@ public class CompanyServiceImpl implements ICompanyService {
     }
 
     @Override
-    public int insertPersionInfo(TbPerson tbPerson) {
-        boolean flag = tbPersonMapper.getPersonTotalByNameAndIDAndSex(tbPerson) > 0;
-        if (!flag) {
-            //不存在新增、并返回新增的 pkid
-            tbPersonMapper.insertPersonInfo(tbPerson);
-            return tbPerson.getPkid();
-        } else {
-            //存在返回查询到的 pkid
-            return tbPersonMapper.getPersonIdByNameAndIDAndSex(tbPerson);
-        }
+    public void updateCompanyQualificationUrlByCorpid(TbCompanyQualification companyQualification) {
+        tbCompanyQualificationMapper.updateCompanyQualificationUrlByCorpidAndCertId(companyQualification);
+    }
+
+    //###############数据更新相关###############
+
+    @Override
+    public List<Map<String, Object>> listComNameAndTab() {
+        return tbCompanyQualificationMapper.listComNameAndTab();
     }
 
     @Override
-    public void insertPersonQualification(TbPersonQualification tbPersonQualification) {
-        boolean flag = tbPersonQualificationMapper.getTotalByCertNoAndComIdAndCategory(tbPersonQualification) > 0;
-        if (!flag) {
-            tbPersonQualificationMapper.insertPersonQualification(tbPersonQualification);
-        }
+    public List<Map<String, Object>> listComNameAndTabByTab(String tab) {
+        return tbCompanyQualificationMapper.listComNameAndTabByTab(tab);
     }
 
     @Override
-    public int insertProjectInfo(TbProject tbProject) {
-        boolean flag = tbProjectMapper.getProjectTotalByProjectNoAndXmid(tbProject) > 0;
-        if (!flag) {
-            tbProjectMapper.insertProjectInfo(tbProject);
-            return tbProject.getProId();
-        } else {
-            return tbProjectMapper.getProIdByProNoAndXmid(tbProject);
-        }
+    public List<String> getAllCompanyQualificationUrlByTabAndCompanyName(Map<String, Object> params) {
+        return tbCompanyQualificationMapper.getAllCompanyQualificationUrlByTabAndCompanyName(params);
     }
 
     @Override
-    public int insertProjectBuild(TbProjectBuild tbProjectBuild) {
-        boolean flag = tbProjectBuildMapper.getTotalByBdxhAndComIdAndBLicence(tbProjectBuild) > 0;
-        if (!flag) {
-            tbProjectBuildMapper.insertProjectBuild(tbProjectBuild);
-            return tbProjectBuild.getPkid();
-        } else {
-            return tbProjectBuildMapper.getPkidByBdxhAndComIdAndBLicence(tbProjectBuild);
-        }
-    }
-
-    public void insertPersonProject(TbPersonProject tbPersonProject) {
-        boolean flag = tbPersonProjectMapper.getPersionProjectTotalByCertNoAndPid(tbPersonProject) > 0;
-        if (!flag) {
-            tbPersonProjectMapper.insertPersionProject(tbPersonProject);
-        }
+    public void updateCompany(TbCompany tbCompany) {
+        tbCompanyMapper.updateCompany(tbCompany);
     }
 
     @Override
-    public int insertProjectDesign(TbProjectDesign tbProjectDesign) {
-        boolean falg = tbProjectDesignMapper.getTotalBySgtxhAndComIdCheckNo(tbProjectDesign) > 0;
-        if (!falg) {
-            tbProjectDesignMapper.insertProjectDesign(tbProjectDesign);
-            return tbProjectDesign.getPkid();
-        } else {
-            return tbProjectDesignMapper.getPkidBySgtxhAndComIdCheckNo(tbProjectDesign);
-        }
+    public void updateCompanyQualificationByUrl(TbCompanyQualification tbCompanyQualification) {
+        tbCompanyQualificationMapper.updateTbCompanyQualificationByUrl(tbCompanyQualification);
     }
 
     @Override
-    public void insertPersonDesign(TbPersonDesign tbPersonDesign) {
-        boolean flag = tbPersonDesignMapper.getTotalByNameAndCategoryAndPid(tbPersonDesign) > 0;
-        if (!flag) {
-            tbPersonDesignMapper.insertPersionDesign(tbPersonDesign);
-        }
+    public TbCompanyQualification getComIdByUrl(String url) {
+        return tbCompanyQualificationMapper.getComIdByUrl(url);
     }
 
-    @Override
-    public int insertProjectDesignTwo(TbProjectDesign tbProjectDesign) {
-        boolean falg = tbProjectDesignMapper.getTotalBySgtxhAndComIdCheckNo(tbProjectDesign) > 0;
-        if (!falg) {
-            tbProjectDesignMapper.insertProjectDesign(tbProjectDesign);
-            return tbProjectDesign.getPkid();
-        } else {
-            return tbProjectDesignMapper.getPkidBySgtxhAndComIdCheckNo(tbProjectDesign);
-        }
-    }
-
-    @Override
-    public int insertProjectSupervisor(TbProjectSupervision tbProjectSupervision) {
-        boolean falg = tbProjectSupervisionMapper.getTotalByJlbdxhAndComIdTwo(tbProjectSupervision) > 0;
-        if (!falg) {
-            tbProjectSupervisionMapper.insertProjectSupervision(tbProjectSupervision);
-            return tbProjectSupervision.getPkid();
-        } else {
-            return tbProjectSupervisionMapper.getPkidByJlbdxhAndComIdTwo(tbProjectSupervision);
-        }
-    }
-
-    @Override
-    public boolean checkPersonQualificationIsExist(TbPersonQualification tbPersonQualification) {
-        return tbPersonQualificationMapper.getTotalByCertNoAndComIdAndCategory(tbPersonQualification) > 0;
-    }
-
-    @Override
-    public boolean checkProjectBuildExist(Map<String, Object> params) {
-        return tbProjectBuildMapper.getTotalByBdxhAndComId(params) > 0;
-    }
-
-    @Override
-    public boolean checkProjectDesignExist(Map<String, Object> params) {
-        return tbProjectDesignMapper.getTotalBySgtxhAndProTypeAndComId(params) > 0;
-    }
-
-    @Override
-    public boolean checkProjectSupervisionExist(Map<String, Object> params) {
-        return tbProjectSupervisionMapper.getTotalByJlbdxhAndComId(params) > 0;
-    }
-
-    public void batchInsertPeopleChange(List<TbPersonChange> tbPersonChanges) {
-        tbPersonChangeMapper.batchInsertPeopleChange(tbPersonChanges);
-    }
-
-    @Override
-    public void insertPeopleChange(TbPersonChange tbPersonChange) {
-        boolean flag = tbPersonChangeMapper.getTotalByPerIdChangeDate(tbPersonChange) > 0;
-        if (!flag) {
-            tbPersonChangeMapper.insertPeopleChange(tbPersonChange);
-        }
-    }
 
     @Override
     public void insertException(TbExceptionUrl tbExceptionUrl) {
@@ -211,45 +135,4 @@ public class CompanyServiceImpl implements ICompanyService {
     }
 
 
-    //####################以下为拆分资质相关业务########################
-
-    @Override
-    public int getCompanyQualificationTotalByTabName(String tableName) {
-        return tbCompanyQualificationMapper.getCompanyQualificationTotalByTabName(tableName);
-    }
-
-    @Override
-    public List<TbCompanyQualification> getCompanyQualifications(Map<String, Object> params) {
-        return tbCompanyQualificationMapper.listCompanyQualification(params);
-    }
-
-    @Override
-    public AllZh getAllZhByName(String name) {
-        return allZhMapper.getAllZhByName(name);
-    }
-
-    @Override
-    public String getMajorNameBymajorUuid(String majorUuid) {
-        return aptitudeDictionaryMapper.getMajorNameBymajorUuid(majorUuid);
-    }
-
-    @Override
-    public void batchInsertCompanyAptitude(List<TbCompanyAptitude> tbCompanyAptitudes) {
-        tbCompanyAptitudeMapper.batchInsertCompanyAptitude(tbCompanyAptitudes);
-    }
-
-    @Override
-    public Integer getCompanyAptitudeTotal() {
-        return tbCompanyAptitudeMapper.getCompanyAptitudeTotal();
-    }
-
-    @Override
-    public List<TbCompanyAptitude> listCompanyAptitude(Map<String, Object> params) {
-        return tbCompanyAptitudeMapper.listCompanyAptitude(params);
-    }
-
-    @Override
-    public void updateCompanyRangeByComId(TbCompany tbCompany) {
-        tbCompanyMapper.updateCompanyRangeByComId(tbCompany);
-    }
 }
