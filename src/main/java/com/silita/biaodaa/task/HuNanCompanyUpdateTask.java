@@ -137,7 +137,7 @@ public class HuNanCompanyUpdateTask {
             company.setComName(eles.select("#ctl00_ContentPlaceHolder1_lbl_qymc").text());
             company.setOrgCode(eles.select("#ctl00_ContentPlaceHolder1_lbl_jgdm").text());
             company.setBusinessNum(eles.select("#ctl00_ContentPlaceHolder1_lbl_yyzz").text());
-            company.setRegisAddress(eles.select("#ctl00_ContentPlaceHolder1_lbl_sz").text());
+            company.setRegisAddress("湖南省" + eles.select("#ctl00_ContentPlaceHolder1_lbl_sz").text());
             company.setComAddress(eles.select("#ctl00_ContentPlaceHolder1_lbl_dwdz").text());
             company.setLegalPerson(eles.select("#ctl00_ContentPlaceHolder1_lbl_fddbr").text());
             company.setEconomicType(eles.select("#ctl00_ContentPlaceHolder1_lbl_jjlx").text());
@@ -158,7 +158,7 @@ public class HuNanCompanyUpdateTask {
                 //有的下面有多个资质
                 for (int i = 0; i < eles.size(); i++) {
                     String type = eles.get(i).select("tr").get(0).select("td").get(1).text();
-                    if (type.equals("建筑业") || type.equals("工程设计") || type.equals("工程勘察") || type.equals("工程监理企业")) {
+                    if (type.equals("建筑业") || type.equals("工程设计") || type.equals("工程勘察") || type.equals("工程监理")) {
                         TbCompanyQualification tbCompanyQualification = new TbCompanyQualification();
                         tbCompanyQualification.setQualType(eles.get(i).select("tr").get(0).select("td").get(1).text());
                         tbCompanyQualification.setCertNo(eles.get(i).select("tr").get(1).select("td").get(1).text());

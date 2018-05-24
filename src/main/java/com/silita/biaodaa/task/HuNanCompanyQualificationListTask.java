@@ -12,8 +12,6 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -112,7 +110,7 @@ public class HuNanCompanyQualificationListTask {
      */
     void insertCompanyQualification(Elements trs, String tableName) {
         TbCompanyQualification companyQualification;
-        List<TbCompanyQualification> companyQualifications = new ArrayList<>(25);
+//        List<TbCompanyQualification> companyQualifications = new ArrayList<>(25);
         for (int row = 1; row < trs.size(); row++) {
             companyQualification = new TbCompanyQualification();
             companyQualification.setComName(trs.get(row).select("td").get(0).select("a").text());
@@ -124,10 +122,10 @@ public class HuNanCompanyQualificationListTask {
             companyQualification.setUrl(companyQualificationUrl);
             companyQualification.setCorpid(companyQualificationUrl.substring(companyQualificationUrl.indexOf("=") + 1));
             companyService.insertCompanyQualification(companyQualification);
-            companyQualifications.add(companyQualification);
+//            companyQualifications.add(companyQualification);
         }
-        companyService.batchInsertCompanyQualification(companyQualifications);
-        companyQualifications.clear();
+//        companyService.batchInsertCompanyQualification(companyQualifications);
+//        companyQualifications.clear();
     }
 
 
