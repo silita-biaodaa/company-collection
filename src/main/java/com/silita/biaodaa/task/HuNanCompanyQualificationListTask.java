@@ -37,12 +37,17 @@ public class HuNanCompanyQualificationListTask {
         String __EVENTVALIDATION = null;
         String url = "http://qyryjg.hunanjz.com/public/EnterpriseList.aspx";
 
-        String[] codes = {"ctl00$ContentPlaceHolder1$btn_7", "ctl00$ContentPlaceHolder1$btn_1", "ctl00$ContentPlaceHolder1$btn_2", "ctl00$ContentPlaceHolder1$btn_5", "ctl00$ContentPlaceHolder1$btn_3",
-                "ctl00$ContentPlaceHolder1$btn_13", "ctl00$ContentPlaceHolder1$btn_zjzx", "ctl00$ContentPlaceHolder1$btn_sgtsc", "ctl00$ContentPlaceHolder1$btn_jcqy", "ctl00$ContentPlaceHolder1$btn_aqsc",
-                "ctl00$ContentPlaceHolder1$btn_ws"};
-        String[] tabs = {"建筑业企业", "工程勘察企业", "工程设计企业", "工程监理企业", "工程招标代理机构",
-                "设计施工一体化企业", "工程造价咨询企业", "施工图审查机构", "质量检测机构", "安全生产许可证",
-                "外省入湘备案"};
+//        String[] codes = {"ctl00$ContentPlaceHolder1$btn_7", "ctl00$ContentPlaceHolder1$btn_1", "ctl00$ContentPlaceHolder1$btn_2", "ctl00$ContentPlaceHolder1$btn_5", "ctl00$ContentPlaceHolder1$btn_3",
+//                "ctl00$ContentPlaceHolder1$btn_13", "ctl00$ContentPlaceHolder1$btn_zjzx", "ctl00$ContentPlaceHolder1$btn_sgtsc", "ctl00$ContentPlaceHolder1$btn_jcqy", "ctl00$ContentPlaceHolder1$btn_aqsc",
+//                "ctl00$ContentPlaceHolder1$btn_ws"};
+//        String[] tabs = {"建筑业企业", "工程勘察企业", "工程设计企业", "工程监理企业", "工程招标代理机构",
+//                "设计施工一体化企业", "工程造价咨询企业", "施工图审查机构", "质量检测机构", "安全生产许可证",
+//                "外省入湘备案"};
+
+        String[] codes = {"ctl00$ContentPlaceHolder1$btn_7", "ctl00$ContentPlaceHolder1$btn_1", "ctl00$ContentPlaceHolder1$btn_2", "ctl00$ContentPlaceHolder1$btn_5",
+                "ctl00$ContentPlaceHolder1$btn_aqsc", "ctl00$ContentPlaceHolder1$btn_ws"};
+        String[] tabs = {"建筑业企业", "工程勘察企业", "工程设计企业", "工程监理企业",
+                "安全生产许可证", "外省入湘备案"};
 
         for (int tab = 0; tab < tabs.length; tab++) {
             int page = 1;

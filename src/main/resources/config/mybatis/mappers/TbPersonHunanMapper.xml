@@ -18,12 +18,12 @@
       `name`, `sex`, `id_card`, `innerid` ,`category`,
       `cert_no`, `seal_no`, `major`, `cert_date`, `valid_date`,
       `url`, `com_id`, `com_name`, `type`, `px`,
-      `flag`, `created`)
+      `created`)
       VALUES(
         #{name}, #{sex}, #{idCard}, #{innerid}, #{category},
         #{certNo}, #{sealNo}, #{major}, #{certDate}, #{validDate},
-        #{url}, #{comId}, #{comName}, #{type}, #{px},
-        #{flag}, NOW()
+        #{url}, #{comId}, #{comName}, #{type}, 0,
+        NOW()
       )
     </insert>
 
