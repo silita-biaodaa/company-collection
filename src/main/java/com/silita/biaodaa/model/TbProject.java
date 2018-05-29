@@ -3,7 +3,6 @@ package com.silita.biaodaa.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Id;
 import java.util.Date;
 
 @Getter
@@ -12,7 +11,6 @@ public class TbProject {
     /**
      * 项目ID
      */
-    @Id
     private Integer proId;
 
     /**

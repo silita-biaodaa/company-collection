@@ -4,7 +4,6 @@ import com.silita.biaodaa.model.*;
 import com.silita.biaodaa.service.ICompanyService;
 import com.silita.biaodaa.service.IProjectService;
 import com.silita.biaodaa.utils.StringUtils;
-import org.apache.commons.collections.map.HashedMap;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -254,7 +253,7 @@ public class ProjectDataUpdate {
                         projectBuildUrl = projectList.get(i).select("a").first().absUrl("href");
                         //施工图审查信息内部id（设计）
                         String sgtxh = projectBuildUrl.substring(projectBuildUrl.indexOf("=") + 1);
-                        param = new HashedMap();
+                        param = new HashMap();
                         param.put("sgtxh", sgtxh);
                         param.put("comId", companyId);
                         param.put("proType", proType);
@@ -433,7 +432,7 @@ public class ProjectDataUpdate {
                         proType = projectList.get(i).select("td").first().text();
                         projectBuildUrl = projectList.get(i).select("a").first().absUrl("href");
                         String sgtxh = projectBuildUrl.substring(projectBuildUrl.indexOf("=") + 1);
-                        param = new HashedMap();
+                        param = new HashMap();
                         param.put("sgtxh", sgtxh);
                         param.put("comId", companyId);
                         param.put("proType", proType);

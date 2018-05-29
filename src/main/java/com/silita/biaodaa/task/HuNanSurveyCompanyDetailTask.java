@@ -5,7 +5,6 @@ import com.silita.biaodaa.service.ICompanyService;
 import com.silita.biaodaa.service.IPeopleCertService;
 import com.silita.biaodaa.service.IProjectService;
 import com.silita.biaodaa.utils.StringUtils;
-import org.apache.commons.collections.map.HashedMap;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -14,10 +13,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -398,7 +394,7 @@ public class HuNanSurveyCompanyDetailTask {
                             proType = projectList.get(i).select("td").first().text();
                             projectBuildUrl = projectList.get(i).select("a").first().absUrl("href");
                             String sgtxh = projectBuildUrl.substring(projectBuildUrl.indexOf("=") + 1);
-                            param = new HashedMap();
+                            param = new HashMap();
                             param.put("sgtxh", sgtxh);
                             param.put("comId", companyId);
                             param.put("proType", proType);
