@@ -54,4 +54,5 @@
         <property name="suffix" value=".html"></property>
     </bean>
 
+    <import resource="applicationContext.xml" />
 </beans>

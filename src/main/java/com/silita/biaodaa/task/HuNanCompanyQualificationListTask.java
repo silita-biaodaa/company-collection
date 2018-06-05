@@ -1,10 +1,13 @@
 package com.silita.biaodaa.task;
 
+import com.alibaba.fastjson.JSONObject;
+import com.silita.biaodaa.common.xxl.BaseTask;
 import com.silita.biaodaa.model.TbCompanyInto;
 import com.silita.biaodaa.model.TbCompanyQualification;
 import com.silita.biaodaa.model.TbSafetyCertificate;
 import com.silita.biaodaa.service.ICompanyService;
 import com.silita.biaodaa.utils.StringUtils;
+import com.xxl.job.core.handler.annotation.JobHander;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -20,7 +23,12 @@ import java.util.Random;
  * Created by 91567 on 2018/3/31.
  */
 @Component
-public class HuNanCompanyQualificationListTask {
+@JobHander(value = "HuNanCompanyQualificationListTask")
+public class HuNanCompanyQualificationListTask extends BaseTask{
+    @Override
+    public void runTask(JSONObject jsonObject) throws Exception {
+        getCompanyList();
+    }
 
     private int min = 1;
     private int max = 5;

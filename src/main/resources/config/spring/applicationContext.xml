@@ -13,9 +13,8 @@
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-    <!-- 激活annotation功能 -->
+	<!-- 激活annotation功能 -->
 	<context:annotation-config />
-
 
 	<!-- 加载redis配置文件 -->
 	<context:property-placeholder location="classpath:config/collection.properties" />
@@ -63,4 +62,6 @@
     </bean>
 
 	<import resource="applicationContext-redis.xml" />
+
+	<import resource="applicationContext-xxl-job.xml" />
 </beans>
