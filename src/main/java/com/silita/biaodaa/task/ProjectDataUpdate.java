@@ -1,5 +1,6 @@
 package com.silita.biaodaa.task;
 
+import com.silita.biaodaa.common.xxl.MyXxlLogger;
 import com.silita.biaodaa.model.*;
 import com.silita.biaodaa.service.ICompanyService;
 import com.silita.biaodaa.service.IProjectService;
@@ -67,13 +68,13 @@ public class ProjectDataUpdate {
                         params.put("bdxh", bdxh);
                         params.put("comId", companyId);
                         if (projectService.checkProjectBuildExist(params)) {
-                            System.out.println("已抓取这个施工项目" + projectBuildUrl);
+                            MyXxlLogger.info("已抓取这个施工项目" + projectBuildUrl);
                         } else {
                             projectBuildDetailConn = Jsoup.connect(projectBuildUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                             projectBuildDetailDoc = projectBuildDetailConn.get();
                             if (projectBuildDetailConn.response().statusCode() == 200) {
                                 if (StringUtils.isNotNull(projectBuildDetailDoc.select("#table1").text())) {
-                                    System.out.println(projectBuildUrl);
+                                    MyXxlLogger.info(projectBuildUrl);
                                     Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
                                     Elements projectBuilderPeopleTable = projectBuildDetailDoc.select("#ctl00_ContentPlaceHolder1_td_rylist").select("table").select("tr");
                                     String projectInfoDetaiUrl = projectBuildDetailTable.select("a").first().absUrl("href");
@@ -84,7 +85,7 @@ public class ProjectDataUpdate {
                                     //添加项目部人员（施工）
                                     addBuilderProjectPeople(projectBuilderPeopleTable, projectBuilderId, projectBuildUrl);
                                 } else {
-                                    System.out.println("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
+                                    MyXxlLogger.info("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
                                 }
                             } else {
                                 TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
@@ -98,10 +99,10 @@ public class ProjectDataUpdate {
                         Thread.sleep(100 * (random.nextInt(max) % (max - min + 1)));
                     }
                 } else {
-                    System.out.println("该企业项目数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                    MyXxlLogger.info("该企业项目数据为空" + CompanyQualificationUrl);
                 }
             } else {
-                System.out.println("获取企业项目列表页失败" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                MyXxlLogger.info("获取企业项目列表页失败" + CompanyQualificationUrl);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -126,7 +127,7 @@ public class ProjectDataUpdate {
                 tbProject.setProName(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_gcmc").text());
                 tbProject.setProNo(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_prjnum").text());
                 tbProject.setProOrg(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_jsdw").text());
-                tbProject.setProWhere(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_sz").text());
+                tbProject.setProWhere("湖南省" + projectTable.select("#ctl00_ContentPlaceHolder1_lbl_sz").text());
                 tbProject.setProAddress(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_gcdd").text());
                 tbProject.setInvestAmount(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_ztze").text().replaceAll("[\\u4e00-\\u9fa5]", ""));
                 tbProject.setApprovalNum(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_lxwh").text());
@@ -200,24 +201,35 @@ public class ProjectDataUpdate {
      */
     void addBuilderProjectPeople(Elements eles, Integer projectBuilderId, String projectBuildUrl) {
         if (eles.size() > 2) {
+            Document PeopleDetailDoc;
+            Connection PeopleDetailConn;
             TbPersonProject tbPersonProject;
-            for (int i = 2; i < eles.size() - 1; i++) {
-                if (StringUtils.isNotNull(eles.get(i).text())) {
-                    tbPersonProject = new TbPersonProject();
-                    tbPersonProject.setName(eles.get(i).select("td").get(0).text());
-                    tbPersonProject.setRole(eles.get(i).select("td").get(1).text());
-                    tbPersonProject.setCertNo(eles.get(i).select("td").get(2).text());
-                    tbPersonProject.setSafeNo(eles.get(i).select("td").get(3).text());
-                    tbPersonProject.setStatus(eles.get(i).select("td").get(4).text());
-                    tbPersonProject.setType("build");
-                    String peopleDetailUrl = eles.get(i).select("td").get(0).select("a").attr("href");
-                    tbPersonProject.setInnerid(peopleDetailUrl.substring(peopleDetailUrl.indexOf("=") + 1));
-                    tbPersonProject.setPid(projectBuilderId);
-                    projectService.insertPersonProject(tbPersonProject);
+            try {
+                for (int i = 2; i < eles.size() - 1; i++) {
+                    if (StringUtils.isNotNull(eles.get(i).text())) {
+                        tbPersonProject = new TbPersonProject();
+                        tbPersonProject.setName(eles.get(i).select("td").get(0).text());
+                        tbPersonProject.setRole(eles.get(i).select("td").get(1).text());
+                        tbPersonProject.setCertNo(eles.get(i).select("td").get(2).text());
+                        tbPersonProject.setSafeNo(eles.get(i).select("td").get(3).text());
+                        tbPersonProject.setStatus(eles.get(i).select("td").get(4).text());
+                        tbPersonProject.setType("build");
+                        String peopleDetailUrl = eles.get(i).select("td").get(0).select("a").first().absUrl("href");
+                        PeopleDetailConn = Jsoup.connect(peopleDetailUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
+                        PeopleDetailDoc = PeopleDetailConn.get();
+                        //判断项目部人员url链接是否有效
+                        if(!org.springframework.util.StringUtils.isEmpty(PeopleDetailDoc.select("#ctl00_ContentPlaceHolder1_lbl_xm").text())) {
+                            tbPersonProject.setInnerid(peopleDetailUrl.substring(peopleDetailUrl.indexOf("=") + 1));
+                        }
+                        tbPersonProject.setPid(projectBuilderId);
+                        projectService.insertPersonProject(tbPersonProject);
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         } else {
-            System.out.println("无项目部人员（施工）" + projectBuildUrl);
+            MyXxlLogger.info("无项目部人员（施工）" + projectBuildUrl);
         }
     }
 
@@ -258,12 +270,12 @@ public class ProjectDataUpdate {
                         param.put("comId", companyId);
                         param.put("proType", proType);
                         if (projectService.checkProjectDesignExist(param)) {
-                            System.out.println("该证书下的设计项目已存在" + projectBuildUrl);
+                            MyXxlLogger.info("该证书下的设计项目已存在" + projectBuildUrl);
                         } else {
                             projectBuildDetailConn = Jsoup.connect(projectBuildUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                             projectBuildDetailDoc = projectBuildDetailConn.get();
                             if (projectBuildDetailConn.response().statusCode() == 200) {
-                                System.out.println(projectBuildUrl);
+                                MyXxlLogger.info(projectBuildUrl);
 //                                logger.error(projectBuildUrl);
                                 if (StringUtils.isNotNull(projectBuildDetailDoc.select("#table1").text())) {
                                     Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
@@ -276,7 +288,7 @@ public class ProjectDataUpdate {
                                     //添加设计人员名单
                                     addDesignPeople(projectDesignPeopleTable, projectDesignId, projectBuildUrl);
                                 } else {
-                                    System.out.println("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
+                                    MyXxlLogger.info("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
                                 }
                             } else {
                                 TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
@@ -290,10 +302,10 @@ public class ProjectDataUpdate {
                     //随机暂停几秒
                     Thread.sleep(000 * (random.nextInt(max) % (max - min + 1)));
                 } else {
-                    System.out.println("该企业项目数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                    MyXxlLogger.info("该企业项目数据为空" + CompanyQualificationUrl);
                 }
             } else {
-                System.out.println("获取企业项目列表页失败" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                MyXxlLogger.info("获取企业项目列表页失败" + CompanyQualificationUrl);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -319,7 +331,7 @@ public class ProjectDataUpdate {
                 tbProject.setProName(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_gcmc").text());
                 tbProject.setProNo(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_prjnum").text());
                 tbProject.setProOrg(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_jsdw").text());
-                tbProject.setProWhere(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_sz").text());
+                tbProject.setProWhere("湖南省" + projectTable.select("#ctl00_ContentPlaceHolder1_lbl_sz").text());
                 tbProject.setProAddress(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_gcdd").text());
                 tbProject.setInvestAmount(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_ztze").text().replaceAll("[\\u4e00-\\u9fa5]", ""));
                 tbProject.setApprovalNum(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_lxwh").text());
@@ -381,23 +393,34 @@ public class ProjectDataUpdate {
      */
     void addDesignPeople(Elements eles, Integer projectDesignId, String projectDesignUrl) {
         if (eles.size() > 2) {
+            Document PeopleDetailDoc;
+            Connection PeopleDetailConn;
             TbPersonProject tbPersonProject;
-            for (int i = 2; i < eles.size() - 1; i++) {
-                if (StringUtils.isNotNull(eles.get(i).text())) {
-                    tbPersonProject = new TbPersonProject();
-                    tbPersonProject.setName(eles.get(i).select("td").get(0).text());
-                    tbPersonProject.setCategory(eles.get(i).select("td").get(1).text());
-                    tbPersonProject.setComName(eles.get(i).select("td").get(2).text());
-                    tbPersonProject.setRole(eles.get(i).select("td").get(3).text());
-                    tbPersonProject.setType("design");
-                    String peopleDetailUrl = eles.get(i).select("td").get(0).select("a").attr("href");
-                    tbPersonProject.setInnerid(peopleDetailUrl.substring(peopleDetailUrl.indexOf("=") + 1));
-                    tbPersonProject.setPid(projectDesignId);
-                    projectService.insertPersonProject(tbPersonProject);
+            try {
+                for (int i = 2; i < eles.size() - 1; i++) {
+                    if (StringUtils.isNotNull(eles.get(i).text())) {
+                        tbPersonProject = new TbPersonProject();
+                        tbPersonProject.setName(eles.get(i).select("td").get(0).text());
+                        tbPersonProject.setCategory(eles.get(i).select("td").get(1).text());
+                        tbPersonProject.setComName(eles.get(i).select("td").get(2).text());
+                        tbPersonProject.setRole(eles.get(i).select("td").get(3).text());
+                        tbPersonProject.setType("design");
+                        String peopleDetailUrl = eles.get(i).select("td").get(0).select("a").first().absUrl("href");
+                        PeopleDetailConn = Jsoup.connect(peopleDetailUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
+                        PeopleDetailDoc = PeopleDetailConn.get();
+                        //判断项目部人员url链接是否有效
+                        if(!org.springframework.util.StringUtils.isEmpty(PeopleDetailDoc.select("#ctl00_ContentPlaceHolder1_lbl_xm").text())) {
+                            tbPersonProject.setInnerid(peopleDetailUrl.substring(peopleDetailUrl.indexOf("=") + 1));
+                        }
+                        tbPersonProject.setPid(projectDesignId);
+                        projectService.insertPersonProject(tbPersonProject);
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         } else {
-            System.out.println("无勘察设计人员名单人员（设计）" + projectDesignUrl);
+            MyXxlLogger.info("无勘察设计人员名单人员（设计）" + projectDesignUrl);
         }
     }
 
@@ -437,13 +460,13 @@ public class ProjectDataUpdate {
                         param.put("comId", companyId);
                         param.put("proType", proType);
                         if (projectService.checkProjectDesignExist(param)) {
-                            System.out.println("该证书下的勘察项目已存在" + projectBuildUrl);
+                            MyXxlLogger.info("该证书下的勘察项目已存在" + projectBuildUrl);
                         } else {
                             projectBuildDetailConn = Jsoup.connect(projectBuildUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                             projectBuildDetailDoc = projectBuildDetailConn.get();
                             if (projectBuildDetailConn.response().statusCode() == 200) {
                                 if (StringUtils.isNotNull(projectBuildDetailDoc.select("#table1").text())) {
-                                    System.out.println(projectBuildUrl);
+                                    MyXxlLogger.info(projectBuildUrl);
 //                                    logger.error(projectBuildUrl);
                                     Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
                                     Elements projectBuilderPeopleTable = projectBuildDetailDoc.select("#ctl00_ContentPlaceHolder1_td_rylist").select("table").select("tr");
@@ -455,7 +478,7 @@ public class ProjectDataUpdate {
                                     //勘察人员名单
                                     addSurveyPeople(projectBuilderPeopleTable, projectSurveyId, projectBuildUrl);
                                 } else {
-                                    System.out.println("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
+                                    MyXxlLogger.info("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
                                 }
                             } else {
                                 TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
@@ -469,10 +492,10 @@ public class ProjectDataUpdate {
                         Thread.sleep(100 * (random.nextInt(max) % (max - min + 1)));
                     }
                 } else {
-                    System.out.println("该企业项目数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                    MyXxlLogger.info("该企业项目数据为空" + CompanyQualificationUrl);
                 }
             } else {
-                System.out.println("获取企业项目列表页失败" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                MyXxlLogger.info("获取企业项目列表页失败" + CompanyQualificationUrl);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -498,7 +521,7 @@ public class ProjectDataUpdate {
                 tbProject.setProName(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_gcmc").text());
                 tbProject.setProNo(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_prjnum").text());
                 tbProject.setProOrg(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_jsdw").text());
-                tbProject.setProWhere(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_sz").text());
+                tbProject.setProWhere("湖南省" + projectTable.select("#ctl00_ContentPlaceHolder1_lbl_sz").text());
                 tbProject.setProAddress(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_gcdd").text());
                 tbProject.setInvestAmount(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_ztze").text().replaceAll("[\\u4e00-\\u9fa5]", ""));
                 tbProject.setApprovalNum(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_lxwh").text());
@@ -560,23 +583,34 @@ public class ProjectDataUpdate {
      */
     void addSurveyPeople(Elements eles, Integer projectSurveyId, String projectDesignUrl) {
         if (eles.size() > 2) {
+            Document PeopleDetailDoc;
+            Connection PeopleDetailConn;
             TbPersonProject tbPersonProject;
-            for (int i = 2; i < eles.size() - 1; i++) {
-                if (StringUtils.isNotNull(eles.get(i).text())) {
-                    tbPersonProject = new TbPersonProject();
-                    tbPersonProject.setName(eles.get(i).select("td").get(0).text());
-                    tbPersonProject.setCategory(eles.get(i).select("td").get(1).text());
-                    tbPersonProject.setComName(eles.get(i).select("td").get(2).text());
-                    tbPersonProject.setRole(eles.get(i).select("td").get(3).text());
-                    tbPersonProject.setType("design");
-                    String peopleDetailUrl = eles.get(i).select("td").get(0).select("a").attr("href");
-                    tbPersonProject.setInnerid(peopleDetailUrl.substring(peopleDetailUrl.indexOf("=") + 1));
-                    tbPersonProject.setPid(projectSurveyId);
-                    projectService.insertPersonProject(tbPersonProject);
+            try {
+                for (int i = 2; i < eles.size() - 1; i++) {
+                    if (StringUtils.isNotNull(eles.get(i).text())) {
+                        tbPersonProject = new TbPersonProject();
+                        tbPersonProject.setName(eles.get(i).select("td").get(0).text());
+                        tbPersonProject.setCategory(eles.get(i).select("td").get(1).text());
+                        tbPersonProject.setComName(eles.get(i).select("td").get(2).text());
+                        tbPersonProject.setRole(eles.get(i).select("td").get(3).text());
+                        tbPersonProject.setType("design");
+                        String peopleDetailUrl = eles.get(i).select("td").get(0).select("a").first().absUrl("href");
+                        PeopleDetailConn = Jsoup.connect(peopleDetailUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
+                        PeopleDetailDoc = PeopleDetailConn.get();
+                        //判断项目部人员url链接是否有效
+                        if(!org.springframework.util.StringUtils.isEmpty(PeopleDetailDoc.select("#ctl00_ContentPlaceHolder1_lbl_xm").text())) {
+                            tbPersonProject.setInnerid(peopleDetailUrl.substring(peopleDetailUrl.indexOf("=") + 1));
+                        }
+                        tbPersonProject.setPid(projectSurveyId);
+                        projectService.insertPersonProject(tbPersonProject);
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         } else {
-            System.out.println("无勘察设计人员名单人员（勘察）" + projectDesignUrl);
+            MyXxlLogger.info("无勘察设计人员名单人员（勘察）" + projectDesignUrl);
         }
     }
 
@@ -616,13 +650,13 @@ public class ProjectDataUpdate {
                         params.put("jlbdxh", jlbdxh);
                         params.put("comId", companyId);
                         if (projectService.checkProjectSupervisionExist(params)) {
-                            System.out.println("该证书下的监理项目已存在" + projectBuildUrl);
+                            MyXxlLogger.info("该证书下的监理项目已存在" + projectBuildUrl);
                         } else {
                             projectBuildDetailConn = Jsoup.connect(projectBuildUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                             projectBuildDetailDoc = projectBuildDetailConn.get();
                             if (projectBuildDetailConn.response().statusCode() == 200) {
                                 if (StringUtils.isNotNull(projectBuildDetailDoc.select("#table1").text())) {
-                                    System.out.println(projectBuildUrl);
+                                    MyXxlLogger.info(projectBuildUrl);
 //                                    logger.error(projectBuildUrl);
                                     Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
                                     Elements projectBuilderPeopleTable = projectBuildDetailDoc.select("#ctl00_ContentPlaceHolder1_td_rylist").select("table").select("tr");
@@ -634,7 +668,7 @@ public class ProjectDataUpdate {
                                     //添加项目部人员（监理）
                                     addSupervisorProjectPeople(projectBuilderPeopleTable, projectSupervisorId, projectBuildUrl);
                                 } else {
-                                    System.out.println("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
+                                    MyXxlLogger.info("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
                                 }
                             } else {
                                 TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
@@ -648,10 +682,10 @@ public class ProjectDataUpdate {
                         Thread.sleep(000 * (random.nextInt(max) % (max - min + 1)));
                     }
                 } else {
-                    System.out.println("该企业项目数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                    MyXxlLogger.info("该企业项目数据为空" + CompanyQualificationUrl);
                 }
             } else {
-                System.out.println("获取企业项目列表页失败" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                MyXxlLogger.info("获取企业项目列表页失败" + CompanyQualificationUrl);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -677,7 +711,7 @@ public class ProjectDataUpdate {
                 tbProject.setProName(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_gcmc").text());
                 tbProject.setProNo(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_prjnum").text());
                 tbProject.setProOrg(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_jsdw").text());
-                tbProject.setProWhere(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_sz").text());
+                tbProject.setProWhere("湖南省" + projectTable.select("#ctl00_ContentPlaceHolder1_lbl_sz").text());
                 tbProject.setProAddress(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_gcdd").text());
                 tbProject.setInvestAmount(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_ztze").text().replaceAll("[\\u4e00-\\u9fa5]", ""));
                 tbProject.setApprovalNum(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_lxwh").text());
@@ -742,24 +776,35 @@ public class ProjectDataUpdate {
      */
     void addSupervisorProjectPeople(Elements eles, Integer projectBuilderId, String projectBuildUrl) {
         if (eles.size() > 2) {
+            Document PeopleDetailDoc;
+            Connection PeopleDetailConn;
             TbPersonProject tbPersonProject;
-            for (int i = 2; i < eles.size() - 1; i++) {
-                if (StringUtils.isNotNull(eles.get(i).text())) {
-                    tbPersonProject = new TbPersonProject();
-                    tbPersonProject.setName(eles.get(i).select("td").get(0).text());
-                    tbPersonProject.setRole(eles.get(i).select("td").get(1).text());
-                    tbPersonProject.setCertNo(eles.get(i).select("td").get(2).text());
-                    tbPersonProject.setSafeNo(eles.get(i).select("td").get(3).text());
-                    tbPersonProject.setStatus(eles.get(i).select("td").get(4).text());
-                    tbPersonProject.setType("supervision");
-                    String peopleDetailId = eles.get(i).select("td").get(0).select("a").attr("href");
-                    tbPersonProject.setInnerid(peopleDetailId.substring(peopleDetailId.indexOf("=") + 1));
-                    tbPersonProject.setPid(projectBuilderId);
-                    projectService.insertPersonProject(tbPersonProject);
+            try {
+                for (int i = 2; i < eles.size() - 1; i++) {
+                    if (StringUtils.isNotNull(eles.get(i).text())) {
+                        tbPersonProject = new TbPersonProject();
+                        tbPersonProject.setName(eles.get(i).select("td").get(0).text());
+                        tbPersonProject.setRole(eles.get(i).select("td").get(1).text());
+                        tbPersonProject.setCertNo(eles.get(i).select("td").get(2).text());
+                        tbPersonProject.setSafeNo(eles.get(i).select("td").get(3).text());
+                        tbPersonProject.setStatus(eles.get(i).select("td").get(4).text());
+                        tbPersonProject.setType("supervision");
+                        String peopleDetailUrl = eles.get(i).select("td").get(0).select("a").first().absUrl("href");
+                        PeopleDetailConn = Jsoup.connect(peopleDetailUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
+                        PeopleDetailDoc = PeopleDetailConn.get();
+                        //判断项目部人员url链接是否有效
+                        if(!org.springframework.util.StringUtils.isEmpty(PeopleDetailDoc.select("#ctl00_ContentPlaceHolder1_lbl_xm").text())) {
+                            tbPersonProject.setInnerid(peopleDetailUrl.substring(peopleDetailUrl.indexOf("=") + 1));
+                        }
+                        tbPersonProject.setPid(projectBuilderId);
+                        projectService.insertPersonProject(tbPersonProject);
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         } else {
-            System.out.println("无项目部人员（监理）" + projectBuildUrl);
+            MyXxlLogger.info("无项目部人员（监理）" + projectBuildUrl);
         }
     }
 

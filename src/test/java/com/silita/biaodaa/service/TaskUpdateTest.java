@@ -1,5 +1,6 @@
 package com.silita.biaodaa.service;
 
+import com.silita.biaodaa.task.HuNanAllCompanyUpdateTask;
 import com.silita.biaodaa.task.HuNanCompanyUpdateTask;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,6 +24,10 @@ public class TaskUpdateTest {
     @Autowired
     private ICompanyService companyService;
 
+    @Autowired
+    HuNanAllCompanyUpdateTask huNanAllCompanyUpdateTask;
+
+
 
     /**
      * 按企业名称单个更新
@@ -30,8 +35,8 @@ public class TaskUpdateTest {
     @Test
     public void taskHuNanCompanyUpdate() {
         Map<String, Object> params = new HashMap();
-        params.put("tableName", "建筑业企业");
-        params.put("comName", "中国建筑第五工程局有限公司");
+//        params.put("tableName", "建筑业企业");
+        params.put("comName", "绿茵美环境建设有限公司");
         huNanBuilderCompanyUpdateTask.taskBuilderCompany(params);
     }
 
@@ -123,6 +128,11 @@ public class TaskUpdateTest {
         }
         long endTime = System.currentTimeMillis();
         System.out.println("更新持续时间： " + (endTime - startTime) * 60 * 60 + "小时！");
+    }
+
+    @Test
+    public void test() {
+        huNanAllCompanyUpdateTask.allCompanyUpdateTask();
     }
 
 }

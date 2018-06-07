@@ -1,15 +1,18 @@
 package com.silita.biaodaa.task;
 
+import com.alibaba.fastjson.JSONObject;
+import com.silita.biaodaa.common.xxl.BaseTask;
+import com.silita.biaodaa.common.xxl.MyXxlLogger;
 import com.silita.biaodaa.model.*;
 import com.silita.biaodaa.service.ICompanyService;
 import com.silita.biaodaa.service.IPeopleCertService;
 import com.silita.biaodaa.service.IProjectService;
 import com.silita.biaodaa.utils.StringUtils;
+import com.xxl.job.core.handler.annotation.JobHander;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,15 +24,19 @@ import java.util.concurrent.CountDownLatch;
  * Created by 91567 on 2018/3/31.
  */
 @Component
-public class HuNanDesignCompanyDetailTask {
+@JobHander(value = "HuNanDesignCompanyDetailTask")
+public class HuNanDesignCompanyDetailTask extends BaseTask {
 
-    Logger logger = org.slf4j.LoggerFactory.getLogger(this.getClass());
+    @Override
+    public void runTask(JSONObject jsonObject) throws Exception {
+        taskDesignCompany();
+    }
+
 
     private int min = 1;
     private int max = 5;
     private Random random = new Random();
-
-    private static final int THREAD_NUMBER = 6;
+    private static final int THREAD_NUMBER = 1;
 
     @Autowired
     private ICompanyService companyService;
@@ -40,12 +47,13 @@ public class HuNanDesignCompanyDetailTask {
 
 
     /**
-     * 设计
+     * 设计企业增量抓取
      */
     public void taskDesignCompany() {
         int threadCount = THREAD_NUMBER;
         List<String> urls = new ArrayList<String>(1000);
         urls = companyService.listCompanyQualificationUrlByTab("工程设计企业");
+        MyXxlLogger.info("本次增量抓取建筑业企业数：" + urls.size());
         int every = urls.size() % threadCount == 0 ? urls.size() / threadCount : (urls.size() / threadCount) + 1;
         final CountDownLatch latch = new CountDownLatch(threadCount);
         for (int i = 0; i < threadCount; i++) {
@@ -159,7 +167,7 @@ public class HuNanDesignCompanyDetailTask {
                     }
                 }
             } else {
-                System.out.println("该企业资质数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                MyXxlLogger.info("该企业资质数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
             }
         }
 
@@ -194,7 +202,7 @@ public class HuNanDesignCompanyDetailTask {
                             tbPersonHunan = new TbPersonHunan();
                             tbPersonHunan.setUrl(PersonQualificationUrl);
                             tbPersonHunan.setName(peopleList.get(i).select("td").get(1).text());
-                            tbPersonHunan.setIdCard(peopleList.get(i).select("td").get(2).text());
+//                            tbPersonHunan.setIdCard(peopleList.get(i).select("td").get(2).text());
                             tbPersonHunan.setCategory(peopleList.get(i).select("td").get(3).text());
                             tbPersonHunan.setCertNo(peopleList.get(i).select("td").get(4).text().trim());
                             if (!org.springframework.util.StringUtils.isEmpty(peopleList.get(i).select("td").get(5).text().replaceAll("[^0-9]", ""))) {
@@ -209,7 +217,7 @@ public class HuNanDesignCompanyDetailTask {
                             tbPersonHunan.setComId(companyId);
                             //已存在url,证书编号，公司id(人员证书可能挂靠其他公司)跳过此证书
                             if (peopleCertService.checkPersonHunanIsExist(tbPersonHunan)) {
-                                System.out.println("已抓取这个公司的这本证书" + PersonQualificationUrl);
+                                MyXxlLogger.info("已抓取这个公司的这本证书" + PersonQualificationUrl);
                             } else {
                                 peopleDetailConn = Jsoup.connect(PersonQualificationUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                                 peopleDetailDoc = peopleDetailConn.get();
@@ -220,8 +228,11 @@ public class HuNanDesignCompanyDetailTask {
                                     Elements peopleOtherQualificationsTable = peopleDetailDoc.select("#tablelist").select("#table3").select("#ctl00_ContentPlaceHolder1_td_rylist").select("tr");
                                     Elements peopleChangeTable = peopleDetailDoc.select("#tablelist").select("#table6").select("#ctl00_ContentPlaceHolder1_jzs2_history").select("tr");
                                     String sex = peopleInfoTable.select("#ctl00_ContentPlaceHolder1_lbl_xb").text();
+                                    String cardId = peopleInfoTable.select("#ctl00_ContentPlaceHolder1_lbl_sfzh").text();
+                                    tbPersonHunan.setSex(sex);
+                                    tbPersonHunan.setIdCard(cardId);
                                     //#######添加人员执业资质########
-                                    String flag = addPeopleMainCert(peopleRegisteredTable, tbPersonHunan, CertDetail, sex);
+                                    String flag = addPeopleMainCert(peopleRegisteredTable, tbPersonHunan, CertDetail);
                                     //#######添加人员其他资质########
                                     addPeopleOtherCert(peopleOtherQualificationsTable, PersonQualificationUrl, companyId, flag);
                                     //#######添加人员变更信息########
@@ -238,10 +249,10 @@ public class HuNanDesignCompanyDetailTask {
                             Thread.sleep(100 * (random.nextInt(max) % (max - min + 1)));
                         }
                     } else {
-                        System.out.println("该企业注册人员数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                        MyXxlLogger.info("该企业注册人员数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
                     }
                 } else {
-                    System.out.println("获取人员证书列表页失败" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                    MyXxlLogger.info("获取人员证书列表页失败" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -255,10 +266,9 @@ public class HuNanDesignCompanyDetailTask {
          * @param peopleRegisteredTable 人员注册执业信息表格
          * @param temp                  证书临时对象
          * @param certDetail            隐藏的表单
-         * @param sex                   人员性别
          * @return 姓名_性别_身份证
          */
-        String addPeopleMainCert(Elements peopleRegisteredTable, TbPersonHunan temp, Elements certDetail, String sex) {
+        String addPeopleMainCert(Elements peopleRegisteredTable, TbPersonHunan temp, Elements certDetail) {
             TbPersonHunan tbPersionHunan = temp;
             if (peopleRegisteredTable.size() > 1) {
                 String certNo;
@@ -275,8 +285,7 @@ public class HuNanDesignCompanyDetailTask {
 
                 }
             }
-            String flag = tbPersionHunan.getName() + "_" + sex + "_" + tbPersionHunan.getIdCard();
-            tbPersionHunan.setSex(sex);
+            String flag = tbPersionHunan.getName() + "_" + tbPersionHunan.getSex() + "_" + tbPersionHunan.getIdCard();
             tbPersionHunan.setFlag(flag);
             //执业印章号为空，取模态窗口数据补齐，同时更新专业
             if (org.springframework.util.StringUtils.isEmpty(tbPersionHunan.getSealNo())) {
@@ -339,7 +348,7 @@ public class HuNanDesignCompanyDetailTask {
                     peopleCertService.insertPersonHunan(tbPersionHunan);
                 }
             } else {
-                System.out.println("人员其他证书信息为空" + url);
+                MyXxlLogger.info("人员其他证书信息为空" + url);
             }
         }
 
@@ -401,12 +410,12 @@ public class HuNanDesignCompanyDetailTask {
                             param.put("comId", companyId);
                             param.put("proType", proType);
                             if (projectService.checkProjectDesignExist(param)) {
-                                System.out.println("该证书下的设计项目已存在" + projectBuildUrl);
+                                MyXxlLogger.info("该证书下的设计项目已存在" + projectBuildUrl);
                             } else {
                                 projectBuildDetailConn = Jsoup.connect(projectBuildUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                                 projectBuildDetailDoc = projectBuildDetailConn.get();
                                 if (projectBuildDetailConn.response().statusCode() == 200) {
-                                    System.out.println(projectBuildUrl);
+                                    MyXxlLogger.info(projectBuildUrl);
 //                                logger.error(projectBuildUrl);
                                     if (StringUtils.isNotNull(projectBuildDetailDoc.select("#table1").text())) {
                                         Elements projectBuildDetailTable = projectBuildDetailDoc.select("#table1");
@@ -419,7 +428,7 @@ public class HuNanDesignCompanyDetailTask {
                                         //添加设计人员名单
                                         addDesignPeople(projectDesignPeopleTable, projectDesignId, projectBuildUrl);
                                     } else {
-                                        System.out.println("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
+                                        MyXxlLogger.info("很抱歉，暂时无法访问工程项目信息" + projectBuildUrl);
                                     }
                                 } else {
                                     TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
@@ -434,7 +443,7 @@ public class HuNanDesignCompanyDetailTask {
                         //随机暂停几秒
                         Thread.sleep(000 * (random.nextInt(max) % (max - min + 1)));
                     } else {
-                        System.out.println("该企业项目数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                        MyXxlLogger.info("该企业项目数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
                     }
                 } else {
                     TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
@@ -469,7 +478,7 @@ public class HuNanDesignCompanyDetailTask {
                     tbProject.setProName(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_gcmc").text());
                     tbProject.setProNo(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_prjnum").text());
                     tbProject.setProOrg(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_jsdw").text());
-                    tbProject.setProWhere(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_sz").text());
+                    tbProject.setProWhere("湖南省" + projectTable.select("#ctl00_ContentPlaceHolder1_lbl_sz").text());
                     tbProject.setProAddress(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_gcdd").text());
                     tbProject.setInvestAmount(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_ztze").text().replaceAll("[\\u4e00-\\u9fa5]", ""));
                     tbProject.setApprovalNum(projectTable.select("#ctl00_ContentPlaceHolder1_lbl_lxwh").text());
@@ -533,23 +542,34 @@ public class HuNanDesignCompanyDetailTask {
          */
         void addDesignPeople(Elements eles, Integer projectDesignId, String projectDesignUrl) {
             if (eles.size() > 2) {
+                Document PeopleDetailDoc;
+                Connection PeopleDetailConn;
                 TbPersonProject tbPersonProject;
-                for (int i = 2; i < eles.size() - 1; i++) {
-                    if (StringUtils.isNotNull(eles.get(i).text())) {
-                        tbPersonProject = new TbPersonProject();
-                        tbPersonProject.setName(eles.get(i).select("td").get(0).text());
-                        tbPersonProject.setCategory(eles.get(i).select("td").get(1).text());
-                        tbPersonProject.setComName(eles.get(i).select("td").get(2).text());
-                        tbPersonProject.setRole(eles.get(i).select("td").get(3).text());
-                        tbPersonProject.setType("design");
-                        String peopleDetailUrl = eles.get(i).select("td").get(0).select("a").attr("href");
-                        tbPersonProject.setInnerid(peopleDetailUrl.substring(peopleDetailUrl.indexOf("=") + 1));
-                        tbPersonProject.setPid(projectDesignId);
-                        projectService.insertPersonProject(tbPersonProject);
+                try {
+                    for (int i = 2; i < eles.size() - 1; i++) {
+                        if (StringUtils.isNotNull(eles.get(i).text())) {
+                            tbPersonProject = new TbPersonProject();
+                            tbPersonProject.setName(eles.get(i).select("td").get(0).text());
+                            tbPersonProject.setCategory(eles.get(i).select("td").get(1).text());
+                            tbPersonProject.setComName(eles.get(i).select("td").get(2).text());
+                            tbPersonProject.setRole(eles.get(i).select("td").get(3).text());
+                            tbPersonProject.setType("design");
+                            String peopleDetailUrl = eles.get(i).select("td").get(0).select("a").first().absUrl("href");
+                            PeopleDetailConn = Jsoup.connect(peopleDetailUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
+                            PeopleDetailDoc = PeopleDetailConn.get();
+                            //判断项目部人员url链接是否有效
+                            if(!org.springframework.util.StringUtils.isEmpty(PeopleDetailDoc.select("#ctl00_ContentPlaceHolder1_lbl_xm").text())) {
+                                tbPersonProject.setInnerid(peopleDetailUrl.substring(peopleDetailUrl.indexOf("=") + 1));
+                            }
+                            tbPersonProject.setPid(projectDesignId);
+                            projectService.insertPersonProject(tbPersonProject);
+                        }
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             } else {
-                System.out.println("无勘察设计人员名单人员（设计）" + projectDesignUrl);
+                MyXxlLogger.info("无勘察设计人员名单人员（设计）" + projectDesignUrl);
             }
         }
 

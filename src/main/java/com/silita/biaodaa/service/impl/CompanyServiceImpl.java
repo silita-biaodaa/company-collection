@@ -114,12 +114,26 @@ public class CompanyServiceImpl implements ICompanyService {
     }
 
     @Override
+    public List<Map<String, Object>> listCompanyQualificationByTabAndCompanyName(Map<String, Object> params) {
+        return tbCompanyQualificationMapper.listCompanyQualificationByTabAndCompanyName(params);
+    }
+
+    @Override
     public void updateCompany(TbCompany tbCompany) {
         tbCompanyMapper.updateCompany(tbCompany);
     }
 
     @Override
     public void updateCompanyQualificationByUrl(TbCompanyQualification tbCompanyQualification) {
+        /*Integer channel = tbCompanyQualificationMapper.getCompanyQualificationChannelByUrl(tbCompanyQualification.getUrl());
+        if(channel == 3) {
+            //todo 人工
+        } else if(channel == 2) {
+            //todo 湖南
+            tbCompanyQualificationMapper.updateTbCompanyQualificationByUrl(tbCompanyQualification);
+        } else if (channel == 1) {
+            //todo 全国
+        }*/
         tbCompanyQualificationMapper.updateTbCompanyQualificationByUrl(tbCompanyQualification);
     }
 

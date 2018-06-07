@@ -90,6 +90,13 @@ public interface ICompanyService {
     List<String> getAllCompanyQualificationUrlByTabAndCompanyName(Map<String, Object> params);
 
     /**
+     * 根据公司名称和类别查询证书url和tab
+     * @param params
+     * @return
+     */
+    List<Map<String, Object>> listCompanyQualificationByTabAndCompanyName(Map<String, Object> params);
+
+    /**
      * 更新企业基本信息
      * @param tbCompany
      */

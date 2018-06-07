@@ -2,6 +2,7 @@ package com.silita.biaodaa.task;
 
 import com.alibaba.fastjson.JSONObject;
 import com.silita.biaodaa.common.xxl.BaseTask;
+import com.silita.biaodaa.common.xxl.MyXxlLogger;
 import com.silita.biaodaa.model.TbCompanyInto;
 import com.silita.biaodaa.model.TbCompanyQualification;
 import com.silita.biaodaa.model.TbSafetyCertificate;
@@ -24,8 +25,10 @@ import java.util.Random;
  */
 @Component
 @JobHander(value = "HuNanCompanyQualificationListTask")
-public class HuNanCompanyQualificationListTask extends BaseTask{
+public class HuNanCompanyQualificationListTask extends BaseTask {
+
     @Override
+
     public void runTask(JSONObject jsonObject) throws Exception {
         getCompanyList();
     }
@@ -88,21 +91,21 @@ public class HuNanCompanyQualificationListTask extends BaseTask{
                     conn.data("ctl00$ContentPlaceHolder1$txtqymc", "");
                     conn.data("ctl00$ContentPlaceHolder1$txtzsbh", "");
                     //外省入湘翻页不要这个！！！！！
-                    if(tab != 10) {
+                    if (tabs[tab] != "外省入湘备案") {
                         conn.data("ctl00$ContentPlaceHolder1$ddlsz", "0");
                     }
                     doc = conn.post();
                 }
-                System.out.println("########抓取" + tabs[tab] + "栏目第" + pageTemp + "页########");
+                MyXxlLogger.info("########抓取" + tabs[tab] + "栏目第" + pageTemp + "页########");
 
                 __VIEWSTATE = doc.select("#__VIEWSTATE").attr("value");
                 __EVENTVALIDATION = doc.select("#__EVENTVALIDATION").attr("value");
 
                 Elements trs = doc.select("#ctl00_ContentPlaceHolder1_div_list").select("#table").select("tr");
                 //安全生产许可
-                if (tab == 9) {
+                if (tabs[tab] == "安全生产许可证") {
                     insertCompanySafetyCert(trs);
-                } else if (tab == 10) {
+                } else if (tabs[tab] == "外省入湘备案") {
                     //外省入湘
                     insertCompanyInto(trs);
                 } else {
@@ -134,6 +137,7 @@ public class HuNanCompanyQualificationListTask extends BaseTask{
             String companyQualificationUrl = trs.get(row).select("td").get(0).select("a").first().absUrl("href");
             companyQualification.setUrl(companyQualificationUrl);
             companyQualification.setCorpid(companyQualificationUrl.substring(companyQualificationUrl.indexOf("=") + 1));
+            companyQualification.setChannel(2);
             companyService.insertCompanyQualification(companyQualification);
 //            companyQualifications.add(companyQualification);
         }
@@ -178,7 +182,7 @@ public class HuNanCompanyQualificationListTask extends BaseTask{
                 companyIntoUrl = trs.get(row).select("td").select("a").first().absUrl("href");
                 companyIntoConn = Jsoup.connect(companyIntoUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                 companyIntoDoc = companyIntoConn.get();
-                if(companyIntoConn.response().statusCode() == 200) {
+                if (companyIntoConn.response().statusCode() == 200) {
                     companyInto = new TbCompanyInto();
                     companyInto.setComName(companyIntoDoc.select("#table1").select("#ctl00_ContentPlaceHolder1_lbl_qymc").text());
                     companyInto.setOrgCode(companyIntoDoc.select("#table1").select("#ctl00_ContentPlaceHolder1_lbl_jgdm").text());
@@ -188,15 +192,15 @@ public class HuNanCompanyQualificationListTask extends BaseTask{
                     companyInto.setLegalPerson(companyIntoDoc.select("#table1").select("#ctl00_ContentPlaceHolder1_lbl_fddbr").text());
                     //入湘登证号
                     String IntoStr = companyIntoDoc.select("#table1").select("#ctl00_ContentPlaceHolder1_lbl_jjlx").text();
-                    if(StringUtils.isNotNull(IntoStr)) {
-                        companyInto.setIntoNo(IntoStr.substring(0, IntoStr.indexOf("有效期")-1));
+                    if (StringUtils.isNotNull(IntoStr)) {
+                        companyInto.setIntoNo(IntoStr.substring(0, IntoStr.indexOf("有效期") - 1));
                         companyInto.setIntoValidDate(IntoStr.substring(IntoStr.indexOf("有效期") + 4, IntoStr.indexOf("至")));
                         companyInto.setRegisCapital(companyIntoDoc.select("#table1").select("#ctl00_ContentPlaceHolder1_lbl_zczb").text());
                         companyInto.setCertNo(companyIntoDoc.select("#table1").select("#ctl00_ContentPlaceHolder1_lbl_zsbh").text());
                     }
                     //安全生产许可证
                     String safetyCertStr = companyIntoDoc.select("#table1").select("#ctl00_ContentPlaceHolder1_lbl_rxba").text();
-                    if(StringUtils.isNotNull(safetyCertStr)) {
+                    if (StringUtils.isNotNull(safetyCertStr)) {
                         companyInto.setSafeCertNo(safetyCertStr.substring(safetyCertStr.indexOf("安全生产许可证") + 8, safetyCertStr.indexOf("有效期") - 1));
                         companyInto.setSafeValidDate(safetyCertStr.substring(safetyCertStr.indexOf("有效期") + 5));
                     }
@@ -204,7 +208,7 @@ public class HuNanCompanyQualificationListTask extends BaseTask{
                     companyInto.setQybm(companyIntoUrl.substring(companyIntoUrl.indexOf("=") + 1));
                     companyService.insertCompanyInto(companyInto);
                 } else {
-                    System.out.println("获取外省入湘企详情数据失败！" + companyIntoUrl);
+                    MyXxlLogger.info("获取外省入湘企详情数据失败！" + companyIntoUrl);
                 }
             }
         } catch (Exception e) {

@@ -83,4 +83,9 @@ public class TbCompanyQualification {
      */
     private String url;
 
+    /**
+     * 资质采集渠道，1：全国四库一；2：湖南四库一；3：人工采集
+     */
+    private Integer channel;
+
 }

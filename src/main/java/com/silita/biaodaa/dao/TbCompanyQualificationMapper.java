@@ -63,11 +63,25 @@ public interface TbCompanyQualificationMapper extends MyMapper<TbCompanyQualific
     List<String> getAllCompanyQualificationUrlByTabAndCompanyName(Map<String, Object> params);
 
     /**
+     * 根据公司名称和类别查询证书url和tab
+     * @param params
+     * @return
+     */
+    List<Map<String, Object>> listCompanyQualificationByTabAndCompanyName(Map<String, Object> params);
+
+    /**
      * 根据证书url获取公司id
      * @param url
      * @return
      */
     TbCompanyQualification getComIdByUrl(String url);
+
+    /**
+     * 根据证书URL获取企业证书来源渠道
+     * @param url
+     * @return
+     */
+    Integer getCompanyQualificationChannelByUrl(String url);
 
     /**
      * 根据证书url更新企业证书信息

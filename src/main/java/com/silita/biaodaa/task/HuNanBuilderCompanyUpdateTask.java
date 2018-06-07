@@ -1,7 +1,12 @@
 package com.silita.biaodaa.task;
 
+import com.alibaba.fastjson.JSONObject;
+import com.silita.biaodaa.common.xxl.BaseTask;
 import com.silita.biaodaa.model.*;
-import com.silita.biaodaa.service.*;
+import com.silita.biaodaa.service.ICompanyService;
+import com.silita.biaodaa.service.IPeopleCertService;
+import com.silita.biaodaa.service.ISplitCertService;
+import com.xxl.job.core.handler.annotation.JobHander;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -13,11 +18,16 @@ import org.springframework.util.StringUtils;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
-/**
- * Created by 91567 on 2018/4/24.
- */
 @Component
-public class HuNanCompanyUpdateTask {
+@JobHander(value = "HuNanBuilderCompanyUpdateTask")
+public class HuNanBuilderCompanyUpdateTask extends BaseTask {
+
+    @Override
+    public void runTask(JSONObject jsonObject) throws Exception {
+        builderCompanyUpdateTask();
+    }
+
+
     private int min = 1;
     private int max = 5;
     private Random random = new Random();
@@ -35,37 +45,43 @@ public class HuNanCompanyUpdateTask {
 
 
     /**
-     * 建筑数据更新
+     * 建筑业企业数据更新
      */
-    public void taskBuilderCompany(Map<String, Object> params) {
+    public void builderCompanyUpdateTask() {
         int threadCount = THREAD_NUMBER;
-        List<Map<String, Object>> certs ;
-        certs = companyService.listCompanyQualificationByTabAndCompanyName(params);
-        int every = certs.size() % threadCount == 0 ? certs.size() / threadCount : (certs.size() / threadCount) + 1;
-        final CountDownLatch latch = new CountDownLatch(threadCount);
-        for (int i = 0; i < threadCount; i++) {
-            new Thread(new HuNanCompanyUpdateRun(i * every, (i + 1) * every, latch, certs, params)).start();
-        }
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        List<Map<String, Object>> maps = companyService.listComNameAndTabByTab("建筑业企业");
+        Map<String, Object> params = null;
+        List<String> urls = new ArrayList<String>(20);
+
+        for (Map<String, Object> map : maps) {
+            params = new HashMap<>();
+            params.put("tableName", map.get("tab"));
+            params.put("comName", map.get("com_name"));
+            urls = companyService.getAllCompanyQualificationUrlByTabAndCompanyName(params);
+            int every = urls.size() % threadCount == 0 ? urls.size() / threadCount : (urls.size() / threadCount) + 1;
+            final CountDownLatch latch = new CountDownLatch(threadCount);
+            for (int i = 0; i < threadCount; i++) {
+                new Thread(new HuNanBuilderCompanyUpdateRun(i * every, (i + 1) * every, latch, urls)).start();
+            }
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    class HuNanCompanyUpdateRun implements Runnable {
+    class HuNanBuilderCompanyUpdateRun implements Runnable {
         private int startNum;
         private int endNum;
         private CountDownLatch latch;
-        private List<Map<String, Object>> CompanyQualificationUrls;
-        private Map<String, Object> params;
+        private List<String> CompanyQualificationUrls;
 
-        public HuNanCompanyUpdateRun(int startNum, int endNum, CountDownLatch latch, List<Map<String, Object>> CompanyQualificationUrls, Map<String, Object> params) {
+        public HuNanBuilderCompanyUpdateRun(int startNum, int endNum, CountDownLatch latch, List<String> CompanyQualificationUrls) {
             this.startNum = startNum;
             this.endNum = endNum;
             this.latch = latch;
             this.CompanyQualificationUrls = CompanyQualificationUrls;
-            this.params = params;
         }
 
         @Override
@@ -77,7 +93,7 @@ public class HuNanCompanyUpdateTask {
             Integer comId = null;
             try {
                 for (int i = startNum; i < endNum; i++) {
-                    String CompanyQualificationUrl = (String) CompanyQualificationUrls.get(i).get("url");
+                    String CompanyQualificationUrl = CompanyQualificationUrls.get(i);
                     companyDetailConn = Jsoup.connect(CompanyQualificationUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                     companyDetailDoc = companyDetailConn.get();
                     if (companyDetailConn.response().statusCode() == 200) {
@@ -97,17 +113,7 @@ public class HuNanCompanyUpdateTask {
                             updatePeople(cookies, CompanyQualificationUrl, comId);
                         }
                         //##########更新项目信息##########
-//                        System.out.println((String) CompanyQualificationUrls.get(i).get("tab"));
-                        String tab = (String) CompanyQualificationUrls.get(i).get("tab");
-                        if (tab.equals("建筑业企业")) {
-                            projectDataUpdate.getBuilderProjectList(cookies, CompanyQualificationUrl, comId);
-                        } else if (tab.equals("工程设计企业")) {
-                            projectDataUpdate.getDesignProjectList(cookies, CompanyQualificationUrl, comId);
-                        } else if (tab.equals("工程勘察企业")) {
-                            projectDataUpdate.getSurveyProjectList(cookies, CompanyQualificationUrl, comId);
-                        } else if (tab.equals("工程监理企业")) {
-                            projectDataUpdate.getSupervisorProjectList(cookies, CompanyQualificationUrl, comId);
-                        }
+                        projectDataUpdate.getBuilderProjectList(cookies, CompanyQualificationUrl, comId);
                     } else {
                         TbExceptionUrl tbExceptionUrl = new TbExceptionUrl();
                         tbExceptionUrl.setComQuaUrl(CompanyQualificationUrl);

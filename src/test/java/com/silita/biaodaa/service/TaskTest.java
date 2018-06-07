@@ -78,7 +78,7 @@ public class TaskTest {
      */
     @Test
     public void splitCertTask() throws Exception {
-//        splitCertTask.splitCompanyQualifications();
+        splitCertTask.splitCompanyQualifications();
 //        splitCertTask.updateCompanyAptitudeRange();
     }
 

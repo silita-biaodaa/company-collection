@@ -1,7 +1,14 @@
 package com.silita.biaodaa.task;
 
+
+import com.alibaba.fastjson.JSONObject;
+import com.silita.biaodaa.common.xxl.BaseTask;
+import com.silita.biaodaa.common.xxl.MyXxlLogger;
 import com.silita.biaodaa.model.*;
-import com.silita.biaodaa.service.*;
+import com.silita.biaodaa.service.ICompanyService;
+import com.silita.biaodaa.service.IPeopleCertService;
+import com.silita.biaodaa.service.ISplitCertService;
+import com.xxl.job.core.handler.annotation.JobHander;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -13,11 +20,15 @@ import org.springframework.util.StringUtils;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
-/**
- * Created by 91567 on 2018/4/24.
- */
 @Component
-public class HuNanCompanyUpdateTask {
+@JobHander(value = "HuNanAllCompanyUpdateTask")
+public class HuNanAllCompanyUpdateTask extends BaseTask {
+
+    @Override
+    public void runTask(JSONObject jsonObject) {
+        allCompanyUpdateTask();
+    }
+
     private int min = 1;
     private int max = 5;
     private Random random = new Random();
@@ -35,37 +46,46 @@ public class HuNanCompanyUpdateTask {
 
 
     /**
-     * 建筑数据更新
+     * 建筑业企业数据更新
      */
-    public void taskBuilderCompany(Map<String, Object> params) {
+    public void allCompanyUpdateTask() {
         int threadCount = THREAD_NUMBER;
+        //获取全部企业名、tab
+        List<Map<String, Object>> maps = companyService.listComNameAndTab();
+        Map<String, Object> params = null;
         List<Map<String, Object>> certs ;
-        certs = companyService.listCompanyQualificationByTabAndCompanyName(params);
-        int every = certs.size() % threadCount == 0 ? certs.size() / threadCount : (certs.size() / threadCount) + 1;
-        final CountDownLatch latch = new CountDownLatch(threadCount);
-        for (int i = 0; i < threadCount; i++) {
-            new Thread(new HuNanCompanyUpdateRun(i * every, (i + 1) * every, latch, certs, params)).start();
-        }
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+
+        for (Map<String, Object> map : maps) {
+            params = new HashMap<>();
+//            params.put("tableName", map.get("tab"));
+            params.put("comName", map.get("com_name"));
+            //根据公司名获取证书url、tab
+            certs = companyService.listCompanyQualificationByTabAndCompanyName(params);
+            int every = certs.size() % threadCount == 0 ? certs.size() / threadCount : (certs.size() / threadCount) + 1;
+            final CountDownLatch latch = new CountDownLatch(threadCount);
+            for (int i = 0; i < threadCount; i++) {
+                new Thread(new HuNanAllCompanyUpdateRun(i * every, (i + 1) * every, latch, certs)).start();
+            }
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    class HuNanCompanyUpdateRun implements Runnable {
+    class HuNanAllCompanyUpdateRun implements Runnable {
+
         private int startNum;
         private int endNum;
         private CountDownLatch latch;
         private List<Map<String, Object>> CompanyQualificationUrls;
-        private Map<String, Object> params;
 
-        public HuNanCompanyUpdateRun(int startNum, int endNum, CountDownLatch latch, List<Map<String, Object>> CompanyQualificationUrls, Map<String, Object> params) {
+        public HuNanAllCompanyUpdateRun(int startNum, int endNum, CountDownLatch latch, List<Map<String, Object>> CompanyQualificationUrls) {
             this.startNum = startNum;
             this.endNum = endNum;
             this.latch = latch;
             this.CompanyQualificationUrls = CompanyQualificationUrls;
-            this.params = params;
         }
 
         @Override
@@ -97,7 +117,6 @@ public class HuNanCompanyUpdateTask {
                             updatePeople(cookies, CompanyQualificationUrl, comId);
                         }
                         //##########更新项目信息##########
-//                        System.out.println((String) CompanyQualificationUrls.get(i).get("tab"));
                         String tab = (String) CompanyQualificationUrls.get(i).get("tab");
                         if (tab.equals("建筑业企业")) {
                             projectDataUpdate.getBuilderProjectList(cookies, CompanyQualificationUrl, comId);
@@ -174,7 +193,7 @@ public class HuNanCompanyUpdateTask {
                     }
                 }
             } else {
-                System.out.println("该企业资质数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                MyXxlLogger.info("该企业资质数据为空" + CompanyQualificationUrl);
             }
         }
 
@@ -210,7 +229,7 @@ public class HuNanCompanyUpdateTask {
                             tbPersonHunan = new TbPersonHunan();
                             tbPersonHunan.setUrl(PersonQualificationUrl);
                             tbPersonHunan.setName(peopleList.get(i).select("td").get(1).text());
-                            tbPersonHunan.setIdCard(peopleList.get(i).select("td").get(2).text());
+//                            tbPersonHunan.setIdCard(peopleList.get(i).select("td").get(2).text());
                             tbPersonHunan.setCategory(peopleList.get(i).select("td").get(3).text());
                             tbPersonHunan.setCertNo(peopleList.get(i).select("td").get(4).text().trim());
                             if (!StringUtils.isEmpty(peopleList.get(i).select("td").get(5).text().replaceAll("[^0-9]", ""))) {
@@ -225,7 +244,7 @@ public class HuNanCompanyUpdateTask {
                             tbPersonHunan.setComId(companyId);
                             //已存在url,证书编号，公司id(人员证书可能挂靠其他公司)跳过此证书
                             if (peopleCertService.checkPersonHunanIsExist(tbPersonHunan)) {
-                                System.out.println("已抓取这个公司的这本证书" + PersonQualificationUrl);
+                                MyXxlLogger.info("已抓取这个公司的这本证书" + PersonQualificationUrl);
                             } else {
                                 peopleDetailConn = Jsoup.connect(PersonQualificationUrl).userAgent("Mozilla").timeout(5000 * 60).ignoreHttpErrors(true);
                                 peopleDetailDoc = peopleDetailConn.get();
@@ -236,8 +255,11 @@ public class HuNanCompanyUpdateTask {
                                     Elements peopleOtherQualificationsTable = peopleDetailDoc.select("#tablelist").select("#table3").select("#ctl00_ContentPlaceHolder1_td_rylist").select("tr");
                                     Elements peopleChangeTable = peopleDetailDoc.select("#tablelist").select("#table6").select("#ctl00_ContentPlaceHolder1_jzs2_history").select("tr");
                                     String sex = peopleInfoTable.select("#ctl00_ContentPlaceHolder1_lbl_xb").text();
+                                    String cardId = peopleInfoTable.select("#ctl00_ContentPlaceHolder1_lbl_sfzh").text();
+                                    tbPersonHunan.setSex(sex);
+                                    tbPersonHunan.setIdCard(cardId);
                                     //#######添加人员执业资质########
-                                    String flag = addPeopleMainCert(peopleRegisteredTable, tbPersonHunan, CertDetail, sex);
+                                    String flag = addPeopleMainCert(peopleRegisteredTable, tbPersonHunan, CertDetail);
                                     //#######添加人员其他资质########
                                     addPeopleOtherCert(peopleOtherQualificationsTable, PersonQualificationUrl, companyId, flag);
                                     //#######添加人员变更信息########
@@ -254,10 +276,10 @@ public class HuNanCompanyUpdateTask {
                             Thread.sleep(100 * (random.nextInt(max) % (max - min + 1)));
                         }
                     } else {
-                        System.out.println("该企业注册人员数据为空" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                        MyXxlLogger.info("该企业注册人员数据为空" + CompanyQualificationUrl);
                     }
                 } else {
-                    System.out.println("获取人员证书列表页失败" + "http://qyryjg.hunanjz.com/public/EnterpriseDetail.aspx?corpid=" + companyId);
+                    MyXxlLogger.info("获取人员证书列表页失败" + CompanyQualificationUrl);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -272,10 +294,9 @@ public class HuNanCompanyUpdateTask {
          * @param peopleRegisteredTable 人员注册执业信息表格
          * @param temp                  证书临时对象
          * @param certDetail            隐藏的表单
-         * @param sex                   人员性别
          * @return 姓名_性别_身份证
          */
-        String addPeopleMainCert(Elements peopleRegisteredTable, TbPersonHunan temp, Elements certDetail, String sex) {
+        String addPeopleMainCert(Elements peopleRegisteredTable, TbPersonHunan temp, Elements certDetail) {
             TbPersonHunan tbPersionHunan = temp;
             if (peopleRegisteredTable.size() > 1) {
                 String certNo;
@@ -292,8 +313,7 @@ public class HuNanCompanyUpdateTask {
 
                 }
             }
-            String flag = tbPersionHunan.getName() + "_" + sex + "_" + tbPersionHunan.getIdCard();
-            tbPersionHunan.setSex(sex);
+            String flag = tbPersionHunan.getName() + "_" + tbPersionHunan.getSex() + "_" + tbPersionHunan.getIdCard();
             tbPersionHunan.setFlag(flag);
             //执业印章号为空，取模态窗口数据补齐，同时更新专业
             if (StringUtils.isEmpty(tbPersionHunan.getSealNo())) {
@@ -356,7 +376,7 @@ public class HuNanCompanyUpdateTask {
                     peopleCertService.insertPersonHunan(tbPersionHunan);
                 }
             } else {
-                System.out.println("人员其他证书信息为空" + url);
+                MyXxlLogger.info("人员其他证书信息为空" + url);
             }
         }
 
@@ -492,6 +512,7 @@ public class HuNanCompanyUpdateTask {
                 splitCertService.updateCompanyRangeByComId(tbCompany);
             }
         }
+        MyXxlLogger.info("完成id为" + companyId + "的企业数据更新！");
     }
 
 }

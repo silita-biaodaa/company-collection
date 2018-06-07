@@ -14,11 +14,13 @@
     </insert>
 
     <insert id="InsertCompanyQualification" parameterType="com.silita.biaodaa.model.TbCompanyQualification">
-      INSERT INTO
-      mishu.tb_company_qualification(`com_name`, `cert_no`, `cert_date`, `valid_date`, `tab`,
-      `url`, `corpid`)
-      VALUES
+        INSERT INTO
+        mishu.tb_company_qualification(`com_name`, `cert_no`, `cert_date`, `valid_date`, `tab`,
+        <!-- `url`, `corpid`, `channel`) -->
+        `url`, `corpid`)
+        VALUES
         (#{comName}, #{certNo}, #{certDate}, #{validDate}, #{tab},
+        <!-- #{url}, #{corpid}, #{channel}) -->
         #{url}, #{corpid})
     </insert>
 
@@ -36,7 +38,8 @@
         ORDER BY CONVERT(com_name USING gbk))
     </select>
 
-    <update id="updateCompanyQualificationUrlByCorpidAndCertId" parameterType="com.silita.biaodaa.model.TbCompanyQualification">
+    <update id="updateCompanyQualificationUrlByCorpidAndCertId"
+            parameterType="com.silita.biaodaa.model.TbCompanyQualification">
         UPDATE mishu.tb_company_qualification
         SET qual_type = #{qualType}, cert_org = #{certOrg}, `range` = #{range}, com_id = #{comId}, created = NOW()
         WHERE `cert_no` = #{certNo} AND `corpid` = #{corpid}
@@ -46,17 +49,41 @@
         SELECT COUNT(*) FROM mishu.tb_company_qualification  WHERE tab = #{tableName} AND `created` IS NOT NULL
     </select>
 
-    <select id="listCompanyQualification" parameterType="Map" resultType="com.silita.biaodaa.model.TbCompanyQualification">
+    <select id="listCompanyQualification" parameterType="Map"
+            resultType="com.silita.biaodaa.model.TbCompanyQualification">
         SELECT * FROM mishu.tb_company_qualification WHERE tab = #{tableName} AND `created` IS NOT NULL LIMIT #{start}, #{pageSize}
     </select>
 
 
     <select id="getAllCompanyQualificationUrlByTabAndCompanyName" parameterType="Map" resultType="String">
-        SELECT url FROM mishu.tb_company_qualification WHERE tab = #{tableName} AND com_name = #{comName}
+        SELECT url FROM mishu.tb_company_qualification
+        WHERE 1 = 1
+        <if test="tableName != null and tableName != ''">
+            AND tab = #{tableName}
+        </if>
+        <if test="comName != null and comName != ''">
+            AND com_name = #{comName}
+        </if>
+    </select>
+
+    <select id="listCompanyQualificationByTabAndCompanyName" parameterType="Map" resultType="Map">
+        SELECT url, tab FROM mishu.tb_company_qualification
+        WHERE 1 = 1
+        <if test="tableName != null and tableName != ''">
+            AND tab = #{tableName}
+        </if>
+        <if test="comName != null and comName != ''">
+            AND com_name = #{comName}
+        </if>
+        AND (tab = '建筑业企业' OR tab = '工程设计企业' OR tab = '工程勘察企业' OR tab = '工程监理企业') AND com_id IS NOT NULL
     </select>
 
     <select id="getComIdByUrl" parameterType="String" resultType="com.silita.biaodaa.model.TbCompanyQualification">
         SELECT * FROM mishu.tb_company_qualification WHERE url = #{url}
+    </select>
+
+    <select id="getCompanyQualificationChannelByUrl" parameterType="String" resultType="Integer">
+        SELECT channel FROM mishu.tb_company_qualification WHERE url = #{url}
     </select>
 
     <update id="updateTbCompanyQualificationByUrl" parameterType="com.silita.biaodaa.model.TbCompanyQualification">
@@ -69,7 +96,7 @@
     <select id="listComNameAndTab" resultType="Map">
         SELECT DISTINCT com_name, tab
         FROM mishu.tb_company_qualification
-        WHERE created IS NOT NULL AND updated IS NULL
+        WHERE created IS NOT NULL
         AND (tab = '建筑业企业' OR tab = '工程设计企业' OR tab = '工程勘察企业' OR tab = '工程监理企业')
     </select>
 
@@ -84,13 +111,15 @@
           WHERE bak_id IS NOT NULL AND pkid NOT IN (SELECT qual_id FROM mishu.tb_company_aptitude)
     </select>
 
-    <select id="listBeiJinCompanyQualification" parameterType="Map" resultType="com.silita.biaodaa.model.TbCompanyQualification">
+    <select id="listBeiJinCompanyQualification" parameterType="Map"
+            resultType="com.silita.biaodaa.model.TbCompanyQualification">
         SELECT * FROM mishu.tb_company_qualification
         WHERE bak_id IS NOT NULL AND pkid NOT IN (SELECT qual_id FROM mishu.tb_company_aptitude)
         LIMIT #{start}, #{pageSize}
     </select>
 
-    <select id="getCompanyQualificationByComId" parameterType="Integer" resultType="com.silita.biaodaa.model.TbCompanyQualification">
+    <select id="getCompanyQualificationByComId" parameterType="Integer"
+            resultType="com.silita.biaodaa.model.TbCompanyQualification">
          SELECT * FROM mishu.tb_company_qualification WHERE com_id = #{companyId}
     </select>
 </mapper>

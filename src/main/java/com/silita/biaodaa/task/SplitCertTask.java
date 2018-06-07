@@ -29,7 +29,7 @@ public class SplitCertTask {
     public void splitCompanyQualifications() {
         int page = 0;
         int batchCount = 1000;
-        Integer count = splitCertService.getCompanyQualificationTotalByTabName("工程监理企业");
+        Integer count = splitCertService.getCompanyQualificationTotalByTabName("建筑业企业");
         if (count % batchCount == 0) {
             page = count / batchCount;
         } else {
@@ -40,7 +40,7 @@ public class SplitCertTask {
         //分页 一次1000
         for (int pageNum = 0; pageNum < page; pageNum++) {
             params = new HashMap<>();
-            params.put("tableName", "工程监理企业");
+            params.put("tableName", "建筑业企业");
             params.put("start", batchCount * pageNum);
             params.put("pageSize", 1000);
             companyQualificationList = splitCertService.listCompanyQualification(params);
