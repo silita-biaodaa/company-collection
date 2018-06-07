@@ -1,5 +1,6 @@
 package com.silita.biaodaa.task;
 
+import com.google.common.base.Splitter;
 import com.silita.biaodaa.model.AllZh;
 import com.silita.biaodaa.model.TbCompany;
 import com.silita.biaodaa.model.TbCompanyAptitude;
@@ -9,10 +10,7 @@ import com.silita.biaodaa.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by 91567 on 2018/4/11.
@@ -201,24 +199,10 @@ public class SplitCertTask {
                         AllZh allZh;
                         TbCompanyAptitude companyAptitude;
                         List<TbCompanyAptitude> companyQualifications = new ArrayList<>();
-                        if (qualRange.contains("|")) {
-                            //拆分资质
-                            String[] qual = qualRange.split("\\|");
-                            for (int j = 0; j < qual.length; j++) {
-                                allZh = splitCertService.getAllZhByName(qual[j]);
-                                if (allZh != null) {
-                                    companyAptitude = new TbCompanyAptitude();
-                                    companyAptitude.setQualId(qualId);
-                                    companyAptitude.setComId(comId);
-                                    companyAptitude.setAptitudeName(splitCertService.getMajorNameBymajorUuid(allZh.getMainuuid()));
-                                    companyAptitude.setAptitudeUuid(allZh.getFinaluuid());
-                                    companyAptitude.setMainuuid(allZh.getMainuuid());
-                                    companyAptitude.setType(allZh.getType());
-                                    companyQualifications.add(companyAptitude);
-                                }
-                            }
-                        } else {
-                            allZh = splitCertService.getAllZhByName(qualRange);
+                        Iterator<String> iterator = Splitter.onPattern("\\||,|，").omitEmptyStrings().trimResults().split(qualRange).iterator();
+                        while(iterator.hasNext()) {
+                            String qual = iterator.next();
+                            allZh = splitCertService.getAllZhByName(qual);
                             if (allZh != null) {
                                 companyAptitude = new TbCompanyAptitude();
                                 companyAptitude.setQualId(qualId);
@@ -230,7 +214,7 @@ public class SplitCertTask {
                                 companyQualifications.add(companyAptitude);
                             }
                         }
-                        if (companyQualifications != null && companyQualifications.size() > 0) {
+                        if (companyQualifications.size() > 0) {
                             splitCertService.batchInsertCompanyAptitude(companyQualifications);
                         }
                     }
