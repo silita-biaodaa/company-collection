@@ -29,6 +29,27 @@ public class PeopleCertServiceImpl implements IPeopleCertService {
     public void insertPersonHunan(TbPersonHunan tbPersonHunan) {
         boolean flag = tbPersonHunanMapper.getTotalByComIdAndCertNoAndCategoryAndMajor(tbPersonHunan) > 0;
         if(!flag) {
+            if(tbPersonHunan.getCategory().equals("注册建造师（一级临时）")) {
+                tbPersonHunan.setCategory("一级临时注册建造师");
+            } else if(tbPersonHunan.getCategory().equals("注册建造师（一级）")) {
+                tbPersonHunan.setCategory("一级注册建造师");
+            } else if(tbPersonHunan.getCategory().equals("一级注册结构师")) {
+                tbPersonHunan.setCategory("一级注册结构工程师");
+            } else if(tbPersonHunan.getCategory().equals("注册建造师(二级临时)")) {
+                tbPersonHunan.setCategory("'二级临时注册建造师");
+            } else if(tbPersonHunan.getCategory().equals("注册建造师（二级临时）")) {
+                tbPersonHunan.setCategory("二级临时注册建造师");
+            } else if(tbPersonHunan.getCategory().equals("注册建造师(二级)")) {
+                tbPersonHunan.setCategory("二级注册建造师");
+            } else if(tbPersonHunan.getCategory().equals("注册建造师（二级）")) {
+                tbPersonHunan.setCategory("二级注册建造师");
+            } else if(tbPersonHunan.getCategory().equals("二级注册结构师")) {
+                tbPersonHunan.setCategory("二级注册结构工程师");
+            } else if(tbPersonHunan.getCategory().equals("监理工程师")) {
+                tbPersonHunan.setCategory("注册监理工程师");
+            } else if(tbPersonHunan.getCategory().equals("造价工程师")) {
+                tbPersonHunan.setCategory("注册造价工程师");
+            }
             tbPersonHunanMapper.insertPersonHunan(tbPersonHunan);
         }
     }

@@ -96,7 +96,7 @@
     <select id="listComNameAndTab" resultType="Map">
         SELECT DISTINCT com_name, tab
         FROM mishu.tb_company_qualification
-        WHERE created IS NOT NULL
+        WHERE created IS NOT NULL AND updated > date_sub(CURDATE(),interval 2 day)
         AND (tab = '建筑业企业' OR tab = '工程设计企业' OR tab = '工程勘察企业' OR tab = '工程监理企业')
     </select>
 

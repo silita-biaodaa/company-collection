@@ -78,8 +78,8 @@ public class TaskTest {
      */
     @Test
     public void splitCertTask() throws Exception {
-        splitCertTask.splitCompanyQualifications();
-//        splitCertTask.updateCompanyAptitudeRange();
+//        splitCertTask.splitCompanyQualifications();
+        splitCertTask.updateCompanyAptitudeRange();
     }
 
     /**
