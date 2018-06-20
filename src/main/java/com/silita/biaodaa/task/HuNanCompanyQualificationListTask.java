@@ -55,15 +55,15 @@ public class HuNanCompanyQualificationListTask extends BaseTask {
 //                "设计施工一体化企业", "工程造价咨询企业", "施工图审查机构", "质量检测机构", "安全生产许可证",
 //                "外省入湘备案"};
 
-//        String[] codes = {"ctl00$ContentPlaceHolder1$btn_7", "ctl00$ContentPlaceHolder1$btn_1", "ctl00$ContentPlaceHolder1$btn_2", "ctl00$ContentPlaceHolder1$btn_5",
-//                "ctl00$ContentPlaceHolder1$btn_aqsc", "ctl00$ContentPlaceHolder1$btn_ws"};
-//        String[] tabs = {"建筑业企业", "工程勘察企业", "工程设计企业", "工程监理企业",
-//                "安全生产许可证", "外省入湘备案"};
-
-        String[] codes = {"ctl00$ContentPlaceHolder1$btn_7",
+        String[] codes = {"ctl00$ContentPlaceHolder1$btn_7", "ctl00$ContentPlaceHolder1$btn_1", "ctl00$ContentPlaceHolder1$btn_2", "ctl00$ContentPlaceHolder1$btn_5",
                 "ctl00$ContentPlaceHolder1$btn_aqsc", "ctl00$ContentPlaceHolder1$btn_ws"};
-        String[] tabs = {"建筑业企业",
+        String[] tabs = {"建筑业企业", "工程勘察企业", "工程设计企业", "工程监理企业",
                 "安全生产许可证", "外省入湘备案"};
+
+//        String[] codes = {"ctl00$ContentPlaceHolder1$btn_7",
+//                "ctl00$ContentPlaceHolder1$btn_aqsc", "ctl00$ContentPlaceHolder1$btn_ws"};
+//        String[] tabs = {"建筑业企业",
+//                "安全生产许可证", "外省入湘备案"};
 
         for (int tab = 0; tab < tabs.length; tab++) {
             int page = 1;
@@ -107,14 +107,14 @@ public class HuNanCompanyQualificationListTask extends BaseTask {
                 __EVENTVALIDATION = doc.select("#__EVENTVALIDATION").attr("value");
 
                 Elements trs = doc.select("#ctl00_ContentPlaceHolder1_div_list").select("#table").select("tr");
-                //安全生产许可
                 if (tabs[tab] == "安全生产许可证") {
+                    //安全生产许可
                     insertCompanySafetyCert(trs);
                 } else if (tabs[tab] == "外省入湘备案") {
                     //外省入湘
-//                    insertCompanyInto(trs);
+                    insertCompanyInto(trs);
                 } else {
-//                    insertCompanyQualification(trs, tabs[tab]);
+                    insertCompanyQualification(trs, tabs[tab]);
                 }
                 //随机暂停几秒
                 Thread.sleep(1000 * (random.nextInt(max) % (max - min + 1)));
