@@ -29,6 +29,7 @@
 
     <delete id="deletePersonHunanByCompanyId" parameterType="Integer">
       DELETE FROM mishu.tb_person_hunan WHERE com_id = #{CompanyId}
+      AND NOT created > DATE_SUB(curdate(), interval 2 DAY)
     </delete>
 
 </mapper>

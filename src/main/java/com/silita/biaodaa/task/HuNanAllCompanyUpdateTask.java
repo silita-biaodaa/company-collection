@@ -19,6 +19,8 @@ import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Component
 @JobHander(value = "HuNanAllCompanyUpdateTask")
@@ -33,7 +35,7 @@ public class HuNanAllCompanyUpdateTask extends BaseTask {
     private int max = 5;
     private Random random = new Random();
 
-    private static final int THREAD_NUMBER = 1;
+    private static final int THREAD_NUMBER = 2;
 
     @Autowired
     private ICompanyService companyService;
@@ -53,25 +55,29 @@ public class HuNanAllCompanyUpdateTask extends BaseTask {
         //获取全部企业名、tab
         List<Map<String, Object>> maps = companyService.listComNameAndTab();
         Map<String, Object> params = null;
-        List<Map<String, Object>> certs ;
+        List allCerts = new ArrayList<Map<String, Object>>();
 
         for (Map<String, Object> map : maps) {
             params = new HashMap<>();
 //            params.put("tableName", map.get("tab"));
             params.put("comName", map.get("com_name"));
             //根据公司名获取证书url、tab
-            certs = companyService.listCompanyQualificationByTabAndCompanyName(params);
-            int every = certs.size() % threadCount == 0 ? certs.size() / threadCount : (certs.size() / threadCount) + 1;
-            final CountDownLatch latch = new CountDownLatch(threadCount);
-            for (int i = 0; i < threadCount; i++) {
-                new Thread(new HuNanAllCompanyUpdateRun(i * every, (i + 1) * every, latch, certs)).start();
-            }
-            try {
-                latch.await();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            List<Map<String, Object>> certs = companyService.listCompanyQualificationByTabAndCompanyName(params);
+            allCerts.addAll(certs);
         }
+
+        ExecutorService executor = Executors.newFixedThreadPool(10);
+        int every = allCerts.size() % threadCount == 0 ? allCerts.size() / threadCount : (allCerts.size() / threadCount) + 1;
+        final CountDownLatch latch = new CountDownLatch(threadCount);
+        for (int i = 0; i < threadCount; i++) {
+            executor.submit(new HuNanAllCompanyUpdateRun(i * every, (i + 1) * every, latch, allCerts));
+        }
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        executor.shutdown();
     }
 
     class HuNanAllCompanyUpdateRun implements Runnable {
@@ -112,10 +118,7 @@ public class HuNanAllCompanyUpdateTask extends BaseTask {
                         //########更新企业资质证书#########
                         updateCompanyAptitude(CompanyAptitudeTable, CompanyQualificationUrl, comId);
                         //########更新人员及人员证书#######
-                        if ((endNum > 1 && i == 0) || (endNum == 1)) {
-                            //多本证书更新一次人员证书就行了
-                            updatePeople(cookies, CompanyQualificationUrl, comId);
-                        }
+                        updatePeople(cookies, CompanyQualificationUrl, comId);
                         //##########更新项目信息##########
                         String tab = (String) CompanyQualificationUrls.get(i).get("tab");
                         if (tab.equals("建筑业企业")) {
