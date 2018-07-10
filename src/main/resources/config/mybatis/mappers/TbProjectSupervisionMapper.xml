@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.silita.biaodaa.dao.TbProjectSupervisionMapper">
+<mapper namespace="com.silita.dao.TbProjectSupervisionMapper">
 
-    <insert id="insertProjectSupervision" parameterType="com.silita.biaodaa.model.TbProjectSupervision">
+    <insert id="insertProjectSupervision" parameterType="com.silita.model.TbProjectSupervision">
         <selectKey resultType="Integer" order="AFTER" keyProperty="pkid">
             SELECT LAST_INSERT_ID() AS pkid
         </selectKey>
@@ -16,19 +16,19 @@
         #{contractPrice}, NOW())
     </insert>
 
-    <select id="getTotalByJlbdxhAndComIdTwo" parameterType="com.silita.biaodaa.model.TbProjectSupervision" resultType="Integer">
+    <select id="getTotalByJlbdxhAndComIdTwo" parameterType="com.silita.model.TbProjectSupervision" resultType="Integer">
         SELECT COUNT(*) FROM mishu.tb_project_supervision WHERE jlbdxh = #{jlbdxh} AND com_id = #{comId}
     </select>
 
-    <select id="getPkidByJlbdxhAndComIdTwo" parameterType="com.silita.biaodaa.model.TbProjectSupervision" resultType="Integer">
+    <select id="getPkidByJlbdxhAndComIdTwo" parameterType="com.silita.model.TbProjectSupervision" resultType="Integer">
         SELECT pkid FROM mishu.tb_project_supervision WHERE jlbdxh = #{jlbdxh} AND com_id = #{comId}
     </select>
 
-    <select id="getTotalByProNameAndSuperOrg" parameterType="com.silita.biaodaa.model.TbProjectSupervision" resultType="Integer">
+    <select id="getTotalByProNameAndSuperOrg" parameterType="com.silita.model.TbProjectSupervision" resultType="Integer">
         SELECT COUNT(*) FROM mishu.tb_project_supervision WHERE `pro_name` = #{proName} AND `super_org` = #{superOrg}
     </select>
 
-    <select id="getPkidByProNameAndSuperOrg" parameterType="com.silita.biaodaa.model.TbProjectSupervision" resultType="Integer">
+    <select id="getPkidByProNameAndSuperOrg" parameterType="com.silita.model.TbProjectSupervision" resultType="Integer">
         SELECT pkid FROM mishu.tb_project_supervision WHERE `pro_name` = #{proName} AND `super_org` = #{superOrg}
     </select>
 

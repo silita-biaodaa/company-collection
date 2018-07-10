@@ -57,6 +57,6 @@
     </settings>
 
     <typeAliases>
-        <package name="com.silita.biaodaa.model"/>
+        <package name="com.silita.model"/>
     </typeAliases>
 </configuration>

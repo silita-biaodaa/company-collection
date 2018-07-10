@@ -17,9 +17,18 @@
 	<context:annotation-config />
 
 	<!-- 加载redis配置文件 -->
-	<context:property-placeholder location="classpath:config/collection.properties" />
+	<!--<context:property-placeholder location="classpath:config/collection.properties" />-->
 
-	<context:component-scan base-package="com.silita">
+	<bean id="propertyConfigurer" class="com.silita.common.config.CustomizedPropertyConfigurer" >
+		<property name="fileEncoding" value="utf-8" />
+		<property name="locations">
+			<list>
+				<value>classpath:config/collection.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<context:component-scan base-package="com.silita.*">
 		<context:exclude-filter type="annotation"
 			expression="org.springframework.stereotype.Controller" />
 	</context:component-scan>
@@ -37,7 +46,7 @@
 	</bean>
 	<!-- spring与mybatis整合配置，扫描所有dao -->
 	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer"
-		  p:basePackage="com.silita.biaodaa.dao" p:sqlSessionFactoryBeanName="sqlSessionFactory" />
+		  p:basePackage="com.silita.dao" p:sqlSessionFactoryBeanName="sqlSessionFactory" />
 
 
 
@@ -53,7 +62,7 @@
 	</tx:advice>
 	<aop:config>
 		<aop:pointcut id="testPointcut"
-			expression="execution(* com.silita..*Service.*(..))" />
+			expression="execution(* com.silita.service.*.*(..))" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="testPointcut" />
 	</aop:config>
     <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">

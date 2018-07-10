@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.silita.biaodaa.dao.TbPersonChangeMapper">
+<mapper namespace="com.silita.dao.TbPersonChangeMapper">
 
-    <insert id="batchInsertPeopleChange" parameterType="com.silita.biaodaa.model.TbPersonChange">
+    <insert id="batchInsertPeopleChange" parameterType="com.silita.model.TbPersonChange">
         INSERT INTO
         mishu.tb_person_change(`com_name`, `major`, `change_date`, `remark`, `per_id`,
         `created`)
@@ -13,11 +13,11 @@
         </foreach>
     </insert>
 
-    <select id="getTotalByPerIdChangeDate" parameterType="com.silita.biaodaa.model.TbPersonChange" resultType="Integer">
+    <select id="getTotalByPerIdChangeDate" parameterType="com.silita.model.TbPersonChange" resultType="Integer">
         SELECT Count(*) FROM mishu.tb_person_change WHERE flag = #{flag} AND change_date = #{changeDate}
     </select>
 
-    <insert id="insertPeopleChange" parameterType="com.silita.biaodaa.model.TbPersonChange">
+    <insert id="insertPeopleChange" parameterType="com.silita.model.TbPersonChange">
         INSERT INTO
         mishu.tb_person_change(
         `com_name`, `major`, `change_date`, `remark`, `per_id`,

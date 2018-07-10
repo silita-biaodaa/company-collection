@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.silita.biaodaa.dao.TbPersonDesignMapper">
+<mapper namespace="com.silita.dao.TbPersonDesignMapper">
 
-    <insert id="insertPersionDesign" parameterType="com.silita.biaodaa.model.TbPersonDesign">
+    <insert id="insertPersionDesign" parameterType="com.silita.model.TbPersonDesign">
         INSERT INTO
         mishu.tb_person_design(`innerid`, `pid`, `name`, `category`, `com_name`,
         `role`, `created`)
@@ -11,7 +11,7 @@
         #{role},  NOW())
     </insert>
 
-    <select id="getTotalByNameAndCategoryAndPid" parameterType="com.silita.biaodaa.model.TbPersonDesign" resultType="Integer">
+    <select id="getTotalByNameAndCategoryAndPid" parameterType="com.silita.model.TbPersonDesign" resultType="Integer">
         SELECT COUNT(*) FROM mishu.tb_person_design WHERE pid = #{pid} AND `name` = #{name} AND `category` = #{category}
     </select>
 </mapper>

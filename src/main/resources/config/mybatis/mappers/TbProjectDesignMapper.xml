@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.silita.biaodaa.dao.TbProjectDesignMapper">
+<mapper namespace="com.silita.dao.TbProjectDesignMapper">
 
-    <insert id="insertProjectDesign" parameterType="com.silita.biaodaa.model.TbProjectDesign">
+    <insert id="insertProjectDesign" parameterType="com.silita.model.TbProjectDesign">
         <selectKey resultType="Integer" order="AFTER" keyProperty="pkid">
             SELECT LAST_INSERT_ID() AS pkid
         </selectKey>
@@ -16,19 +16,19 @@
         #{checkFinishDate}, #{checkPerson}, #{type}, NOW())
     </insert>
 
-    <select id="getTotalBySgtxhAndComIdCheckNo" parameterType="com.silita.biaodaa.model.TbProjectDesign" resultType="Integer">
+    <select id="getTotalBySgtxhAndComIdCheckNo" parameterType="com.silita.model.TbProjectDesign" resultType="Integer">
       SELECT COUNT(*) FROM mishu.tb_project_design WHERE sgtxh = #{sgtxh} AND com_id = #{comId} AND check_no = #{checkNo}
     </select>
 
-    <select id="getPkidBySgtxhAndComIdCheckNo" parameterType="com.silita.biaodaa.model.TbProjectDesign" resultType="Integer">
+    <select id="getPkidBySgtxhAndComIdCheckNo" parameterType="com.silita.model.TbProjectDesign" resultType="Integer">
         SELECT pkid FROM mishu.tb_project_design WHERE sgtxh = #{sgtxh} AND com_id = #{comId} AND check_no = #{checkNo}
     </select>
 
-    <select id="getProjectDesignTotalByCheckNoAndExploreOrg" parameterType="com.silita.biaodaa.model.TbProjectDesign" resultType="Integer">
+    <select id="getProjectDesignTotalByCheckNoAndExploreOrg" parameterType="com.silita.model.TbProjectDesign" resultType="Integer">
         SELECT COUNT(*) FROM mishu.tb_project_design WHERE check_no = #{checkNo} AND explore_org = #{exploreOrg}
     </select>
 
-    <select id="getPkidByCheckNoAndExploreOrg" parameterType="com.silita.biaodaa.model.TbProjectDesign" resultType="Integer">
+    <select id="getPkidByCheckNoAndExploreOrg" parameterType="com.silita.model.TbProjectDesign" resultType="Integer">
         SELECT pkid FROM mishu.tb_project_design WHERE check_no = #{checkNo} AND explore_org = #{exploreOrg}
     </select>
 

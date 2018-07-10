@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.silita.biaodaa.dao.TbPersonHunanMapper">
+<mapper namespace="com.silita.dao.TbPersonHunanMapper">
 
-    <select id="getTotalByComIdAndCertNoAndCategory" parameterType="com.silita.biaodaa.model.TbPersonHunan"
+    <select id="getTotalByComIdAndCertNoAndCategory" parameterType="com.silita.model.TbPersonHunan"
             resultType="Integer">
       SELECT COUNT(*) FROM mishu.tb_person_hunan WHERE com_id = #{comId} AND cert_no = #{certNo} AND category = #{category}
     </select>
 
-    <select id="getTotalByComIdAndCertNoAndCategoryAndMajor" parameterType="com.silita.biaodaa.model.TbPersonHunan"
+    <select id="getTotalByComIdAndCertNoAndCategoryAndMajor" parameterType="com.silita.model.TbPersonHunan"
             resultType="Integer">
       SELECT COUNT(*) FROM mishu.tb_person_hunan WHERE com_id = #{comId} AND cert_no = #{certNo} AND category = #{category} AND major = #{major}
     </select>
 
-    <insert id="insertPersonHunan" parameterType="com.silita.biaodaa.model.TbPersonHunan">
+    <insert id="insertPersonHunan" parameterType="com.silita.model.TbPersonHunan">
       INSERT INTO
       mishu.tb_person_hunan(
       `name`, `sex`, `id_card`, `innerid` ,`category`,

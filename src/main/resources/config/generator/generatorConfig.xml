@@ -11,7 +11,7 @@
         <property name="endingDelimiter" value="`"/>
 
         <plugin type="tk.mybatis.mapper.generator.MapperPlugin">
-            <property name="mappers" value="com.silita.biaodaa.utils.MyMapper"/>
+            <property name="mappers" value="com.silita.utils.MyMapper"/>
         </plugin>
 
         <jdbcConnection driverClass="${jdbc.driverClassName}"

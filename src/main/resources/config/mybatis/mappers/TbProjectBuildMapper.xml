@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.silita.biaodaa.dao.TbProjectBuildMapper">
+<mapper namespace="com.silita.dao.TbProjectBuildMapper">
 
-    <insert id="insertProjectBuild" parameterType="com.silita.biaodaa.model.TbProjectBuild">
+    <insert id="insertProjectBuild" parameterType="com.silita.model.TbProjectBuild">
         <selectKey resultType="Integer" order="AFTER" keyProperty="pkid">
             SELECT LAST_INSERT_ID() AS pkid
         </selectKey>
@@ -18,11 +18,11 @@
         #{subContrace}, NOW())
     </insert>
 
-    <select id="getTotalByBdxhAndComIdAndBLicence" parameterType="com.silita.biaodaa.model.TbProjectBuild" resultType="Integer">
+    <select id="getTotalByBdxhAndComIdAndBLicence" parameterType="com.silita.model.TbProjectBuild" resultType="Integer">
         SELECT COUNT(*) FROM mishu.tb_project_build WHERE bdxh = #{bdxh} AND com_id = #{comId} AND b_licence = #{bLicence}
     </select>
 
-    <select id="getPkidByBdxhAndComIdAndBLicence" parameterType="com.silita.biaodaa.model.TbProjectBuild" resultType="Integer">
+    <select id="getPkidByBdxhAndComIdAndBLicence" parameterType="com.silita.model.TbProjectBuild" resultType="Integer">
         SELECT pkid FROM mishu.tb_project_build WHERE bdxh = #{bdxh} AND com_id = #{comId} AND b_licence = #{bLicence}
     </select>
 
